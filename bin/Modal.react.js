@@ -8,7 +8,7 @@ var isMobile = function isMobile() {
 
   return toMatch.some(function (toMatchItem) {
     return navigator.userAgent.match(toMatchItem);
-  }) || isIpad();
+  });
 };
 
 /*

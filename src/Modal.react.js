@@ -14,7 +14,7 @@ let isMobile = () => {
 
   return toMatch.some((toMatchItem) => {
       return navigator.userAgent.match(toMatchItem);
-  }) || isIpad();
+  });
 }
 
 /*
