@@ -7,16 +7,11 @@ var useState = React.useState,
     useEffect = React.useEffect,
     useMemo = React.useMemo;
 
-var helpers = require('../../utils/helpers');
 
 var isElectron = function isElectron() {
   // return true;
   return window.require != null;
 };
-if (helpers) {
-  isElectron = helpers.isElectron; // HACK to centralize function
-  // if possible
-}
 var remote = null;
 if (isElectron()) {
   remote = window.require('electron');

@@ -2,7 +2,6 @@
 
 var React = require('react');
 var Button = require('./Button.react');
-var helpers = require('../../utils/helpers');
 
 var isMobile = function isMobile() {
   var toMatch = [/Android/i, /webOS/i, /iPhone/i, /iPad/i, /iPod/i, /BlackBerry/i, /Windows Phone/i];
@@ -11,11 +10,6 @@ var isMobile = function isMobile() {
     return navigator.userAgent.match(toMatchItem);
   }) || isIpad();
 };
-
-if (helpers) {
-  // HACK to centralize this function if possible
-  isMobile = helpers.isMobile;
-}
 
 /*
 type Props = {

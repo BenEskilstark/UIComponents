@@ -2,15 +2,10 @@ const React = require('react');
 const Button = require('./Button.react');
 const Modal = require('./Modal.react');
 const {useState, useEffect, useMemo} = React;
-const helpers = require('../../utils/helpers');
 
 let isElectron = () => {
   // return true;
   return window.require != null;
-}
-if (helpers) {
-  isElectron = helpers.isElectron; // HACK to centralize function
-                                   // if possible
 }
 let remote = null;
 if (isElectron()) {

@@ -1,6 +1,5 @@
 const React = require('react');
 const Button = require('./Button.react');
-const helpers = require('../../utils/helpers');
 
 let isMobile = () => {
   const toMatch = [
@@ -16,11 +15,6 @@ let isMobile = () => {
   return toMatch.some((toMatchItem) => {
       return navigator.userAgent.match(toMatchItem);
   }) || isIpad();
-}
-
-if (helpers) {
-  // HACK to centralize this function if possible
-  isMobile = helpers.isMobile;
 }
 
 /*
