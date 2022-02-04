@@ -3,19 +3,13 @@
 var React = require('react');
 var Button = require('./Button.react');
 var Modal = require('./Modal.react');
+
+var isElectron = require('bens_utils').platform.isElectron;
+
 var useState = React.useState,
     useEffect = React.useEffect,
     useMemo = React.useMemo;
 
-
-var isElectron = function isElectron() {
-  // return true;
-  return window.require != null;
-};
-var remote = null;
-if (isElectron()) {
-  remote = window.require('electron');
-}
 
 var QuitButton = function QuitButton(props) {
   var isInGame = props.isInGame,

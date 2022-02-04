@@ -3,13 +3,7 @@
 var React = require('react');
 var Button = require('./Button.react');
 
-var isMobile = function isMobile() {
-  var toMatch = [/Android/i, /webOS/i, /iPhone/i, /iPad/i, /iPod/i, /BlackBerry/i, /Windows Phone/i];
-
-  return toMatch.some(function (toMatchItem) {
-    return navigator.userAgent.match(toMatchItem);
-  });
-};
+var isMobile = require('bens_utils').platform.isMobile;
 
 /*
 type Props = {

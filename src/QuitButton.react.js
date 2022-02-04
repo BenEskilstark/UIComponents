@@ -1,16 +1,9 @@
 const React = require('react');
 const Button = require('./Button.react');
 const Modal = require('./Modal.react');
+const {isElectron} = require('bens_utils').platform;
 const {useState, useEffect, useMemo} = React;
 
-let isElectron = () => {
-  // return true;
-  return window.require != null;
-}
-let remote = null;
-if (isElectron()) {
-  remote = window.require('electron');
-}
 
 const QuitButton = (props) => {
   const {isInGame, dispatch} = props;

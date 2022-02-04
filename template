@@ -12,6 +12,10 @@
 # browserify
 # sudo npm install -g browserify
 
+# bens utils
+sudo npm install bens_utils
+
+
 # babel
 sudo npm install babel-preset-flow
 sudo npm install babel-preset-es2015
@@ -59,3 +63,4 @@ sudo npm install --save-dev babel-plugin-transform-object-rest-spread
 
 # electron squirrel
 # npm i @electron-forge/maker-squirrel
+
