@@ -2,6 +2,7 @@
 module.exports = {
   AudioWidget: require('./bin/AudioWidget.react.js'),
   Button: require('./bin/Button.react.js'),
+  Canvas: require('./bin/Canvas.react.js'),
   Checkbox: require('./bin/Checkbox.react.js'),
   Divider: require('./bin/Divider.react.js'),
   Dropdown: require('./bin/Dropdown.react.js'),
