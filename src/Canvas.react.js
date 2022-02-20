@@ -65,9 +65,6 @@ function Canvas(props: Props) {
   const nonFullScreenStyle = {
     height: windowHeight,
     width: windowWidth,
-    position: 'absolute',
-    top: 0,
-    left: 0,
   };
 
   return (
