@@ -2,6 +2,7 @@
 
 /**
  * See ~/Code/teaching/clusters for an example of how to use the plot
+ * Specifically ui/Main and reducers/plotReducer
  */
 
 const React = require('react');
