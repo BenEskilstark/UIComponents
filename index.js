@@ -9,6 +9,8 @@ module.exports = {
   InfoCard: require('./bin/InfoCard.react.js'),
   Modal: require('./bin/Modal.react.js'),
   NumberField: require('./bin/NumberField.react.js'),
+  Plot: require('./bin/Plot.react.js'),
+  plotReducer: require('./bin/plotReducer.js'),
   QuitButton: require('./bin/QuitButton.react.js'),
   RadioPicker: require('./bin/RadioPicker.react.js'),
   Slider: require('./bin/Slider.react.js'),
