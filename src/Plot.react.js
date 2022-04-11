@@ -6,7 +6,8 @@
  */
 
 const React = require('react');
-const {Button, Canvas} = require('bens_ui_components');
+const Button = require('./Button.react');
+const Canvas = require('./Canvas.react');
 const {useState, useMemo, useEffect, useReducer} = React;
 
 import type {State, Action} from '../types';
