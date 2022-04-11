@@ -21,6 +21,7 @@ function Canvas(props) {
   var useFullScreen = props.useFullScreen,
       width = props.width,
       height = props.height,
+      id = props.id,
       cellSize = props.cellSize,
       dispatch = props.dispatch,
       focus = props.focus;
@@ -90,7 +91,7 @@ function Canvas(props) {
       style: useFullScreen ? fullScreenStyle : nonFullScreenStyle
     },
     React.createElement('canvas', {
-      id: 'canvas', style: {
+      id: id || "canvas", style: {
         backgroundColor: 'white',
         cursor: 'pointer'
       },

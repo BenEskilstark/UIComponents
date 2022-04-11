@@ -7,6 +7,8 @@ function Canvas(props: Props) {
     // only necessary if not useFullScreen
     width, height,
 
+    id, // optional if you have multiple canvases on the same page
+
     // needed for resizing images on canvas relative to canvas size
     cellSize, // size in pixels of grid space
     dispatch,
@@ -72,7 +74,7 @@ function Canvas(props: Props) {
       style={useFullScreen ? fullScreenStyle : nonFullScreenStyle}
     >
       <canvas
-        id="canvas" style={{
+        id={id || "canvas"} style={{
           backgroundColor: 'white',
           cursor: 'pointer',
         }}
