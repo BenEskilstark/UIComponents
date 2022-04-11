@@ -10,16 +10,27 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
  */
 
 var React = require('react');
-
-var _require = require('bens_ui_components'),
-    Button = _require.Button,
-    Canvas = _require.Canvas;
-
+var Button = require('./Button.react');
+var Canvas = require('./Canvas.react');
 var useState = React.useState,
     useMemo = React.useMemo,
     useEffect = React.useEffect,
     useReducer = React.useReducer;
 
+// type Point = {
+//   x: number,
+//   y: number,
+//   color: ?string, // css color
+// };
+//
+// type Axis = {
+//   dimension: 'x' | 'y',
+//   label: string,
+//   min: ?number,
+//   max: ?number,
+//   majorTicks: ?number,
+//   minorTicks: ?number,
+// };
 
 /**
  * NOTE: 0, 0 is the bottom left corner
@@ -88,20 +99,20 @@ var Plot = function Plot(props) {
     // drawing axes
     ctx.fillStyle = 'black';
     var xMajor = xAxis.majorTicks || 10;
-    for (var _x = xAxis.min; _x < xAxis.max; _x += xMajor) {
-      drawLine(ctx, { x: transX(_x), y: height }, { x: transX(_x), y: height - 20 });
+    for (var x = xAxis.min; x < xAxis.max; x += xMajor) {
+      drawLine(ctx, { x: transX(x), y: height }, { x: transX(x), y: height - 20 });
     }
     var xMinor = xAxis.minorTicks || 2;
-    for (var _x2 = xAxis.min; _x2 < xAxis.max; _x2 += xMinor) {
-      drawLine(ctx, { x: transX(_x2), y: height }, { x: transX(_x2), y: height - 10 });
+    for (var _x = xAxis.min; _x < xAxis.max; _x += xMinor) {
+      drawLine(ctx, { x: transX(_x), y: height }, { x: transX(_x), y: height - 10 });
     }
     var yMajor = yAxis.majorTicks || 10;
-    for (var _y = yAxis.min; _y < yAxis.max; _y += yMajor) {
-      drawLine(ctx, { x: 0, y: transY(_y) }, { x: 20, y: transY(_y) });
+    for (var y = yAxis.min; y < yAxis.max; y += yMajor) {
+      drawLine(ctx, { x: 0, y: transY(y) }, { x: 20, y: transY(y) });
     }
     var yMinor = yAxis.minorTicks || 2;
-    for (var _y2 = yAxis.min; _y2 < yAxis.max; _y2 += yMinor) {
-      drawLine(ctx, { x: 0, y: transY(_y2) }, { x: 10, y: transY(_y2) });
+    for (var _y = yAxis.min; _y < yAxis.max; _y += yMinor) {
+      drawLine(ctx, { x: 0, y: transY(_y) }, { x: 10, y: transY(_y) });
     }
 
     // drawing points
@@ -118,16 +129,16 @@ var Plot = function Plot(props) {
         var point = _step.value;
 
         ctx.fillStyle = point.color ? point.color : 'black';
-        var _x3 = transX(point.x);
-        var _y3 = yAxis.max * yTrans - yAxis.min * yTrans - point.y * yTrans;
+        var _x2 = transX(point.x);
+        var _y2 = yAxis.max * yTrans - yAxis.min * yTrans - point.y * yTrans;
         var size = 2;
-        ctx.fillRect(_x3 - size, _y3 - size, size * 2, size * 2);
+        ctx.fillRect(_x2 - size, _y2 - size, size * 2, size * 2);
 
         if (isLinear && prevPoint != null) {
           ctx.fillStyle = 'black';
-          drawLine(ctx, prevPoint, { x: _x3, y: _y3 });
+          drawLine(ctx, prevPoint, { x: _x2, y: _y2 });
         }
-        prevPoint = { x: _x3, y: _y3 };
+        prevPoint = { x: _x2, y: _y2 };
       }
     } catch (err) {
       _didIteratorError = true;

@@ -1,5 +1,3 @@
-// @flow
-
 /**
  * See ~/Code/teaching/clusters for an example of how to use the plot
  * Specifically ui/Main and reducers/plotReducer
@@ -10,22 +8,21 @@ const Button = require('./Button.react');
 const Canvas = require('./Canvas.react');
 const {useState, useMemo, useEffect, useReducer} = React;
 
-import type {State, Action} from '../types';
 
-type Point = {
-  x: number,
-  y: number,
-  color: ?string, // css color
-};
-
-type Axis = {
-  dimension: 'x' | 'y',
-  label: string,
-  min: ?number,
-  max: ?number,
-  majorTicks: ?number,
-  minorTicks: ?number,
-};
+// type Point = {
+//   x: number,
+//   y: number,
+//   color: ?string, // css color
+// };
+//
+// type Axis = {
+//   dimension: 'x' | 'y',
+//   label: string,
+//   min: ?number,
+//   max: ?number,
+//   majorTicks: ?number,
+//   minorTicks: ?number,
+// };
 
 /**
  * NOTE: 0, 0 is the bottom left corner
