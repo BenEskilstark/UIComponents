@@ -20,6 +20,8 @@ const {useState, useMemo, useEffect, useReducer} = React;
 //   label: string,
 //   min: ?number,
 //   max: ?number,
+//   adaptiveRange: ?boolean, // min/max adapt to the given points
+//   hidden: ?boolean, // don't render the axis
 //   majorTicks: ?number,
 //   minorTicks: ?number,
 // };
@@ -32,6 +34,10 @@ const {useState, useMemo, useEffect, useReducer} = React;
  *   xAxis: Axis,
  *   yAxis: Axis,
  *   isLinear: boolean,
+ *   watch: ?number, // if provided, will watch for changes in this value
+ *                   // and add a point to the plot whenever it changes
+ *                   // up to a maximum number of points equal to the xAxis size
+ *   inline: ?boolean,
  *
  * canvas props:
  *   useFullScreen: boolean,
@@ -43,7 +49,6 @@ const Plot = (props) => {
 
   // screen resizing
   const [resizeCount, setResize] = useState(0);
-
   useEffect(() => {
     function handleResize() {
       setResize(resizeCount + 1);
@@ -54,51 +59,99 @@ const Plot = (props) => {
     }
   }, [resizeCount]);
 
+  // track points with watching
+  const [allPoints, setAllPoints] = useState(props.points);
+  useEffect(() => {
+    if (props.watch == null) {
+      setAllPoints(props.points);
+      return;
+    }
+    const watchedPoint = {x: allPoints.length, y: props.watch}
+    if (allPoints.length < props.xAxis.max) {
+      setAllPoints([...allPoints, watchedPoint]);
+    } else {
+      const [_, ...next] = allPoints;
+      setAllPoints([...next, watchedPoint]);
+    }
+  }, [props.watch, setAllPoints, allPoints, props.xAxis, props.points]);
+
+
   // rendering
   useEffect(() => {
     const canvas = document.getElementById('canvas');
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
 
-    const {points, xAxis, yAxis, isLinear} = props;
+    const {xAxis, yAxis, isLinear} = props;
     const {width, height} = canvas.getBoundingClientRect();
 
-    // scaling points to canvas
-    const xTrans = width / (xAxis.max - xAxis.min);
-    const yTrans = height / (yAxis.max - yAxis.min);
-    const transX = (x) => x * xTrans - xAxis.min * xTrans;
-    const transY = (y) => y * yTrans - yAxis.min * yTrans;
+    let xmax = xAxis.max == null ? 10 : xAxis.max;
+    let xmin = xAxis.min == null ? 0 : xAxis.min;
+    let ymax = yAxis.max == null ? 10 : yAxis.max;
+    let ymin = yAxis.min == null ? 0 : yAxis.min;
+
+    // handling adaptive ranges
+    if (xAxis.adaptiveRange) {
+      for (const point of allPoints) {
+        if (point.x < minVal) {
+          xmin = point.x;
+        }
+        if (point.x > maxVal) {
+          xmax = point.x;
+        }
+      }
+    }
+    if (yAxis.adaptiveRange) {
+      for (const point of allPoints) {
+        if (point.y < minVal) {
+          ymin = point.y;
+        }
+        if (point.y > maxVal) {
+          ymax = point.y;
+        }
+      }
+    }
+
+    // scaling allPoints to canvas
+    const xTrans = width / (xmax - xmin);
+    const yTrans = height / (ymax - ymin);
+    const transX = (x) => x * xTrans - xmin * xTrans;
+    const transY = (y) => y * yTrans - ymin * yTrans;
 
     // clear canvas
     ctx.fillStyle = 'white';
     ctx.fillRect(0, 0, width, height);
 
     // drawing axes
-    ctx.fillStyle = 'black';
-    const xMajor = xAxis.majorTicks || 10;
-    for (let x = xAxis.min; x < xAxis.max; x += xMajor) {
-      drawLine(ctx, {x: transX(x), y: height}, {x: transX(x), y: height - 20});
+    if (!xAxis.hidden) {
+      ctx.fillStyle = 'black';
+      const xMajor = xAxis.majorTicks || 10;
+      for (let x = xmin; x < xmax; x += xMajor) {
+        drawLine(ctx, {x: transX(x), y: height}, {x: transX(x), y: height - 20});
+      }
+      const xMinor = xAxis.minorTicks || 2;
+      for (let x = xmin; x < xmax; x += xMinor) {
+        drawLine(ctx, {x: transX(x), y: height}, {x: transX(x), y: height - 10});
+      }
     }
-    const xMinor = xAxis.minorTicks || 2;
-    for (let x = xAxis.min; x < xAxis.max; x += xMinor) {
-      drawLine(ctx, {x: transX(x), y: height}, {x: transX(x), y: height - 10});
-    }
-    const yMajor = yAxis.majorTicks || 10;
-    for (let y = yAxis.min; y < yAxis.max; y += yMajor) {
-      drawLine(ctx, {x: 0, y: transY(y)}, {x: 20, y: transY(y)});
-    }
-    const yMinor = yAxis.minorTicks || 2;
-    for (let y = yAxis.min; y < yAxis.max; y += yMinor) {
-      drawLine(ctx, {x: 0, y: transY(y)}, {x: 10, y: transY(y)});
+    if (!yAxis.hidden) {
+      const yMajor = yAxis.majorTicks || 10;
+      for (let y = ymin; y < ymax; y += yMajor) {
+        drawLine(ctx, {x: 0, y: transY(y)}, {x: 20, y: transY(y)});
+      }
+      const yMinor = yAxis.minorTicks || 2;
+      for (let y = ymin; y < ymax; y += yMinor) {
+        drawLine(ctx, {x: 0, y: transY(y)}, {x: 10, y: transY(y)});
+      }
     }
 
-    // drawing points
-    const sortedPoints = [...points].sort((a, b) => a.x - b.x);
+    // drawing allPoints
+    const sortedPoints = [...allPoints].sort((a, b) => a.x - b.x);
     let prevPoint = null;
     for (const point of sortedPoints) {
       ctx.fillStyle = point.color ? point.color : 'black';
       const x = transX(point.x);
-      const y = yAxis.max * yTrans - yAxis.min * yTrans - point.y * yTrans;
+      const y = ymax * yTrans - ymin * yTrans - point.y * yTrans;
       const size = 2;
       ctx.fillRect(x - size, y - size, size * 2, size * 2);
 
@@ -109,7 +162,7 @@ const Plot = (props) => {
       prevPoint = {x, y};
     }
 
-  }, [props, resizeCount]);
+  }, [props, resizeCount, allPoints]);
 
   // axis labels
   let xAxisLabel = null;
@@ -138,7 +191,7 @@ const Plot = (props) => {
     <div
       style={{
         width: 'fit-content',
-        display: 'table',
+        display: props.inline ? 'inline' : 'table',
       }}
     >
       {yAxisLabel}

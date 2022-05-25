@@ -1,0 +1,8 @@
+
+- - - - - PLOT - - - - -
+  ** fix plotReducer require
+  ** allow not rendering axes at all
+  ** smart axes that adjust to given min-maxes after a reasonable starting margin
+  ** option to "watch" a value that will be appended to points via useEffect
+  ** ability to render in-line
+

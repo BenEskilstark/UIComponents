@@ -38,6 +38,21 @@ const plotReducer = (state: State, action: Action): State=> {
         points: state.points ? [...state.points, ...points] : points,
       };
     }
+    case 'ADD_POINT_CIRCULAR': {
+      const {point} = action;
+      if (point.x < state.xAxis.max) {
+        return {
+          ...state,
+          points: state.points ? [...state.points, point] : points,
+        };
+      } else {
+        const [_, ...next] = state.points;
+        return {
+          ...state,
+          points: state.points ? [...next, point] : points,
+        };
+      }
+    }
     case 'CLEAR_POINTS': {
       return {
         ...state,

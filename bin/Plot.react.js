@@ -2,6 +2,8 @@
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
+function _toArray(arr) { return Array.isArray(arr) ? arr : Array.from(arr); }
+
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 /**
@@ -28,6 +30,8 @@ var useState = React.useState,
 //   label: string,
 //   min: ?number,
 //   max: ?number,
+//   adaptiveRange: ?boolean, // min/max adapt to the given points
+//   hidden: ?boolean, // don't render the axis
 //   majorTicks: ?number,
 //   minorTicks: ?number,
 // };
@@ -40,6 +44,10 @@ var useState = React.useState,
  *   xAxis: Axis,
  *   yAxis: Axis,
  *   isLinear: boolean,
+ *   watch: ?number, // if provided, will watch for changes in this value
+ *                   // and add a point to the plot whenever it changes
+ *                   // up to a maximum number of points equal to the xAxis size
+ *   inline: ?boolean,
  *
  * canvas props:
  *   useFullScreen: boolean,
@@ -65,14 +73,37 @@ var Plot = function Plot(props) {
     };
   }, [resizeCount]);
 
+  // track points with watching
+
+  var _useState3 = useState(props.points),
+      _useState4 = _slicedToArray(_useState3, 2),
+      allPoints = _useState4[0],
+      setAllPoints = _useState4[1];
+
+  useEffect(function () {
+    if (props.watch == null) {
+      setAllPoints(props.points);
+      return;
+    }
+    var watchedPoint = { x: allPoints.length, y: props.watch };
+    if (allPoints.length < props.xAxis.max) {
+      setAllPoints([].concat(_toConsumableArray(allPoints), [watchedPoint]));
+    } else {
+      var _allPoints = _toArray(allPoints),
+          _ = _allPoints[0],
+          next = _allPoints.slice(1);
+
+      setAllPoints([].concat(_toConsumableArray(next), [watchedPoint]));
+    }
+  }, [props.watch, setAllPoints, allPoints, props.xAxis, props.points]);
+
   // rendering
   useEffect(function () {
     var canvas = document.getElementById('canvas');
     if (!canvas) return;
     var ctx = canvas.getContext('2d');
 
-    var points = props.points,
-        xAxis = props.xAxis,
+    var xAxis = props.xAxis,
         yAxis = props.yAxis,
         isLinear = props.isLinear;
 
@@ -80,16 +111,83 @@ var Plot = function Plot(props) {
         width = _canvas$getBoundingCl.width,
         height = _canvas$getBoundingCl.height;
 
-    // scaling points to canvas
+    var xmax = xAxis.max == null ? 10 : xAxis.max;
+    var xmin = xAxis.min == null ? 0 : xAxis.min;
+    var ymax = yAxis.max == null ? 10 : yAxis.max;
+    var ymin = yAxis.min == null ? 0 : yAxis.min;
 
+    // handling adaptive ranges
+    if (xAxis.adaptiveRange) {
+      var _iteratorNormalCompletion = true;
+      var _didIteratorError = false;
+      var _iteratorError = undefined;
 
-    var xTrans = width / (xAxis.max - xAxis.min);
-    var yTrans = height / (yAxis.max - yAxis.min);
+      try {
+        for (var _iterator = allPoints[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          var point = _step.value;
+
+          if (point.x < minVal) {
+            xmin = point.x;
+          }
+          if (point.x > maxVal) {
+            xmax = point.x;
+          }
+        }
+      } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion && _iterator.return) {
+            _iterator.return();
+          }
+        } finally {
+          if (_didIteratorError) {
+            throw _iteratorError;
+          }
+        }
+      }
+    }
+    if (yAxis.adaptiveRange) {
+      var _iteratorNormalCompletion2 = true;
+      var _didIteratorError2 = false;
+      var _iteratorError2 = undefined;
+
+      try {
+        for (var _iterator2 = allPoints[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+          var _point = _step2.value;
+
+          if (_point.y < minVal) {
+            ymin = _point.y;
+          }
+          if (_point.y > maxVal) {
+            ymax = _point.y;
+          }
+        }
+      } catch (err) {
+        _didIteratorError2 = true;
+        _iteratorError2 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion2 && _iterator2.return) {
+            _iterator2.return();
+          }
+        } finally {
+          if (_didIteratorError2) {
+            throw _iteratorError2;
+          }
+        }
+      }
+    }
+
+    // scaling allPoints to canvas
+    var xTrans = width / (xmax - xmin);
+    var yTrans = height / (ymax - ymin);
     var transX = function transX(x) {
-      return x * xTrans - xAxis.min * xTrans;
+      return x * xTrans - xmin * xTrans;
     };
     var transY = function transY(y) {
-      return y * yTrans - yAxis.min * yTrans;
+      return y * yTrans - ymin * yTrans;
     };
 
     // clear canvas
@@ -97,40 +195,44 @@ var Plot = function Plot(props) {
     ctx.fillRect(0, 0, width, height);
 
     // drawing axes
-    ctx.fillStyle = 'black';
-    var xMajor = xAxis.majorTicks || 10;
-    for (var x = xAxis.min; x < xAxis.max; x += xMajor) {
-      drawLine(ctx, { x: transX(x), y: height }, { x: transX(x), y: height - 20 });
+    if (!xAxis.hidden) {
+      ctx.fillStyle = 'black';
+      var xMajor = xAxis.majorTicks || 10;
+      for (var x = xmin; x < xmax; x += xMajor) {
+        drawLine(ctx, { x: transX(x), y: height }, { x: transX(x), y: height - 20 });
+      }
+      var xMinor = xAxis.minorTicks || 2;
+      for (var _x = xmin; _x < xmax; _x += xMinor) {
+        drawLine(ctx, { x: transX(_x), y: height }, { x: transX(_x), y: height - 10 });
+      }
     }
-    var xMinor = xAxis.minorTicks || 2;
-    for (var _x = xAxis.min; _x < xAxis.max; _x += xMinor) {
-      drawLine(ctx, { x: transX(_x), y: height }, { x: transX(_x), y: height - 10 });
-    }
-    var yMajor = yAxis.majorTicks || 10;
-    for (var y = yAxis.min; y < yAxis.max; y += yMajor) {
-      drawLine(ctx, { x: 0, y: transY(y) }, { x: 20, y: transY(y) });
-    }
-    var yMinor = yAxis.minorTicks || 2;
-    for (var _y = yAxis.min; _y < yAxis.max; _y += yMinor) {
-      drawLine(ctx, { x: 0, y: transY(_y) }, { x: 10, y: transY(_y) });
+    if (!yAxis.hidden) {
+      var yMajor = yAxis.majorTicks || 10;
+      for (var y = ymin; y < ymax; y += yMajor) {
+        drawLine(ctx, { x: 0, y: transY(y) }, { x: 20, y: transY(y) });
+      }
+      var yMinor = yAxis.minorTicks || 2;
+      for (var _y = ymin; _y < ymax; _y += yMinor) {
+        drawLine(ctx, { x: 0, y: transY(_y) }, { x: 10, y: transY(_y) });
+      }
     }
 
-    // drawing points
-    var sortedPoints = [].concat(_toConsumableArray(points)).sort(function (a, b) {
+    // drawing allPoints
+    var sortedPoints = [].concat(_toConsumableArray(allPoints)).sort(function (a, b) {
       return a.x - b.x;
     });
     var prevPoint = null;
-    var _iteratorNormalCompletion = true;
-    var _didIteratorError = false;
-    var _iteratorError = undefined;
+    var _iteratorNormalCompletion3 = true;
+    var _didIteratorError3 = false;
+    var _iteratorError3 = undefined;
 
     try {
-      for (var _iterator = sortedPoints[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-        var point = _step.value;
+      for (var _iterator3 = sortedPoints[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+        var _point2 = _step3.value;
 
-        ctx.fillStyle = point.color ? point.color : 'black';
-        var _x2 = transX(point.x);
-        var _y2 = yAxis.max * yTrans - yAxis.min * yTrans - point.y * yTrans;
+        ctx.fillStyle = _point2.color ? _point2.color : 'black';
+        var _x2 = transX(_point2.x);
+        var _y2 = ymax * yTrans - ymin * yTrans - _point2.y * yTrans;
         var size = 2;
         ctx.fillRect(_x2 - size, _y2 - size, size * 2, size * 2);
 
@@ -141,20 +243,20 @@ var Plot = function Plot(props) {
         prevPoint = { x: _x2, y: _y2 };
       }
     } catch (err) {
-      _didIteratorError = true;
-      _iteratorError = err;
+      _didIteratorError3 = true;
+      _iteratorError3 = err;
     } finally {
       try {
-        if (!_iteratorNormalCompletion && _iterator.return) {
-          _iterator.return();
+        if (!_iteratorNormalCompletion3 && _iterator3.return) {
+          _iterator3.return();
         }
       } finally {
-        if (_didIteratorError) {
-          throw _iteratorError;
+        if (_didIteratorError3) {
+          throw _iteratorError3;
         }
       }
     }
-  }, [props, resizeCount]);
+  }, [props, resizeCount, allPoints]);
 
   // axis labels
   var xAxisLabel = null;
@@ -184,7 +286,7 @@ var Plot = function Plot(props) {
     {
       style: {
         width: 'fit-content',
-        display: 'table'
+        display: props.inline ? 'inline' : 'table'
       }
     },
     yAxisLabel,
