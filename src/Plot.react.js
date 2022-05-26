@@ -37,9 +37,11 @@ const {useState, useMemo, useEffect, useReducer} = React;
  *   watch: ?number, // if provided, will watch for changes in this value
  *                   // and add a point to the plot whenever it changes
  *                   // up to a maximum number of points equal to the xAxis size
+ *   changeOnly: ?boolean, // a watch prop, only add a point if watched prop changes
  *   inline: ?boolean,
  *
  * canvas props:
+ *   canvasID: ?string, // for when there's multiple plots
  *   useFullScreen: boolean,
  *   width: number,
  *   height: number,
@@ -61,7 +63,7 @@ const Plot = (props) => {
 
   // rendering
   useEffect(() => {
-    const canvas = document.getElementById('canvas');
+    const canvas = document.getElementById(props.canvasID || 'canvas');
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
 
@@ -182,6 +184,7 @@ const Plot = (props) => {
       {yAxisLabel}
       <div style={{display: 'inline-block'}}>
         <Canvas
+          id={props.canvasID}
           useFullScreen={props.useFullScreen}
           width={props.width}
           height={props.height}
@@ -210,6 +213,11 @@ const PlotWatcher = (props) => {
       }
 
       const {value} = action;
+      // don't add a point if we're changeOnly and value is the same
+      let prevVal = state.points.length > 0 ? state.points[state.points.length - 1].y : -1;
+      if (props.changeOnly && value == prevVal) {
+        return state;
+      }
       const point = {x: state.points.length, y: value};
       if (point.x < props.xAxis.max) {
         return {
