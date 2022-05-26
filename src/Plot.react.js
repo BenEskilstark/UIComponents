@@ -59,23 +59,6 @@ const Plot = (props) => {
     }
   }, [resizeCount]);
 
-  // track points with watching
-  const [allPoints, setAllPoints] = useState(props.points);
-  useEffect(() => {
-    if (props.watch == null) {
-      setAllPoints(props.points);
-      return;
-    }
-    const watchedPoint = {x: allPoints.length, y: props.watch}
-    if (allPoints.length < props.xAxis.max) {
-      setAllPoints([...allPoints, watchedPoint]);
-    } else {
-      const [_, ...next] = allPoints;
-      setAllPoints([...next, watchedPoint]);
-    }
-  }, [props.watch, setAllPoints, allPoints, props.xAxis, props.points]);
-
-
   // rendering
   useEffect(() => {
     const canvas = document.getElementById('canvas');
@@ -93,26 +76,26 @@ const Plot = (props) => {
     // handling adaptive ranges
     if (xAxis.adaptiveRange) {
       for (const point of allPoints) {
-        if (point.x < minVal) {
+        if (point.x < xmin) {
           xmin = point.x;
         }
-        if (point.x > maxVal) {
+        if (point.x > xmax) {
           xmax = point.x;
         }
       }
     }
     if (yAxis.adaptiveRange) {
-      for (const point of allPoints) {
-        if (point.y < minVal) {
+      for (const point of props.points) {
+        if (point.y < ymin) {
           ymin = point.y;
         }
-        if (point.y > maxVal) {
+        if (point.y > ymax) {
           ymax = point.y;
         }
       }
     }
 
-    // scaling allPoints to canvas
+    // scaling props.points to canvas
     const xTrans = width / (xmax - xmin);
     const yTrans = height / (ymax - ymin);
     const transX = (x) => x * xTrans - xmin * xTrans;
@@ -145,15 +128,17 @@ const Plot = (props) => {
       }
     }
 
-    // drawing allPoints
-    const sortedPoints = [...allPoints].sort((a, b) => a.x - b.x);
+    // drawing props.points
+    const sortedPoints = [...props.points].sort((a, b) => a.x - b.x);
     let prevPoint = null;
     for (const point of sortedPoints) {
       ctx.fillStyle = point.color ? point.color : 'black';
       const x = transX(point.x);
       const y = ymax * yTrans - ymin * yTrans - point.y * yTrans;
       const size = 2;
-      ctx.fillRect(x - size, y - size, size * 2, size * 2);
+      if (!isLinear) {
+        ctx.fillRect(x - size, y - size, size * 2, size * 2);
+      }
 
       if (isLinear && prevPoint != null) {
         ctx.fillStyle = 'black';
@@ -162,7 +147,7 @@ const Plot = (props) => {
       prevPoint = {x, y};
     }
 
-  }, [props, resizeCount, allPoints]);
+  }, [props, resizeCount]);
 
   // axis labels
   let xAxisLabel = null;
@@ -215,4 +200,44 @@ const drawLine = (ctx, p1, p2) => {
     ctx.closePath();
 };
 
-module.exports = Plot;
+
+const PlotWatcher = (props) => {
+  // track points with watching
+  const [pointState, dispatch] = useReducer(
+    (state, action) => {
+      if (action.type == 'SET_ALL') {
+        return {points: [...action.points]};
+      }
+
+      const {value} = action;
+      const point = {x: state.points.length, y: value};
+      if (point.x < props.xAxis.max) {
+        return {
+          ...state,
+          points: state.points ? [...state.points, point] : points,
+        };
+      } else {
+        const [_, ...next] = state.points;
+        for (const p of next) {
+          p.x -= 1;
+        }
+        return {
+          ...state,
+          points: state.points ? [...next, point] : points,
+        };
+      }
+    },
+    {points: [...props.points]},
+  );
+  useEffect(() => {
+    if (props.watch == null) {
+      dispatch({type: 'SET_ALL', points: props.points});
+    } else {
+      dispatch({type: 'SET', value: props.watch});
+    }
+  }, [props.watch, dispatch, props.points]);
+
+  return <Plot {...props} points={pointState.points} />
+}
+
+module.exports = PlotWatcher;
