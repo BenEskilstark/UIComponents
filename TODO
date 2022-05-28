@@ -1,6 +1,3 @@
 
 - - - - - PLOT - - - - -
-  - Watcher
-    - make sure if you're not watching a plot that it still works
-      - may need to separate out PlotWatcher if so
 
