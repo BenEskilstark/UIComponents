@@ -84,8 +84,8 @@ function Canvas(props) {
     position: 'relative'
   };
   var nonFullScreenStyle = {
-    height: windowHeight,
-    width: windowWidth
+    height: height,
+    width: width
   };
 
   return React.createElement(
@@ -98,7 +98,8 @@ function Canvas(props) {
         backgroundColor: 'white',
         cursor: 'pointer'
       },
-      width: windowWidth, height: windowHeight
+      width: useFullScreen ? windowWidth : width,
+      height: useFullScreen ? windowHeight : height
     })
   );
 }
