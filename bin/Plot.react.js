@@ -54,7 +54,7 @@ var useState = React.useState,
  *
  * canvas props:
  *   canvasID: ?string, // for when there's multiple plots
- *   useFullScreen: boolean,
+ *   useFullScreen: boolean, // overriden by width and height
  *   width: number,
  *   height: number,
  */

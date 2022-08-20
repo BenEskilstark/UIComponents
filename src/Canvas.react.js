@@ -15,6 +15,8 @@ function Canvas(props: Props) {
 
     // needed for focusing an entity (plus cellSize and dispatch)
     focus, // Entity
+
+    onResize, // optional function called when the canvas resizes
   } = props;
 
   const [windowWidth, setWindowWidth] = useState(width ? width : window.innerWidth);
@@ -22,7 +24,9 @@ function Canvas(props: Props) {
 
   useEffect(() => {
     function handleResize() {
-      if (useFullScreen) {
+      if (onResize) {
+        onResize();
+      } else if (useFullScreen) {
         setWindowWidth(window.innerWidth)
         setWindowHeight(window.innerHeight)
       }

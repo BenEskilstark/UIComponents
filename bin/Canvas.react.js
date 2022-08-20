@@ -24,7 +24,8 @@ function Canvas(props) {
       id = props.id,
       cellSize = props.cellSize,
       dispatch = props.dispatch,
-      focus = props.focus;
+      focus = props.focus,
+      onResize = props.onResize;
 
   var _useState = useState(width ? width : window.innerWidth),
       _useState2 = _slicedToArray(_useState, 2),
@@ -38,7 +39,9 @@ function Canvas(props) {
 
   useEffect(function () {
     function handleResize() {
-      if (useFullScreen) {
+      if (onResize) {
+        onResize();
+      } else if (useFullScreen) {
         setWindowWidth(window.innerWidth);
         setWindowHeight(window.innerHeight);
       }
