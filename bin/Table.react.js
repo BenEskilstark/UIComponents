@@ -41,16 +41,21 @@ function Table(props) {
       rows = props.rows,
       hideColSorts = props.hideColSorts;
 
-  var colNames = useMemo(function () {
-    return Object.keys(columns);
-  }, [columns]);
+  var colNames = Object.keys(columns);
+
+  // sort by column
 
   var _useState = useState({ by: 'ASC', name: null }),
       _useState2 = _slicedToArray(_useState, 2),
       sortByColumn = _useState2[0],
       setSortByColumn = _useState2[1];
 
-  var computeSelectedByColumn = function computeSelectedByColumn() {
+  useEffect(function () {
+    setSortByColumn({ by: 'ASC', name: null });
+  }, [columns]);
+
+  // filter by column
+  var computeSelectedByColumn = function computeSelectedByColumn(colNames) {
     var selected = {};
     var _iteratorNormalCompletion = true;
     var _didIteratorError = false;
@@ -82,15 +87,15 @@ function Table(props) {
     return selected;
   };
 
-  var _useState3 = useState(computeSelectedByColumn),
+  var _useState3 = useState(computeSelectedByColumn(colNames)),
       _useState4 = _slicedToArray(_useState3, 2),
       selectedByColumn = _useState4[0],
       setSelectedByColumn = _useState4[1];
 
   useEffect(function () {
-    var selected = computeSelectedByColumn();
+    var selected = computeSelectedByColumn(colNames);
     setSelectedByColumn(selected);
-  }, [colNames.length]);
+  }, [columns]);
 
   var columnOptions = useMemo(function () {
     var filters = {};
@@ -155,7 +160,7 @@ function Table(props) {
     if (columns[col].filterable) {
       filterDropdown = React.createElement(Dropdown, {
         options: columnOptions[col],
-        selected: selectedByColumn[col].selected,
+        selected: selectedByColumn[col] ? selectedByColumn[col].selected : '*',
         onChange: function onChange(n) {
           setSelectedByColumn(_extends({}, selectedByColumn, _defineProperty({}, col, n)));
         }
@@ -164,7 +169,7 @@ function Table(props) {
     return React.createElement(
       'th',
       { key: 'header_' + col },
-      columns[col].displayName,
+      columns[col].displayName || col,
       hideColSorts ? null : React.createElement(
         'div',
         { style: { fontWeight: 'normal' } },
@@ -229,6 +234,7 @@ function Table(props) {
 
   var sortedRows = useMemo(function () {
     if (sortByColumn.name == null) return filteredRows;
+    if (columns[sortByColumn.name] == null) return filteredRows;
     var sorted = [];
     if (columns[sortByColumn.name].sortFn != null) {
       sorted = [].concat(_toConsumableArray(filteredRows)).sort(columns[sortByColumn.name].sortFn);

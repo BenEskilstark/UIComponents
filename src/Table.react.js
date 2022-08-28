@@ -26,12 +26,16 @@ const tableStyle = {
 
 function Table(props) {
   const {columns, rows, hideColSorts} = props;
-  const colNames = useMemo(() => {
-    return Object.keys(columns);
+  const colNames = Object.keys(columns);
+
+  // sort by column
+  const [sortByColumn, setSortByColumn] = useState({by: 'ASC', name: null});
+  useEffect(() => {
+    setSortByColumn({by: 'ASC', name: null});
   }, [columns]);
 
-  const [sortByColumn, setSortByColumn] = useState({by: 'ASC', name: null});
-  const computeSelectedByColumn = () => {
+  // filter by column
+  const computeSelectedByColumn = (colNames) => {
     const selected = {};
     for (const col of colNames) {
       if (columns[col].filterable) {
@@ -40,11 +44,11 @@ function Table(props) {
     }
     return selected;
   }
-  const [selectedByColumn, setSelectedByColumn] = useState(computeSelectedByColumn);
+  const [selectedByColumn, setSelectedByColumn] = useState(computeSelectedByColumn(colNames));
   useEffect(() => {
-    const selected = computeSelectedByColumn();
+    const selected = computeSelectedByColumn(colNames);
     setSelectedByColumn(selected);
-  }, [colNames.length]);
+  }, [columns]);
 
   const columnOptions = useMemo(() => {
     const filters = {};
@@ -67,7 +71,7 @@ function Table(props) {
       filterDropdown = (
         <Dropdown
           options={columnOptions[col]}
-          selected={selectedByColumn[col].selected}
+          selected={selectedByColumn[col] ? selectedByColumn[col].selected : '*'}
           onChange={(n) => {
             setSelectedByColumn({...selectedByColumn, [col]: n});
           }}
@@ -76,7 +80,7 @@ function Table(props) {
     }
     return (
       <th key={'header_' + col}>
-        {columns[col].displayName}
+        {columns[col].displayName || col}
         {hideColSorts ? null : (
           <div style={{fontWeight: 'normal'}}>
             Sort:
@@ -120,6 +124,7 @@ function Table(props) {
 
   const sortedRows = useMemo(() => {
     if (sortByColumn.name == null) return filteredRows;
+    if (columns[sortByColumn.name] == null) return filteredRows;
     let sorted = [];
     if (columns[sortByColumn.name].sortFn != null) {
       sorted = [...filteredRows].sort(columns[sortByColumn.name].sortFn);
