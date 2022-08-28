@@ -1,5 +1,6 @@
 const React = require('react');
 const Button = require('./Button.react');
+const Dropdown = require('./Dropdown.react');
 const {useEffect, useMemo, useState} = React;
 
 /**
@@ -9,6 +10,8 @@ type Props = {
     displayName: string,
     sortFn: ?() => number, // sorts alphanumerically if not provided
     maxWidth: number, // maximum number of characters allowed
+    filterable: ?boolean, // if true, then have a dropdown with all unique
+                          // options and filter rows by these
   }},
   rows: Array<{[name: ColumnName]: mixed}>,
   hideColSorts: boolean,
@@ -23,11 +26,54 @@ const tableStyle = {
 
 function Table(props) {
   const {columns, rows, hideColSorts} = props;
-  const colNames = Object.keys(columns);
+  const colNames = useMemo(() => {
+    return Object.keys(columns);
+  }, [columns]);
 
   const [sortByColumn, setSortByColumn] = useState({by: 'ASC', name: null});
+  const computeSelectedByColumn = () => {
+    const selected = {};
+    for (const col of colNames) {
+      if (columns[col].filterable) {
+        selected[col] = '*';
+      }
+    }
+    return selected;
+  }
+  const [selectedByColumn, setSelectedByColumn] = useState(computeSelectedByColumn);
+  useEffect(() => {
+    const selected = computeSelectedByColumn();
+    setSelectedByColumn(selected);
+  }, [colNames.length]);
+
+  const columnOptions = useMemo(() => {
+    const filters = {};
+    for (const col of colNames) {
+      if (columns[col].filterable) {
+        filters[col] = ['*'];
+        for (const row of rows) {
+          if (!filters[col].includes(row[col])) {
+            filters[col].push(row[col]);
+          }
+        }
+      }
+    }
+    return filters;
+  }, [columns]);
 
   const headers = colNames.map(col => {
+    let filterDropdown = null;
+    if (columns[col].filterable) {
+      filterDropdown = (
+        <Dropdown
+          options={columnOptions[col]}
+          selected={selectedByColumn[col].selected}
+          onChange={(n) => {
+            setSelectedByColumn({...selectedByColumn, [col]: n});
+          }}
+        />
+      );
+    }
     return (
       <th key={'header_' + col}>
         {columns[col].displayName}
@@ -48,19 +94,37 @@ function Table(props) {
                 setSortByColumn({by: 'DESC', name: col});
               }}
             />
+            {filterDropdown}
           </div>
         )}
       </th>
     )
   });
 
+  const filteredRows = useMemo(() => {
+    const filtered = [];
+    for (const row of rows) {
+      let addRow = true;
+      for (const col in selectedByColumn) {
+        if (row[col] != selectedByColumn[col] && selectedByColumn[col] != '*') {
+          addRow = false;
+          break;
+        }
+      }
+      if (addRow) {
+        filtered.push(row);
+      }
+    }
+    return filtered;
+  }, [rows, selectedByColumn, columnOptions]);
+
   const sortedRows = useMemo(() => {
-    if (sortByColumn.name == null) return rows;
+    if (sortByColumn.name == null) return filteredRows;
     let sorted = [];
     if (columns[sortByColumn.name].sortFn != null) {
-      sorted = [...rows].sort(columns[sortByColumn.name].sortFn);
+      sorted = [...filteredRows].sort(columns[sortByColumn.name].sortFn);
     } else {
-      sorted = [...rows].sort((rowA, rowB) => {
+      sorted = [...filteredRows].sort((rowA, rowB) => {
         if (rowA[sortByColumn.name] < rowB[sortByColumn.name]) {
           return -1;
         }
@@ -71,7 +135,7 @@ function Table(props) {
       return sorted.reverse();
     }
     return sorted;
-  }, [sortByColumn, rows]);
+  }, [sortByColumn, filteredRows]);
 
   const rowHTML = sortedRows.map((row, i) => {
     const rowData = colNames.map(col => {
