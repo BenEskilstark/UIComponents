@@ -15,6 +15,7 @@ type Props = {
   }},
   rows: Array<{[name: ColumnName]: mixed}>,
   hideColSorts: boolean,
+  hideNumRows: boolean,
 };
 */
 
@@ -155,14 +156,19 @@ function Table(props) {
   });
 
   return (
-    <table style={tableStyle}>
-      <thead>
-        <tr>{headers}</tr>
-      </thead>
-      <tbody>
-        {rowHTML}
-      </tbody>
-    </table>
+    <div>
+      {props.hideNumRows ? null :
+        (<span>Total Rows: {rows.length} Rows Displayed: {filteredRows.length}</span>)
+      }
+      <table style={tableStyle}>
+        <thead>
+          <tr>{headers}</tr>
+        </thead>
+        <tbody>
+          {rowHTML}
+        </tbody>
+      </table>
+    </div>
   );
 }
 

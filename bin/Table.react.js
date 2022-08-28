@@ -27,6 +27,7 @@ type Props = {
   }},
   rows: Array<{[name: ColumnName]: mixed}>,
   hideColSorts: boolean,
+  hideNumRows: boolean,
 };
 */
 
@@ -269,21 +270,33 @@ function Table(props) {
   });
 
   return React.createElement(
-    'table',
-    { style: tableStyle },
-    React.createElement(
-      'thead',
+    'div',
+    null,
+    props.hideNumRows ? null : React.createElement(
+      'span',
       null,
-      React.createElement(
-        'tr',
-        null,
-        headers
-      )
+      'Total Rows: ',
+      rows.length,
+      ' Rows Displayed: ',
+      filteredRows.length
     ),
     React.createElement(
-      'tbody',
-      null,
-      rowHTML
+      'table',
+      { style: tableStyle },
+      React.createElement(
+        'thead',
+        null,
+        React.createElement(
+          'tr',
+          null,
+          headers
+        )
+      ),
+      React.createElement(
+        'tbody',
+        null,
+        rowHTML
+      )
     )
   );
 }
