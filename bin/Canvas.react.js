@@ -2,6 +2,8 @@
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -21,6 +23,7 @@ function Canvas(props) {
   var useFullScreen = props.useFullScreen,
       width = props.width,
       height = props.height,
+      style = props.style,
       id = props.id,
       cellSize = props.cellSize,
       dispatch = props.dispatch,
@@ -49,6 +52,8 @@ function Canvas(props) {
 
     window.addEventListener('resize', handleResize);
   });
+
+  var overrideStyle = style ? style : {};
 
   if (useFullScreen) {
     var sizeMult = 0.9;
@@ -94,10 +99,9 @@ function Canvas(props) {
       style: useFullScreen ? fullScreenStyle : nonFullScreenStyle
     },
     React.createElement('canvas', {
-      id: id || "canvas", style: {
-        backgroundColor: 'white',
+      id: id || "canvas", style: _extends({
         cursor: 'pointer'
-      },
+      }, overrideStyle),
       width: useFullScreen ? windowWidth : width,
       height: useFullScreen ? windowHeight : height
     })

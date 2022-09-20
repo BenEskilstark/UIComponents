@@ -7,6 +7,8 @@ function Canvas(props: Props) {
     // only necessary if not useFullScreen
     width, height,
 
+    style, // style overrides
+
     id, // optional if you have multiple canvases on the same page
 
     // needed for resizing images on canvas relative to canvas size
@@ -34,6 +36,8 @@ function Canvas(props: Props) {
 
     window.addEventListener('resize', handleResize);
   });
+
+  const overrideStyle = style ? style : {};
 
   if (useFullScreen) {
     let sizeMult = 0.9;
@@ -79,8 +83,8 @@ function Canvas(props: Props) {
     >
       <canvas
         id={id || "canvas"} style={{
-          backgroundColor: 'white',
           cursor: 'pointer',
+          ...overrideStyle,
         }}
         width={useFullScreen ? windowWidth : width}
         height={useFullScreen ? windowHeight : height}
