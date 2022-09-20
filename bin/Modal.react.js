@@ -1,5 +1,7 @@
 'use strict';
 
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
 var React = require('react');
 var Button = require('./Button.react');
 
@@ -13,6 +15,7 @@ type Props = {
     label: string,
     onClick: () => void,
   }>,
+  style: ?Object,
   height: ?number,
 };
 */
@@ -46,7 +49,7 @@ function Modal(props) {
   return React.createElement(
     'div',
     {
-      style: {
+      style: _extends({
         position: 'absolute',
         backgroundColor: 'whitesmoke',
         border: '1px solid black',
@@ -58,7 +61,7 @@ function Modal(props) {
         width: width,
         top: isMobile() ? 0 : (canvasRect.height - height) / 2,
         left: (rect.width - width) / 2
-      }
+      }, props.style)
     },
     React.createElement(
       'h3',

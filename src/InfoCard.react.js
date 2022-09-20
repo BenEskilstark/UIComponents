@@ -5,6 +5,7 @@ const InfoCard = (props) => {
   const underrideStyle = props.underrideStyle || {};
   return (
     <div
+      id={props.id ? props.id : ''}
       style={{
         ...underrideStyle,
         border: props.border != null ? props.border : '1px solid black',

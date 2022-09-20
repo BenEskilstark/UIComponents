@@ -10,6 +10,7 @@ var InfoCard = function InfoCard(props) {
   return React.createElement(
     'div',
     {
+      id: props.id ? props.id : '',
       style: _extends({}, underrideStyle, {
         border: props.border != null ? props.border : '1px solid black',
         backgroundColor: 'white',

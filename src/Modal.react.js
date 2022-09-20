@@ -10,6 +10,7 @@ type Props = {
     label: string,
     onClick: () => void,
   }>,
+  style: ?Object,
   height: ?number,
 };
 */
@@ -51,6 +52,7 @@ function Modal(props) {
         width,
         top: isMobile() ? 0 : (canvasRect.height - height) / 2,
         left: (rect.width - width) / 2,
+        ...props.style,
       }}
     >
       <h3><b>{title}</b></h3>
