@@ -39,32 +39,32 @@ function Canvas(props: Props) {
 
   const overrideStyle = style ? style : {};
 
-  if (useFullScreen) {
-    let sizeMult = 0.9;
-    if (windowWidth < 600 || windowHeight < 800) {
-      sizeMult = 0.75;
-    }
-    if (windowWidth > 1000 || windowHeight > 1000) {
-      sizeMult = 1.25;
-    }
-    if (windowWidth > 1200 || windowHeight > 1200) {
-      sizeMult = 1.3;
-    }
-    useEffect(() => {
-      if (focus != null) {
-        let viewPos = {x:0, y: 0};
-        const viewWidth = windowWidth / (cellSize * sizeMult);
-        const viewHeight = windowHeight / (cellHeight * sizeMult);
-          viewPos = {
-            x: focus.position.x - viewWidth / 2,
-            y: focus.position.y - viewHeight /2,
-          };
-        dispatch({type: 'SET_VIEW_POS',
-          viewPos, viewWidth, viewHeight,
-        });
-      }
-    }, [windowWidth, windowHeight]);
-  }
+  // if (useFullScreen) {
+  //   let sizeMult = 0.9;
+  //   if (windowWidth < 600 || windowHeight < 800) {
+  //     sizeMult = 0.75;
+  //   }
+  //   if (windowWidth > 1000 || windowHeight > 1000) {
+  //     sizeMult = 1.25;
+  //   }
+  //   if (windowWidth > 1200 || windowHeight > 1200) {
+  //     sizeMult = 1.3;
+  //   }
+  //   useEffect(() => {
+  //     if (focus != null) {
+  //       let viewPos = {x:0, y: 0};
+  //       const viewWidth = windowWidth / (cellSize * sizeMult);
+  //       const viewHeight = windowHeight / (cellHeight * sizeMult);
+  //         viewPos = {
+  //           x: focus.position.x - viewWidth / 2,
+  //           y: focus.position.y - viewHeight /2,
+  //         };
+  //       dispatch({type: 'SET_VIEW_POS',
+  //         viewPos, viewWidth, viewHeight,
+  //       });
+  //     }
+  //   }, [windowWidth, windowHeight]);
+  // }
 
   const fullScreenStyle = {
     height: '100%',
