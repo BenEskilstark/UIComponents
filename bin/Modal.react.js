@@ -23,19 +23,13 @@ type Props = {
 function Modal(props) {
   var title = props.title,
       body = props.body,
-      buttons = props.buttons;
+      buttons = props.buttons,
+      style = props.style,
+      buttonStyle = props.buttonStyle;
 
   var height = props.height ? props.height : 450;
-
-  // using 2 rects to properly position width and height
-  var rect = document.getElementById('container').getBoundingClientRect();
-  var canvasRect = null;
-  var canvas = document.getElementById('canvas');
-  if (canvas != null) {
-    canvasRect = canvas.getBoundingClientRect();
-  } else {
-    canvasRect = rect;
-  }
+  var overrideStyle = style ? style : {};
+  var overrideButtonStyle = buttonStyle ? buttonStyle : {};
 
   var buttonHTML = buttons.map(function (b) {
     return React.createElement(Button, {
@@ -45,6 +39,7 @@ function Modal(props) {
     });
   });
 
+  var rect = document.getElementById('container').getBoundingClientRect();
   var width = props.width ? props.width : Math.min(rect.width * 0.8, 350);
   return React.createElement(
     'div',
@@ -61,7 +56,7 @@ function Modal(props) {
         width: width,
         top: isMobile() ? 0 : (canvasRect.height - height) / 2,
         left: (rect.width - width) / 2
-      }, props.style)
+      }, overrideStyle)
     },
     React.createElement(
       'h3',
@@ -76,7 +71,7 @@ function Modal(props) {
     React.createElement(
       'div',
       {
-        style: {}
+        style: _extends({}, overrideButtonStyle)
       },
       buttonHTML
     )

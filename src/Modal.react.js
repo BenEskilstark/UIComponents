@@ -16,18 +16,10 @@ type Props = {
 */
 
 function Modal(props) {
-  const {title, body, buttons} = props;
+  const {title, body, buttons, style, buttonStyle} = props;
   const height = props.height ? props.height : 450;
-
-  // using 2 rects to properly position width and height
-  const rect = document.getElementById('container').getBoundingClientRect();
-  let canvasRect = null;
-  const canvas = document.getElementById('canvas');
-  if (canvas != null) {
-    canvasRect = canvas.getBoundingClientRect();
-  } else {
-    canvasRect = rect;
-  }
+  const overrideStyle = style ? style : {};
+  const overrideButtonStyle = buttonStyle ? buttonStyle : {};
 
   const buttonHTML = buttons.map(b => {
     return (<Button
@@ -37,6 +29,7 @@ function Modal(props) {
     />);
   });
 
+  const rect = document.getElementById('container').getBoundingClientRect();
   const width = props.width ? props.width : Math.min(rect.width * 0.8, 350);
   return (
     <div
@@ -52,14 +45,14 @@ function Modal(props) {
         width,
         top: isMobile() ? 0 : (canvasRect.height - height) / 2,
         left: (rect.width - width) / 2,
-        ...props.style,
+        ...overrideStyle,
       }}
     >
       <h3><b>{title}</b></h3>
       {body}
       <div
         style={{
-
+          ...overrideButtonStyle,
         }}
       >
         {buttonHTML}
