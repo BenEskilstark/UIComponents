@@ -43,7 +43,7 @@ function Modal(props) {
         color: '#46403a',
         textAlign: 'center',
         width,
-        top: isMobile() ? 0 : (canvasRect.height - height) / 2,
+        top: isMobile() ? 0 : (rect.height - height) / 2,
         left: (rect.width - width) / 2,
         ...overrideStyle,
       }}
