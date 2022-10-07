@@ -20,6 +20,7 @@ module.exports = {
   RadioPicker: require('./bin/RadioPicker.react.js'),
   Slider: require('./bin/Slider.react.js'),
   Table: require('./bin/Table.react.js'),
+  TextField: require('./bin/TextField.react.js'),
 };
 
 
