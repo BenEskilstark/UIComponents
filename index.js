@@ -11,6 +11,7 @@ module.exports = {
   Checkbox: require('./bin/Checkbox.react.js'),
   Divider: require('./bin/Divider.react.js'),
   Dropdown: require('./bin/Dropdown.react.js'),
+  Indicator: require('./bin/Indicator.react.js'),
   InfoCard: require('./bin/InfoCard.react.js'),
   Modal: require('./bin/Modal.react.js'),
   NumberField: require('./bin/NumberField.react.js'),

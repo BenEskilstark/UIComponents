@@ -9,10 +9,11 @@ const React = require('react');
  *  - style: Object
  */
 const TextField = (props) => {
-  const {value, placeholder, password, onChange} = props;
+  const {value, placeholder, password, onChange, id} = props;
   const style = props.style != null ? props.style : {};
   return (
     <input
+      id={id ? id : null}
       style={style}
       placeholder={placeholder}
       type={password ? 'password' : 'text'}

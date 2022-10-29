@@ -14,10 +14,12 @@ var TextField = function TextField(props) {
   var value = props.value,
       placeholder = props.placeholder,
       password = props.password,
-      _onChange = props.onChange;
+      _onChange = props.onChange,
+      id = props.id;
 
   var style = props.style != null ? props.style : {};
   return React.createElement('input', {
+    id: id ? id : null,
     style: style,
     placeholder: placeholder,
     type: password ? 'password' : 'text',
