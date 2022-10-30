@@ -1,6 +1,6 @@
 const React = require('react');
 const Button = require('./Button.react');
-const {isMobile} = require('bens_utils').platform;
+const Divider = require('./Divider.react');
 
 /*
 type Props = {
@@ -17,7 +17,6 @@ type Props = {
 
 function Modal(props) {
   const {title, body, buttons, style, buttonStyle} = props;
-  const height = props.height ? props.height : 450;
   const overrideStyle = style ? style : {};
   const overrideButtonStyle = buttonStyle ? buttonStyle : {};
 
@@ -35,27 +34,46 @@ function Modal(props) {
     <div
       style={{
         position: 'absolute',
-        backgroundColor: 'whitesmoke',
-        border: '1px solid black',
-        padding: 4,
-        boxShadow: '2px 2px #666666',
-        borderRadius: 3,
-        color: '#46403a',
-        textAlign: 'center',
-        width,
-        top: isMobile() ? 0 : (rect.height - height) / 2,
-        left: (rect.width - width) / 2,
-        ...overrideStyle,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '100%',
+        height: '100%',
       }}
     >
-      <h3><b>{title}</b></h3>
-      {body}
       <div
         style={{
-          ...overrideButtonStyle,
+          backgroundColor: 'whitesmoke',
+          border: '1px solid black',
+          boxSizing: 'border-box',
+          boxShadow: '2px 2px #666666',
+          borderRadius: 3,
+          color: '#46403a',
+          textAlign: 'center',
+          width,
+          ...overrideStyle,
         }}
       >
-        {buttonHTML}
+        <div
+          style={{
+            fontSize: '1.2em',
+          }}
+        >
+          <b>{title}</b>
+        </div>
+        {body}
+        <Divider style={{
+          marginTop: 4,
+          marginBottom: 4,
+        }} />
+        <div
+          style={{
+            marginBottom: 4,
+            ...overrideButtonStyle,
+          }}
+        >
+          {buttonHTML}
+        </div>
       </div>
     </div>
   );

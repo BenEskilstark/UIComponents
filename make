@@ -8,6 +8,9 @@ mkdir bin
 # babel transform
 npm run babel -- src/ -d bin/
 
+# create bundle.js for the UI playground
+npm run browserify -- bin/playground.react.js -o bin/bundle.js
+
 
 
 

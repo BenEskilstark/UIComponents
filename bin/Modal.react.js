@@ -4,8 +4,7 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
 
 var React = require('react');
 var Button = require('./Button.react');
-
-var isMobile = require('bens_utils').platform.isMobile;
+var Divider = require('./Divider.react');
 
 /*
 type Props = {
@@ -27,7 +26,6 @@ function Modal(props) {
       style = props.style,
       buttonStyle = props.buttonStyle;
 
-  var height = props.height ? props.height : 450;
   var overrideStyle = style ? style : {};
   var overrideButtonStyle = buttonStyle ? buttonStyle : {};
 
@@ -44,36 +42,56 @@ function Modal(props) {
   return React.createElement(
     'div',
     {
-      style: _extends({
+      style: {
         position: 'absolute',
-        backgroundColor: 'whitesmoke',
-        border: '1px solid black',
-        padding: 4,
-        boxShadow: '2px 2px #666666',
-        borderRadius: 3,
-        color: '#46403a',
-        textAlign: 'center',
-        width: width,
-        top: isMobile() ? 0 : (rect.height - height) / 2,
-        left: (rect.width - width) / 2
-      }, overrideStyle)
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '100%',
+        height: '100%'
+      }
     },
-    React.createElement(
-      'h3',
-      null,
-      React.createElement(
-        'b',
-        null,
-        title
-      )
-    ),
-    body,
     React.createElement(
       'div',
       {
-        style: _extends({}, overrideButtonStyle)
+        style: _extends({
+          backgroundColor: 'whitesmoke',
+          border: '1px solid black',
+          boxSizing: 'border-box',
+          boxShadow: '2px 2px #666666',
+          borderRadius: 3,
+          color: '#46403a',
+          textAlign: 'center',
+          width: width
+        }, overrideStyle)
       },
-      buttonHTML
+      React.createElement(
+        'div',
+        {
+          style: {
+            fontSize: '1.2em'
+          }
+        },
+        React.createElement(
+          'b',
+          null,
+          title
+        )
+      ),
+      body,
+      React.createElement(Divider, { style: {
+          marginTop: 4,
+          marginBottom: 4
+        } }),
+      React.createElement(
+        'div',
+        {
+          style: _extends({
+            marginBottom: 4
+          }, overrideButtonStyle)
+        },
+        buttonHTML
+      )
     )
   );
 }

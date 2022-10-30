@@ -1,11 +1,12 @@
 {
   "name": "bens_ui_components",
-  "version": "1.4.62",
+  "version": "1.4.63",
   "description": "Some common react elements I use in pretty much every project",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "babel": "babel",
+    "browserify": "browserify",
     "start": "python3 -m http.server"
   },
   "author": "",
