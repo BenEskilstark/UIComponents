@@ -92,7 +92,7 @@ var AudioWidget = function AudioWidget(props) {
 };
 
 module.exports = AudioWidget;
-},{"./Button.react":2,"react":32}],2:[function(require,module,exports){
+},{"./Button.react":2,"react":33}],2:[function(require,module,exports){
 'use strict';
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
@@ -179,7 +179,7 @@ function Button(props) {
 }
 
 module.exports = Button;
-},{"react":32}],3:[function(require,module,exports){
+},{"react":33}],3:[function(require,module,exports){
 'use strict';
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
@@ -258,7 +258,7 @@ function Canvas(props) {
 }
 
 module.exports = React.memo(Canvas);
-},{"react":32}],4:[function(require,module,exports){
+},{"react":33}],4:[function(require,module,exports){
 'use strict';
 
 var React = require('react');
@@ -298,7 +298,7 @@ function Checkbox(props) {
 }
 
 module.exports = Checkbox;
-},{"react":32}],5:[function(require,module,exports){
+},{"react":33}],5:[function(require,module,exports){
 'use strict';
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
@@ -318,7 +318,7 @@ function Divider(props) {
 }
 
 module.exports = Divider;
-},{"react":32}],6:[function(require,module,exports){
+},{"react":33}],6:[function(require,module,exports){
 'use strict';
 
 var React = require('react');
@@ -359,7 +359,7 @@ var Dropdown = function Dropdown(props) {
 };
 
 module.exports = Dropdown;
-},{"react":32}],7:[function(require,module,exports){
+},{"react":33}],7:[function(require,module,exports){
 'use strict';
 
 var React = require('react');
@@ -417,7 +417,7 @@ var usePrevious = function usePrevious(value) {
 };
 
 module.exports = Indicator;
-},{"react":32}],8:[function(require,module,exports){
+},{"react":33}],8:[function(require,module,exports){
 'use strict';
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
@@ -449,7 +449,7 @@ var InfoCard = function InfoCard(props) {
 };
 
 module.exports = InfoCard;
-},{"react":32}],9:[function(require,module,exports){
+},{"react":33}],9:[function(require,module,exports){
 'use strict';
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
@@ -549,7 +549,7 @@ function Modal(props) {
 }
 
 module.exports = Modal;
-},{"./Button.react":2,"./Divider.react":5,"react":32}],10:[function(require,module,exports){
+},{"./Button.react":2,"./Divider.react":5,"react":33}],10:[function(require,module,exports){
 'use strict';
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
@@ -639,7 +639,7 @@ var submitValue = function submitValue(onChange, nextVal, onlyInt) {
 };
 
 module.exports = NumberField;
-},{"react":32}],11:[function(require,module,exports){
+},{"react":33}],11:[function(require,module,exports){
 'use strict';
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
@@ -1006,7 +1006,7 @@ var PlotWatcher = function PlotWatcher(props) {
 };
 
 module.exports = PlotWatcher;
-},{"./Button.react":2,"./Canvas.react":3,"react":32}],12:[function(require,module,exports){
+},{"./Button.react":2,"./Canvas.react":3,"react":33}],12:[function(require,module,exports){
 'use strict';
 
 var React = require('react');
@@ -1090,7 +1090,7 @@ var quitGameModal = function quitGameModal(dispatch) {
 };
 
 module.exports = QuitButton;
-},{"./Button.react":2,"./Modal.react":9,"bens_utils":25,"react":32}],13:[function(require,module,exports){
+},{"./Button.react":2,"./Modal.react":9,"bens_utils":26,"react":33}],13:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -1179,7 +1179,7 @@ var RadioPicker = function (_React$Component) {
 }(React.Component);
 
 module.exports = RadioPicker;
-},{"react":32}],14:[function(require,module,exports){
+},{"react":33}],14:[function(require,module,exports){
 'use strict';
 
 var React = require('react');
@@ -1249,7 +1249,7 @@ function Slider(props) {
 }
 
 module.exports = Slider;
-},{"./NumberField.react":10,"react":32}],15:[function(require,module,exports){
+},{"./NumberField.react":10,"react":33}],15:[function(require,module,exports){
 'use strict';
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
@@ -1280,6 +1280,7 @@ type Props = {
   rows: Array<{[name: ColumnName]: mixed}>,
   hideColSorts: boolean,
   hideNumRows: boolean,
+  style: Object containing additional styles for outer div
 };
 */
 
@@ -1294,7 +1295,12 @@ function Table(props) {
       rows = props.rows,
       hideColSorts = props.hideColSorts;
 
-  var colNames = Object.keys(columns);
+  var colNames = [];
+  if (props.columns) {
+    colNames = Object.keys(columns);
+  } else {}
+  // TODO: infer column names if not provided
+
 
   // sort by column
 
@@ -1304,7 +1310,9 @@ function Table(props) {
       setSortByColumn = _useState2[1];
 
   useEffect(function () {
-    setSortByColumn({ by: 'ASC', name: null });
+    if (!colNames.includes(sortByColumn.name)) {
+      setSortByColumn({ by: 'ASC', name: null });
+    }
   }, [columns]);
 
   // filter by column
@@ -1346,12 +1354,7 @@ function Table(props) {
       setSelectedByColumn = _useState4[1];
 
   useEffect(function () {
-    var selected = computeSelectedByColumn(colNames);
-    setSelectedByColumn(selected);
-  }, [columns]);
-
-  var columnOptions = useMemo(function () {
-    var filters = {};
+    var selected = {};
     var _iteratorNormalCompletion2 = true;
     var _didIteratorError2 = false;
     var _iteratorError2 = undefined;
@@ -1361,33 +1364,7 @@ function Table(props) {
         var col = _step2.value;
 
         if (columns[col].filterable) {
-          filters[col] = ['*'];
-          var _iteratorNormalCompletion3 = true;
-          var _didIteratorError3 = false;
-          var _iteratorError3 = undefined;
-
-          try {
-            for (var _iterator3 = rows[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-              var row = _step3.value;
-
-              if (!filters[col].includes(row[col])) {
-                filters[col].push(row[col]);
-              }
-            }
-          } catch (err) {
-            _didIteratorError3 = true;
-            _iteratorError3 = err;
-          } finally {
-            try {
-              if (!_iteratorNormalCompletion3 && _iterator3.return) {
-                _iterator3.return();
-              }
-            } finally {
-              if (_didIteratorError3) {
-                throw _iteratorError3;
-              }
-            }
-          }
+          selected[col] = selectedByColumn[col] || '*';
         }
       }
     } catch (err) {
@@ -1401,6 +1378,64 @@ function Table(props) {
       } finally {
         if (_didIteratorError2) {
           throw _iteratorError2;
+        }
+      }
+    }
+
+    setSelectedByColumn(selected);
+  }, [columns]);
+
+  var columnOptions = useMemo(function () {
+    var filters = {};
+    var _iteratorNormalCompletion3 = true;
+    var _didIteratorError3 = false;
+    var _iteratorError3 = undefined;
+
+    try {
+      for (var _iterator3 = colNames[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+        var col = _step3.value;
+
+        if (columns[col].filterable) {
+          filters[col] = ['*'];
+          var _iteratorNormalCompletion4 = true;
+          var _didIteratorError4 = false;
+          var _iteratorError4 = undefined;
+
+          try {
+            for (var _iterator4 = rows[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+              var row = _step4.value;
+
+              if (!filters[col].includes(row[col])) {
+                filters[col].push(row[col]);
+              }
+            }
+          } catch (err) {
+            _didIteratorError4 = true;
+            _iteratorError4 = err;
+          } finally {
+            try {
+              if (!_iteratorNormalCompletion4 && _iterator4.return) {
+                _iterator4.return();
+              }
+            } finally {
+              if (_didIteratorError4) {
+                throw _iteratorError4;
+              }
+            }
+          }
+        }
+      }
+    } catch (err) {
+      _didIteratorError3 = true;
+      _iteratorError3 = err;
+    } finally {
+      try {
+        if (!_iteratorNormalCompletion3 && _iterator3.return) {
+          _iterator3.return();
+        }
+      } finally {
+        if (_didIteratorError3) {
+          throw _iteratorError3;
         }
       }
     }
@@ -1448,13 +1483,13 @@ function Table(props) {
 
   var filteredRows = useMemo(function () {
     var filtered = [];
-    var _iteratorNormalCompletion4 = true;
-    var _didIteratorError4 = false;
-    var _iteratorError4 = undefined;
+    var _iteratorNormalCompletion5 = true;
+    var _didIteratorError5 = false;
+    var _iteratorError5 = undefined;
 
     try {
-      for (var _iterator4 = rows[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-        var row = _step4.value;
+      for (var _iterator5 = rows[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+        var row = _step5.value;
 
         var addRow = true;
         for (var col in selectedByColumn) {
@@ -1468,16 +1503,16 @@ function Table(props) {
         }
       }
     } catch (err) {
-      _didIteratorError4 = true;
-      _iteratorError4 = err;
+      _didIteratorError5 = true;
+      _iteratorError5 = err;
     } finally {
       try {
-        if (!_iteratorNormalCompletion4 && _iterator4.return) {
-          _iterator4.return();
+        if (!_iteratorNormalCompletion5 && _iterator5.return) {
+          _iterator5.return();
         }
       } finally {
-        if (_didIteratorError4) {
-          throw _iteratorError4;
+        if (_didIteratorError5) {
+          throw _iteratorError5;
         }
       }
     }
@@ -1523,7 +1558,7 @@ function Table(props) {
 
   return React.createElement(
     'div',
-    null,
+    { style: _extends({}, tableStyle, props.style) },
     props.hideNumRows ? null : React.createElement(
       'span',
       null,
@@ -1534,7 +1569,7 @@ function Table(props) {
     ),
     React.createElement(
       'table',
-      { style: tableStyle },
+      null,
       React.createElement(
         'thead',
         null,
@@ -1554,7 +1589,7 @@ function Table(props) {
 }
 
 module.exports = Table;
-},{"./Button.react":2,"./Dropdown.react":6,"react":32}],16:[function(require,module,exports){
+},{"./Button.react":2,"./Dropdown.react":6,"react":33}],16:[function(require,module,exports){
 'use strict';
 
 var React = require('react');
@@ -1588,10 +1623,73 @@ var TextField = function TextField(props) {
 };
 
 module.exports = TextField;
-},{"react":32}],17:[function(require,module,exports){
+},{"react":33}],17:[function(require,module,exports){
 'use strict';
 
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
+var React = require('react');
+var useEffect = React.useEffect,
+    useState = React.useState,
+    useMemo = React.useMemo,
+    useReducer = React.useReducer,
+    useRef = React.useRef,
+    useCallback = React.useCallback;
+
+// use like
+// const [state, dispatch, getState] = useEnhancedReducer(reducer, initialState);
+
+var useEnhancedReducer = function useEnhancedReducer(reducer, initState, initializer) {
+  var lastState = useRef(initState);
+  var getState = useCallback(function () {
+    return lastState.current;
+  }, []);
+  return [].concat(_toConsumableArray(useReducer(function (state, action) {
+    return lastState.current = reducer(state, action);
+  }, initState, initializer)), [getState]);
+};
+
+// pass accessibleVals that the effect can read but won't re-run when they change
+var useEnhancedEffect = function useEnhancedEffect(effectFn, dependencies, accessibleVals) {
+  var compares = dependencies.map(useCompare);
+  useEffect(function () {
+    if (compares.filter(function (c) {
+      return c;
+    }).length == 0) return;
+    effectFn();
+  }, [].concat(_toConsumableArray(dependencies), _toConsumableArray(accessibleVals), _toConsumableArray(compares)));
+};
+
+// Desired hook
+function useCompare(val) {
+  var prevVal = usePrevious(val);
+  return prevVal !== val;
+}
+
+// Helper hook
+function usePrevious(value) {
+  var ref = useRef();
+  useEffect(function () {
+    ref.current = value;
+  }, [value]);
+  return ref.current;
+}
+
+module.exports = {
+  useEnhancedReducer: useEnhancedReducer,
+  useEnhancedEffect: useEnhancedEffect,
+  useCompare: useCompare,
+  usePrevious: usePrevious
+
+};
+},{"react":33}],18:[function(require,module,exports){
+'use strict';
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 var React = require('react');
 var ReactDOM = require('react-dom/client');
@@ -1619,11 +1717,14 @@ var Slider = require('./Slider.react.js');
 var Table = require('./Table.react.js');
 var TextField = require('./TextField.react.js');
 
+var _require = require('./hooks.js'),
+    useEnhancedEffect = _require.useEnhancedEffect;
+
 function renderUI(root) {
   root.render(React.createElement(Main, null));
 }
 
-var Main = function Main() {
+var Main = function Main(props) {
   var _useState = useState(null),
       _useState2 = _slicedToArray(_useState, 2),
       modal = _useState2[0],
@@ -1634,11 +1735,53 @@ var Main = function Main() {
       fullCanvas = _useState4[0],
       setFullCanvas = _useState4[1];
 
+  var _useState5 = useState({ val: 0 }),
+      _useState6 = _slicedToArray(_useState5, 2),
+      counter = _useState6[0],
+      setCounter = _useState6[1];
+
+  var _useState7 = useState({ val: 0 }),
+      _useState8 = _slicedToArray(_useState7, 2),
+      counter2 = _useState8[0],
+      setCounter2 = _useState8[1];
+
+  // useEnhancedEffect(() => {
+  //   console.log("counter1", counter, "counter2", counter2);
+  // }, [counter], [counter2]);
+
+
+  useEffect(function () {
+    console.log("counter1", counter.val, "counter2", counter2.val);
+  }, [counter]);
+
   useEffect(function () {
     var canvasWidth = fullCanvas ? window.innerWidth : 300;
     var canvasHeight = fullCanvas ? window.innerHeight : 300;
     render(canvasWidth, canvasHeight);
   }, []);
+
+  var _useReducer = useReducer(function (table, action) {
+    if (action.type == 'ADD_NAME') {
+      var id = table.nextID++;
+      return _extends({}, table, {
+        columns: _extends({}, table.columns),
+        rows: [].concat(_toConsumableArray(table.rows), [{ id: table.nextID++, name: action.name }])
+      });
+    }
+    return table;
+  }, {
+    nextID: 1,
+    rows: [{ id: 0, name: 'ben' }],
+    columns: {
+      id: { filterable: true },
+      name: { filterable: true }
+    }
+  }),
+      _useReducer2 = _slicedToArray(_useReducer, 2),
+      table = _useReducer2[0],
+      updateTable = _useReducer2[1];
+
+  console.log(table);
 
   return React.createElement(
     'div',
@@ -1655,12 +1798,34 @@ var Main = function Main() {
         }
       },
       React.createElement(Button, {
+        label: "Pressed " + counter.val + " times",
+        onClick: function onClick() {
+          return setCounter({ val: counter.val + 1 });
+        }
+      }),
+      React.createElement(Button, {
+        label: "Pressed " + counter2.val + " times",
+        onClick: function onClick() {
+          return setCounter2({ val: counter2.val + 1 });
+        }
+      }),
+      React.createElement(Button, {
+        label: "Add Row",
+        onClick: function onClick() {
+          return updateTable({ type: 'ADD_NAME', name: 'foo' });
+        }
+      }),
+      React.createElement('div', null),
+      React.createElement(Button, {
         label: "Display Modal",
         disabled: modal != null,
         onClick: function onClick() {
           setModal(React.createElement(Modal, {
             title: 'Modal',
-            body: 'lorem ipsum dolor the quick brown fox jumped over the lazy dog',
+            body: React.createElement(ModalBody, {
+              counter: counter,
+              counter2: counter2
+            }),
             buttons: [{ label: 'Dismiss', onClick: function onClick() {
                 return setModal(null);
               } }]
@@ -1674,12 +1839,40 @@ var Main = function Main() {
         }
       })
     ),
-    React.createElement(Canvas, {
-      width: 300,
-      height: 300,
-      useFullScreen: fullCanvas,
-      onResize: render
-    })
+    React.createElement(
+      'div',
+      {
+        style: {
+          display: 'flex'
+        }
+      },
+      React.createElement(Canvas, {
+        width: 300,
+        height: 300,
+        useFullScreen: fullCanvas,
+        onResize: render
+      }),
+      React.createElement(Table, {
+        style: { paddingTop: '3rem', fontSize: 19 },
+        rows: table.rows,
+        columns: table.columns
+      })
+    )
+  );
+};
+
+var ModalBody = function ModalBody(props) {
+  useEffect(function () {
+    console.log(props.counter.val, props.counter2.val);
+    return function () {
+      console.log(props.counter.val, props.counter2.val);
+    };
+  }, [props.counter]);
+
+  return React.createElement(
+    'div',
+    null,
+    'lorem ipsum the quick brown fox jumped over the lazy dog'
   );
 };
 
@@ -1706,7 +1899,7 @@ var render = function render(canvasWidth, canvasHeight) {
 
 var root = ReactDOM.createRoot(document.getElementById('container'));
 renderUI(root);
-},{"./AudioWidget.react.js":1,"./Button.react.js":2,"./Canvas.react.js":3,"./Checkbox.react.js":4,"./Divider.react.js":5,"./Dropdown.react.js":6,"./Indicator.react.js":7,"./InfoCard.react.js":8,"./Modal.react.js":9,"./NumberField.react.js":10,"./Plot.react.js":11,"./QuitButton.react.js":12,"./RadioPicker.react.js":13,"./Slider.react.js":14,"./Table.react.js":15,"./TextField.react.js":16,"./plotReducer.js":18,"react":32,"react-dom/client":28}],18:[function(require,module,exports){
+},{"./AudioWidget.react.js":1,"./Button.react.js":2,"./Canvas.react.js":3,"./Checkbox.react.js":4,"./Divider.react.js":5,"./Dropdown.react.js":6,"./Indicator.react.js":7,"./InfoCard.react.js":8,"./Modal.react.js":9,"./NumberField.react.js":10,"./Plot.react.js":11,"./QuitButton.react.js":12,"./RadioPicker.react.js":13,"./Slider.react.js":14,"./Table.react.js":15,"./TextField.react.js":16,"./hooks.js":17,"./plotReducer.js":19,"react":33,"react-dom/client":29}],19:[function(require,module,exports){
 'use strict';
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
@@ -1795,7 +1988,7 @@ var plotReducer = function plotReducer(state, action) {
 };
 
 module.exports = { plotReducer: plotReducer };
-},{}],19:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 'use strict';
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
@@ -1959,7 +2152,7 @@ module.exports = {
   getEntityPositions: getEntityPositions,
   entityInsideGrid: entityInsideGrid
 };
-},{"./helpers":20,"./math":21,"./vectors":24}],20:[function(require,module,exports){
+},{"./helpers":21,"./math":22,"./vectors":25}],21:[function(require,module,exports){
 'use strict';
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
@@ -2106,7 +2299,7 @@ module.exports = {
   deepCopy: deepCopy,
   throttle: throttle
 };
-},{"./vectors":24}],21:[function(require,module,exports){
+},{"./vectors":25}],22:[function(require,module,exports){
 "use strict";
 
 var clamp = function clamp(val, min, max) {
@@ -2151,7 +2344,7 @@ module.exports = {
   clamp: clamp,
   subtractWithDeficit: subtractWithDeficit
 };
-},{}],22:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 'use strict';
 
 function isIpad() {
@@ -2177,7 +2370,7 @@ module.exports = {
   isIpad: isIpad,
   isMobile: isMobile
 };
-},{}],23:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 "use strict";
 
 var floor = Math.floor,
@@ -2232,7 +2425,7 @@ module.exports = {
   oneOf: oneOf,
   weightedOneOf: weightedOneOf
 };
-},{}],24:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 "use strict";
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
@@ -2431,7 +2624,7 @@ module.exports = {
   rotate: rotate,
   abs: abs
 };
-},{}],25:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 
 module.exports = {
   vectors: require('./bin/vectors'),
@@ -2442,7 +2635,7 @@ module.exports = {
   math: require('./bin/math'),
 }
 
-},{"./bin/gridHelpers":19,"./bin/helpers":20,"./bin/math":21,"./bin/platform":22,"./bin/stochastic":23,"./bin/vectors":24}],26:[function(require,module,exports){
+},{"./bin/gridHelpers":20,"./bin/helpers":21,"./bin/math":22,"./bin/platform":23,"./bin/stochastic":24,"./bin/vectors":25}],27:[function(require,module,exports){
 (function (process){(function (){
 /**
  * @license React
@@ -32314,7 +32507,7 @@ if (
 }
 
 }).call(this)}).call(this,require('_process'))
-},{"_process":36,"react":32,"scheduler":35}],27:[function(require,module,exports){
+},{"_process":37,"react":33,"scheduler":36}],28:[function(require,module,exports){
 /**
  * @license React
  * react-dom.production.min.js
@@ -32639,7 +32832,7 @@ exports.hydrateRoot=function(a,b,c){if(!ol(a))throw Error(p(405));var d=null!=c&
 e);return new nl(b)};exports.render=function(a,b,c){if(!pl(b))throw Error(p(200));return sl(null,a,b,!1,c)};exports.unmountComponentAtNode=function(a){if(!pl(a))throw Error(p(40));return a._reactRootContainer?(Sk(function(){sl(null,null,a,!1,function(){a._reactRootContainer=null;a[uf]=null})}),!0):!1};exports.unstable_batchedUpdates=Rk;
 exports.unstable_renderSubtreeIntoContainer=function(a,b,c,d){if(!pl(c))throw Error(p(200));if(null==a||void 0===a._reactInternals)throw Error(p(38));return sl(a,b,c,!1,d)};exports.version="18.2.0-next-9e3b772b8-20220608";
 
-},{"react":32,"scheduler":35}],28:[function(require,module,exports){
+},{"react":33,"scheduler":36}],29:[function(require,module,exports){
 (function (process){(function (){
 'use strict';
 
@@ -32668,7 +32861,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 }).call(this)}).call(this,require('_process'))
-},{"_process":36,"react-dom":29}],29:[function(require,module,exports){
+},{"_process":37,"react-dom":30}],30:[function(require,module,exports){
 (function (process){(function (){
 'use strict';
 
@@ -32710,7 +32903,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 }).call(this)}).call(this,require('_process'))
-},{"./cjs/react-dom.development.js":26,"./cjs/react-dom.production.min.js":27,"_process":36}],30:[function(require,module,exports){
+},{"./cjs/react-dom.development.js":27,"./cjs/react-dom.production.min.js":28,"_process":37}],31:[function(require,module,exports){
 (function (process){(function (){
 /**
  * @license React
@@ -35453,7 +35646,7 @@ if (
 }
 
 }).call(this)}).call(this,require('_process'))
-},{"_process":36}],31:[function(require,module,exports){
+},{"_process":37}],32:[function(require,module,exports){
 /**
  * @license React
  * react.production.min.js
@@ -35481,7 +35674,7 @@ exports.useCallback=function(a,b){return U.current.useCallback(a,b)};exports.use
 exports.useInsertionEffect=function(a,b){return U.current.useInsertionEffect(a,b)};exports.useLayoutEffect=function(a,b){return U.current.useLayoutEffect(a,b)};exports.useMemo=function(a,b){return U.current.useMemo(a,b)};exports.useReducer=function(a,b,e){return U.current.useReducer(a,b,e)};exports.useRef=function(a){return U.current.useRef(a)};exports.useState=function(a){return U.current.useState(a)};exports.useSyncExternalStore=function(a,b,e){return U.current.useSyncExternalStore(a,b,e)};
 exports.useTransition=function(){return U.current.useTransition()};exports.version="18.2.0";
 
-},{}],32:[function(require,module,exports){
+},{}],33:[function(require,module,exports){
 (function (process){(function (){
 'use strict';
 
@@ -35492,7 +35685,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 }).call(this)}).call(this,require('_process'))
-},{"./cjs/react.development.js":30,"./cjs/react.production.min.js":31,"_process":36}],33:[function(require,module,exports){
+},{"./cjs/react.development.js":31,"./cjs/react.production.min.js":32,"_process":37}],34:[function(require,module,exports){
 (function (process,setImmediate){(function (){
 /**
  * @license React
@@ -36130,7 +36323,7 @@ if (
 }
 
 }).call(this)}).call(this,require('_process'),require("timers").setImmediate)
-},{"_process":36,"timers":37}],34:[function(require,module,exports){
+},{"_process":37,"timers":38}],35:[function(require,module,exports){
 (function (setImmediate){(function (){
 /**
  * @license React
@@ -36153,7 +36346,7 @@ exports.unstable_scheduleCallback=function(a,b,c){var d=exports.unstable_now();"
 exports.unstable_shouldYield=M;exports.unstable_wrapCallback=function(a){var b=y;return function(){var c=y;y=b;try{return a.apply(this,arguments)}finally{y=c}}};
 
 }).call(this)}).call(this,require("timers").setImmediate)
-},{"timers":37}],35:[function(require,module,exports){
+},{"timers":38}],36:[function(require,module,exports){
 (function (process){(function (){
 'use strict';
 
@@ -36164,7 +36357,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 }).call(this)}).call(this,require('_process'))
-},{"./cjs/scheduler.development.js":33,"./cjs/scheduler.production.min.js":34,"_process":36}],36:[function(require,module,exports){
+},{"./cjs/scheduler.development.js":34,"./cjs/scheduler.production.min.js":35,"_process":37}],37:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -36350,7 +36543,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],37:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
 (function (setImmediate,clearImmediate){(function (){
 var nextTick = require('process/browser.js').nextTick;
 var apply = Function.prototype.apply;
@@ -36429,4 +36622,4 @@ exports.clearImmediate = typeof clearImmediate === "function" ? clearImmediate :
   delete immediateIds[id];
 };
 }).call(this)}).call(this,require("timers").setImmediate,require("timers").clearImmediate)
-},{"process/browser.js":36,"timers":37}]},{},[17]);
+},{"process/browser.js":37,"timers":38}]},{},[18]);

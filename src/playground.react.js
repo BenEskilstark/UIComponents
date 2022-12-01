@@ -20,6 +20,7 @@ const RadioPicker = require('./RadioPicker.react.js');
 const Slider = require('./Slider.react.js');
 const Table = require('./Table.react.js');
 const TextField = require('./TextField.react.js');
+const {useEnhancedEffect} = require('./hooks.js');
 
 
 function renderUI(root): React.Node {
@@ -27,15 +28,53 @@ function renderUI(root): React.Node {
 }
 
 
-const Main = () => {
+const Main = (props) => {
   const [modal, setModal] = useState(null);
   const [fullCanvas, setFullCanvas] = useState(false);
+
+  const [counter, setCounter] = useState({val: 0});
+  const [counter2, setCounter2] = useState({val: 0});
+
+  // useEnhancedEffect(() => {
+  //   console.log("counter1", counter, "counter2", counter2);
+  // }, [counter], [counter2]);
+  useEffect(() => {
+    console.log(
+      "counter1", counter.val,
+      "counter2", counter2.val,
+    );
+  }, [counter]);
 
   useEffect(() => {
     const canvasWidth = fullCanvas ? window.innerWidth : 300;
     const canvasHeight = fullCanvas ? window.innerHeight : 300;
     render(canvasWidth, canvasHeight);
   }, []);
+
+  const [table, updateTable] = useReducer(
+    (table, action) => {
+      if (action.type == 'ADD_NAME') {
+        const id = table.nextID++;
+        return {...table,
+          columns: {...table.columns},
+          rows: [...table.rows,
+            {id: table.nextID++, name: action.name},
+          ],
+        };
+      }
+      return table;
+    },
+    {
+      nextID: 1,
+      rows: [{id: 0, name: 'ben'}],
+      columns: {
+        id: {filterable: true},
+        name: {filterable: true},
+      }
+    },
+  );
+
+  console.log(table);
 
   return (
     <div>
@@ -49,12 +88,30 @@ const Main = () => {
         }}
       >
         <Button
+          label={"Pressed " + counter.val + " times"}
+          onClick={() => setCounter({val: counter.val + 1})}
+        />
+        <Button
+          label={"Pressed " + counter2.val + " times"}
+          onClick={() => setCounter2({val: counter2.val + 1})}
+        />
+        <Button
+          label={"Add Row"}
+          onClick={() => updateTable({type: 'ADD_NAME', name: 'foo'})}
+        />
+        <div></div>
+        <Button
           label={"Display Modal"}
           disabled={modal != null}
           onClick={() => {
             setModal(<Modal
               title="Modal"
-              body="lorem ipsum dolor the quick brown fox jumped over the lazy dog"
+              body={
+                <ModalBody
+                  counter={counter}
+                  counter2={counter2}
+                />
+              }
               buttons={[{label: 'Dismiss', onClick: () => setModal(null)}]}
             />);
           }}
@@ -64,15 +121,41 @@ const Main = () => {
           onClick={() => setFullCanvas(!fullCanvas)}
         />
       </div>
-      <Canvas
-        width={300}
-        height={300}
-        useFullScreen={fullCanvas}
-        onResize={render}
-      />
+      <div
+        style={{
+         display: 'flex',
+        }}
+      >
+        <Canvas
+          width={300}
+          height={300}
+          useFullScreen={fullCanvas}
+          onResize={render}
+        />
+        <Table
+          style={{paddingTop: '3rem', fontSize: 19}}
+          rows={table.rows}
+          columns={table.columns}
+        />
+      </div>
     </div>
   );
 };
+
+const ModalBody = (props) => {
+  useEffect(() => {
+    console.log(props.counter.val, props.counter2.val)
+    return () => {
+      console.log(props.counter.val, props.counter2.val)
+    }
+  }, [props.counter]);
+
+  return (
+    <div>
+      lorem ipsum the quick brown fox jumped over the lazy dog
+    </div>
+  );
+}
 
 const grid = {
   width: 500,

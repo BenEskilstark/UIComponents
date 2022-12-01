@@ -16,6 +16,7 @@ type Props = {
   rows: Array<{[name: ColumnName]: mixed}>,
   hideColSorts: boolean,
   hideNumRows: boolean,
+  style: Object containing additional styles for outer div
 };
 */
 
@@ -27,12 +28,19 @@ const tableStyle = {
 
 function Table(props) {
   const {columns, rows, hideColSorts} = props;
-  const colNames = Object.keys(columns);
+  let colNames = []
+  if (props.columns) {
+    colNames = Object.keys(columns);
+  } else {
+    // TODO: infer column names if not provided
+  }
 
   // sort by column
   const [sortByColumn, setSortByColumn] = useState({by: 'ASC', name: null});
   useEffect(() => {
-    setSortByColumn({by: 'ASC', name: null});
+    if (!colNames.includes(sortByColumn.name)) {
+      setSortByColumn({by: 'ASC', name: null});
+    }
   }, [columns]);
 
   // filter by column
@@ -45,9 +53,16 @@ function Table(props) {
     }
     return selected;
   }
-  const [selectedByColumn, setSelectedByColumn] = useState(computeSelectedByColumn(colNames));
+  const [selectedByColumn, setSelectedByColumn] = useState(
+    computeSelectedByColumn(colNames));
   useEffect(() => {
-    const selected = computeSelectedByColumn(colNames);
+    const selected = {}
+    for (const col of colNames) {
+      if (columns[col].filterable) {
+        selected[col] = selectedByColumn[col] || '*';
+      }
+    }
+
     setSelectedByColumn(selected);
   }, [columns]);
 
@@ -156,11 +171,13 @@ function Table(props) {
   });
 
   return (
-    <div>
+    <div style={{...tableStyle, ...props.style}}>
       {props.hideNumRows ? null :
-        (<span>Total Rows: {rows.length} Rows Displayed: {filteredRows.length}</span>)
+        (<span>
+          Total Rows: {rows.length} Rows Displayed: {filteredRows.length}
+        </span>)
       }
-      <table style={tableStyle}>
+      <table>
         <thead>
           <tr>{headers}</tr>
         </thead>

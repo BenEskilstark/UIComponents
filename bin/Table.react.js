@@ -28,6 +28,7 @@ type Props = {
   rows: Array<{[name: ColumnName]: mixed}>,
   hideColSorts: boolean,
   hideNumRows: boolean,
+  style: Object containing additional styles for outer div
 };
 */
 
@@ -42,7 +43,12 @@ function Table(props) {
       rows = props.rows,
       hideColSorts = props.hideColSorts;
 
-  var colNames = Object.keys(columns);
+  var colNames = [];
+  if (props.columns) {
+    colNames = Object.keys(columns);
+  } else {}
+  // TODO: infer column names if not provided
+
 
   // sort by column
 
@@ -52,7 +58,9 @@ function Table(props) {
       setSortByColumn = _useState2[1];
 
   useEffect(function () {
-    setSortByColumn({ by: 'ASC', name: null });
+    if (!colNames.includes(sortByColumn.name)) {
+      setSortByColumn({ by: 'ASC', name: null });
+    }
   }, [columns]);
 
   // filter by column
@@ -94,12 +102,7 @@ function Table(props) {
       setSelectedByColumn = _useState4[1];
 
   useEffect(function () {
-    var selected = computeSelectedByColumn(colNames);
-    setSelectedByColumn(selected);
-  }, [columns]);
-
-  var columnOptions = useMemo(function () {
-    var filters = {};
+    var selected = {};
     var _iteratorNormalCompletion2 = true;
     var _didIteratorError2 = false;
     var _iteratorError2 = undefined;
@@ -109,33 +112,7 @@ function Table(props) {
         var col = _step2.value;
 
         if (columns[col].filterable) {
-          filters[col] = ['*'];
-          var _iteratorNormalCompletion3 = true;
-          var _didIteratorError3 = false;
-          var _iteratorError3 = undefined;
-
-          try {
-            for (var _iterator3 = rows[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-              var row = _step3.value;
-
-              if (!filters[col].includes(row[col])) {
-                filters[col].push(row[col]);
-              }
-            }
-          } catch (err) {
-            _didIteratorError3 = true;
-            _iteratorError3 = err;
-          } finally {
-            try {
-              if (!_iteratorNormalCompletion3 && _iterator3.return) {
-                _iterator3.return();
-              }
-            } finally {
-              if (_didIteratorError3) {
-                throw _iteratorError3;
-              }
-            }
-          }
+          selected[col] = selectedByColumn[col] || '*';
         }
       }
     } catch (err) {
@@ -149,6 +126,64 @@ function Table(props) {
       } finally {
         if (_didIteratorError2) {
           throw _iteratorError2;
+        }
+      }
+    }
+
+    setSelectedByColumn(selected);
+  }, [columns]);
+
+  var columnOptions = useMemo(function () {
+    var filters = {};
+    var _iteratorNormalCompletion3 = true;
+    var _didIteratorError3 = false;
+    var _iteratorError3 = undefined;
+
+    try {
+      for (var _iterator3 = colNames[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+        var col = _step3.value;
+
+        if (columns[col].filterable) {
+          filters[col] = ['*'];
+          var _iteratorNormalCompletion4 = true;
+          var _didIteratorError4 = false;
+          var _iteratorError4 = undefined;
+
+          try {
+            for (var _iterator4 = rows[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+              var row = _step4.value;
+
+              if (!filters[col].includes(row[col])) {
+                filters[col].push(row[col]);
+              }
+            }
+          } catch (err) {
+            _didIteratorError4 = true;
+            _iteratorError4 = err;
+          } finally {
+            try {
+              if (!_iteratorNormalCompletion4 && _iterator4.return) {
+                _iterator4.return();
+              }
+            } finally {
+              if (_didIteratorError4) {
+                throw _iteratorError4;
+              }
+            }
+          }
+        }
+      }
+    } catch (err) {
+      _didIteratorError3 = true;
+      _iteratorError3 = err;
+    } finally {
+      try {
+        if (!_iteratorNormalCompletion3 && _iterator3.return) {
+          _iterator3.return();
+        }
+      } finally {
+        if (_didIteratorError3) {
+          throw _iteratorError3;
         }
       }
     }
@@ -196,13 +231,13 @@ function Table(props) {
 
   var filteredRows = useMemo(function () {
     var filtered = [];
-    var _iteratorNormalCompletion4 = true;
-    var _didIteratorError4 = false;
-    var _iteratorError4 = undefined;
+    var _iteratorNormalCompletion5 = true;
+    var _didIteratorError5 = false;
+    var _iteratorError5 = undefined;
 
     try {
-      for (var _iterator4 = rows[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-        var row = _step4.value;
+      for (var _iterator5 = rows[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+        var row = _step5.value;
 
         var addRow = true;
         for (var col in selectedByColumn) {
@@ -216,16 +251,16 @@ function Table(props) {
         }
       }
     } catch (err) {
-      _didIteratorError4 = true;
-      _iteratorError4 = err;
+      _didIteratorError5 = true;
+      _iteratorError5 = err;
     } finally {
       try {
-        if (!_iteratorNormalCompletion4 && _iterator4.return) {
-          _iterator4.return();
+        if (!_iteratorNormalCompletion5 && _iterator5.return) {
+          _iterator5.return();
         }
       } finally {
-        if (_didIteratorError4) {
-          throw _iteratorError4;
+        if (_didIteratorError5) {
+          throw _iteratorError5;
         }
       }
     }
@@ -271,7 +306,7 @@ function Table(props) {
 
   return React.createElement(
     'div',
-    null,
+    { style: _extends({}, tableStyle, props.style) },
     props.hideNumRows ? null : React.createElement(
       'span',
       null,
@@ -282,7 +317,7 @@ function Table(props) {
     ),
     React.createElement(
       'table',
-      { style: tableStyle },
+      null,
       React.createElement(
         'thead',
         null,

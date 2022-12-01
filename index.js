@@ -22,53 +22,7 @@ module.exports = {
   Slider: require('./bin/Slider.react.js'),
   Table: require('./bin/Table.react.js'),
   TextField: require('./bin/TextField.react.js'),
-  ...require('./bin/effects.js'),
+  ...require('./bin/hooks.js'),
 };
 
 
-// function renderUI(): React.Node {
-//   ReactDOM.render(
-//     <Main />,
-//     document.getElementById('container'),
-//   );
-// }
-//
-//
-// const Main = () => {
-//   const [modal, setModal] = useState(null);
-//   return (
-//     <div>
-//       {modal}
-//       <Button
-//         label={"Display Modal"}
-//         onClick={() => {
-//           setModal(<Modal
-//             title="Modal"
-//             body="lorem ipsum"
-//             buttons={[{label: 'Dismiss', onClick: () => setModal(null)}]}
-//           />);
-//         }}
-//       />
-//     </div>
-//   );
-// };
-//
-// renderUI;
-//
-// module.exports = {
-//   AudioWidget,
-//   Button,
-//   Canvas,
-//   Checkbox,
-//   Divider,
-//   Dropdown,
-//   InfoCard,
-//   Modal,
-//   NumberField,
-//   Plot,
-//   plotReducer,
-//   QuitButton,
-//   RadioPicker,
-//   Slider,
-//   Table,
-// };
