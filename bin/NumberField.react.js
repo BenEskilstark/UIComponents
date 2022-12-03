@@ -15,6 +15,7 @@ var useState = React.useState,
  * width: number,
  * submitOnEnter: boolean, // not implemented -- hard to play nice w/other keys
  * submitOnBlur: boolean,
+ * disabled: ?boolean,
  */
 
 var NumberField = function NumberField(props) {
@@ -63,6 +64,10 @@ var NumberField = function NumberField(props) {
       }
     },
     onChange: function onChange(ev) {
+      if (props.disabled) {
+        setValue(value);
+        return;
+      }
       var nextVal = ev.target.value;
       if (isNaN(Number(nextVal))) return; // don't allow non-numerical input
       setValue(nextVal);

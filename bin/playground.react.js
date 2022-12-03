@@ -33,7 +33,8 @@ var Table = require('./Table.react.js');
 var TextField = require('./TextField.react.js');
 
 var _require = require('./hooks.js'),
-    useEnhancedEffect = _require.useEnhancedEffect;
+    useEnhancedEffect = _require.useEnhancedEffect,
+    useEnhancedReducer = _require.useEnhancedReducer;
 
 function renderUI(root) {
   root.render(React.createElement(Main, null));
@@ -55,10 +56,10 @@ var Main = function Main(props) {
       counter = _useState6[0],
       setCounter = _useState6[1];
 
-  var _useState7 = useState({ val: 0 }),
-      _useState8 = _slicedToArray(_useState7, 2),
-      counter2 = _useState8[0],
-      setCounter2 = _useState8[1];
+  var _useEnhancedReducer = useEnhancedReducer(function () {}, { val: 0 }),
+      _useEnhancedReducer2 = _slicedToArray(_useEnhancedReducer, 2),
+      counter2 = _useEnhancedReducer2[0],
+      setCounter2 = _useEnhancedReducer2[1];
 
   // useEnhancedEffect(() => {
   //   console.log("counter1", counter, "counter2", counter2);
@@ -75,7 +76,7 @@ var Main = function Main(props) {
     render(canvasWidth, canvasHeight);
   }, []);
 
-  var _useReducer = useReducer(function (table, action) {
+  var _useEnhancedReducer3 = useEnhancedReducer(function (table, action) {
     if (action.type == 'ADD_NAME') {
       var id = table.nextID++;
       return _extends({}, table, {
@@ -92,11 +93,9 @@ var Main = function Main(props) {
       name: { filterable: true }
     }
   }),
-      _useReducer2 = _slicedToArray(_useReducer, 2),
-      table = _useReducer2[0],
-      updateTable = _useReducer2[1];
-
-  console.log(table);
+      _useEnhancedReducer4 = _slicedToArray(_useEnhancedReducer3, 2),
+      table = _useEnhancedReducer4[0],
+      updateTable = _useEnhancedReducer4[1];
 
   return React.createElement(
     'div',
@@ -172,6 +171,67 @@ var Main = function Main(props) {
         rows: table.rows,
         columns: table.columns
       })
+    ),
+    React.createElement(
+      'div',
+      null,
+      React.createElement(Slider, {
+        label: 'Slider',
+        style: { display: 'inline' },
+        min: 0, max: 100,
+        value: counter.val,
+        noOriginalValue: true,
+        onChange: function onChange(v) {
+          return setCounter({ val: v });
+        }
+      }),
+      React.createElement(Slider, {
+        label: 'Slider 2',
+        style: { display: 'inline' },
+        min: 0, max: 100,
+        value: counter2.val,
+        noNumberField: true,
+        onChange: function onChange(v) {
+          return setCounter2({ val: v });
+        }
+      })
+    )
+  );
+};
+
+var HorizontalSplitPane = function HorizontalSplitPane(props) {
+  return React.createElement(
+    'div',
+    {
+      style: {
+        display: "flex",
+        flexFlow: "column",
+        width: '100%'
+      }
+    },
+    React.createElement(
+      'div',
+      {
+        style: {
+          backgroundColor: 'red',
+          opacity: 0.2,
+          width: '100%',
+          borderBottom: '1px solid black'
+        }
+      },
+      'Hello'
+    ),
+    React.createElement(
+      'div',
+      {
+        style: {
+          backgroundColor: 'steelblue',
+          opacity: 0.2,
+          width: '100%',
+          borderTop: '1px solid black'
+        }
+      },
+      'World'
     )
   );
 };

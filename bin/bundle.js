@@ -567,6 +567,7 @@ var useState = React.useState,
  * width: number,
  * submitOnEnter: boolean, // not implemented -- hard to play nice w/other keys
  * submitOnBlur: boolean,
+ * disabled: ?boolean,
  */
 
 var NumberField = function NumberField(props) {
@@ -615,6 +616,10 @@ var NumberField = function NumberField(props) {
       }
     },
     onChange: function onChange(ev) {
+      if (props.disabled) {
+        setValue(value);
+        return;
+      }
       var nextVal = ev.target.value;
       if (isNaN(Number(nextVal))) return; // don't allow non-numerical input
       setValue(nextVal);
@@ -1195,7 +1200,11 @@ var useState = React.useState,
  *  onChange: (number) => void,
  *  step: ?number (1 if null),
  *  label: ?string,
- *  isFloat: ?boolean
+ *  isFloat: ?boolean,
+ *  noNumberField: ?boolean,
+ *  noOrignalValue: ?boolean,
+ *  inline: ?boolean,
+ *  style: ?Object,
  */
 
 function Slider(props) {
@@ -1218,13 +1227,16 @@ function Slider(props) {
   }, []);
   return React.createElement(
     'div',
-    null,
+    { style: props.style || {} },
     props.label != null ? label : null,
     React.createElement('input', { type: 'range',
       id: 'slider_' + label,
       min: min, max: max,
       value: value,
       onChange: function onChange(ev) {
+        if (props.disabled) {
+          return;
+        }
         var val = ev.target.value;
         props.onChange(parseFloat(isFloat ? val / 10 : val));
       },
@@ -1233,7 +1245,8 @@ function Slider(props) {
     React.createElement(
       'div',
       { style: { display: 'inline-block' } },
-      React.createElement(NumberField, {
+      props.noNumberField ? null : React.createElement(NumberField, {
+        disabled: props.disabled,
         value: displayValue,
         onlyInt: !isFloat,
         onChange: function onChange(val) {
@@ -1241,9 +1254,7 @@ function Slider(props) {
         },
         submitOnBlur: false
       }),
-      '(',
-      originalValue,
-      ')'
+      props.noOriginalValue ? null : "(" + originalValue + ")"
     )
   );
 }
@@ -1626,6 +1637,8 @@ module.exports = TextField;
 },{"react":33}],17:[function(require,module,exports){
 'use strict';
 
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 var React = require('react');
@@ -1638,6 +1651,9 @@ var useEffect = React.useEffect,
 
 // use like
 // const [state, dispatch, getState] = useEnhancedReducer(reducer, initialState);
+// ALSO
+// can dispatch an action with no type and the action is simply merged into the state
+// with no need for handling
 
 var useEnhancedReducer = function useEnhancedReducer(reducer, initState, initializer) {
   var lastState = useRef(initState);
@@ -1645,7 +1661,13 @@ var useEnhancedReducer = function useEnhancedReducer(reducer, initState, initial
     return lastState.current;
   }, []);
   return [].concat(_toConsumableArray(useReducer(function (state, action) {
-    return lastState.current = reducer(state, action);
+    var mergeReducer = function mergeReducer(state, action) {
+      if (action.type === undefined) {
+        return _extends({}, state, action);
+      }
+      return reducer(state, action);
+    };
+    return lastState.current = mergeReducer(state, action);
   }, initState, initializer)), [getState]);
 };
 
@@ -1718,7 +1740,8 @@ var Table = require('./Table.react.js');
 var TextField = require('./TextField.react.js');
 
 var _require = require('./hooks.js'),
-    useEnhancedEffect = _require.useEnhancedEffect;
+    useEnhancedEffect = _require.useEnhancedEffect,
+    useEnhancedReducer = _require.useEnhancedReducer;
 
 function renderUI(root) {
   root.render(React.createElement(Main, null));
@@ -1740,10 +1763,10 @@ var Main = function Main(props) {
       counter = _useState6[0],
       setCounter = _useState6[1];
 
-  var _useState7 = useState({ val: 0 }),
-      _useState8 = _slicedToArray(_useState7, 2),
-      counter2 = _useState8[0],
-      setCounter2 = _useState8[1];
+  var _useEnhancedReducer = useEnhancedReducer(function () {}, { val: 0 }),
+      _useEnhancedReducer2 = _slicedToArray(_useEnhancedReducer, 2),
+      counter2 = _useEnhancedReducer2[0],
+      setCounter2 = _useEnhancedReducer2[1];
 
   // useEnhancedEffect(() => {
   //   console.log("counter1", counter, "counter2", counter2);
@@ -1760,7 +1783,7 @@ var Main = function Main(props) {
     render(canvasWidth, canvasHeight);
   }, []);
 
-  var _useReducer = useReducer(function (table, action) {
+  var _useEnhancedReducer3 = useEnhancedReducer(function (table, action) {
     if (action.type == 'ADD_NAME') {
       var id = table.nextID++;
       return _extends({}, table, {
@@ -1777,11 +1800,9 @@ var Main = function Main(props) {
       name: { filterable: true }
     }
   }),
-      _useReducer2 = _slicedToArray(_useReducer, 2),
-      table = _useReducer2[0],
-      updateTable = _useReducer2[1];
-
-  console.log(table);
+      _useEnhancedReducer4 = _slicedToArray(_useEnhancedReducer3, 2),
+      table = _useEnhancedReducer4[0],
+      updateTable = _useEnhancedReducer4[1];
 
   return React.createElement(
     'div',
@@ -1857,6 +1878,67 @@ var Main = function Main(props) {
         rows: table.rows,
         columns: table.columns
       })
+    ),
+    React.createElement(
+      'div',
+      null,
+      React.createElement(Slider, {
+        label: 'Slider',
+        style: { display: 'inline' },
+        min: 0, max: 100,
+        value: counter.val,
+        noOriginalValue: true,
+        onChange: function onChange(v) {
+          return setCounter({ val: v });
+        }
+      }),
+      React.createElement(Slider, {
+        label: 'Slider 2',
+        style: { display: 'inline' },
+        min: 0, max: 100,
+        value: counter2.val,
+        noNumberField: true,
+        onChange: function onChange(v) {
+          return setCounter2({ val: v });
+        }
+      })
+    )
+  );
+};
+
+var HorizontalSplitPane = function HorizontalSplitPane(props) {
+  return React.createElement(
+    'div',
+    {
+      style: {
+        display: "flex",
+        flexFlow: "column",
+        width: '100%'
+      }
+    },
+    React.createElement(
+      'div',
+      {
+        style: {
+          backgroundColor: 'red',
+          opacity: 0.2,
+          width: '100%',
+          borderBottom: '1px solid black'
+        }
+      },
+      'Hello'
+    ),
+    React.createElement(
+      'div',
+      {
+        style: {
+          backgroundColor: 'steelblue',
+          opacity: 0.2,
+          width: '100%',
+          borderTop: '1px solid black'
+        }
+      },
+      'World'
     )
   );
 };

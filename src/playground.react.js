@@ -20,7 +20,7 @@ const RadioPicker = require('./RadioPicker.react.js');
 const Slider = require('./Slider.react.js');
 const Table = require('./Table.react.js');
 const TextField = require('./TextField.react.js');
-const {useEnhancedEffect} = require('./hooks.js');
+const {useEnhancedEffect, useEnhancedReducer} = require('./hooks.js');
 
 
 function renderUI(root): React.Node {
@@ -33,7 +33,7 @@ const Main = (props) => {
   const [fullCanvas, setFullCanvas] = useState(false);
 
   const [counter, setCounter] = useState({val: 0});
-  const [counter2, setCounter2] = useState({val: 0});
+  const [counter2, setCounter2] = useEnhancedReducer(() => {}, {val: 0});
 
   // useEnhancedEffect(() => {
   //   console.log("counter1", counter, "counter2", counter2);
@@ -51,7 +51,7 @@ const Main = (props) => {
     render(canvasWidth, canvasHeight);
   }, []);
 
-  const [table, updateTable] = useReducer(
+  const [table, updateTable] = useEnhancedReducer(
     (table, action) => {
       if (action.type == 'ADD_NAME') {
         const id = table.nextID++;
@@ -73,8 +73,6 @@ const Main = (props) => {
       }
     },
   );
-
-  console.log(table);
 
   return (
     <div>
@@ -138,9 +136,64 @@ const Main = (props) => {
           columns={table.columns}
         />
       </div>
+      <div>
+        <Slider
+          label="Slider"
+          style={{display: 'inline'}}
+          min={0} max={100}
+          value={counter.val}
+          noOriginalValue={true}
+          onChange={(v) => {
+            return setCounter({val: v});
+          }}
+        />
+        <Slider
+          label="Slider 2"
+          style={{display: 'inline'}}
+          min={0} max={100}
+          value={counter2.val}
+          noNumberField={true}
+          onChange={(v) => {
+            return setCounter2({val: v});
+          }}
+        />
+      </div>
     </div>
   );
 };
+
+const HorizontalSplitPane = (props) => {
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexFlow: "column",
+        width: '100%',
+      }}
+    >
+      <div
+        style={{
+          backgroundColor: 'red',
+          opacity: 0.2,
+          width: '100%',
+          borderBottom: '1px solid black',
+        }}
+      >
+        Hello
+      </div>
+      <div
+        style={{
+          backgroundColor: 'steelblue',
+          opacity: 0.2,
+          width: '100%',
+          borderTop: '1px solid black',
+        }}
+      >
+        World
+      </div>
+    </div>
+  );
+}
 
 const ModalBody = (props) => {
   useEffect(() => {

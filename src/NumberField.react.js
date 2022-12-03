@@ -9,6 +9,7 @@ const {useState, useMemo, useEffect} = React;
  * width: number,
  * submitOnEnter: boolean, // not implemented -- hard to play nice w/other keys
  * submitOnBlur: boolean,
+ * disabled: ?boolean,
  */
 const NumberField = (props) => {
   const {
@@ -49,6 +50,10 @@ const NumberField = (props) => {
         }
       }}
       onChange={(ev) => {
+        if (props.disabled) {
+          setValue(value);
+          return;
+        }
         const nextVal = ev.target.value;
         if (isNaN(Number(nextVal))) return; // don't allow non-numerical input
         setValue(nextVal);

@@ -13,7 +13,11 @@ var useState = React.useState,
  *  onChange: (number) => void,
  *  step: ?number (1 if null),
  *  label: ?string,
- *  isFloat: ?boolean
+ *  isFloat: ?boolean,
+ *  noNumberField: ?boolean,
+ *  noOrignalValue: ?boolean,
+ *  inline: ?boolean,
+ *  style: ?Object,
  */
 
 function Slider(props) {
@@ -36,13 +40,16 @@ function Slider(props) {
   }, []);
   return React.createElement(
     'div',
-    null,
+    { style: props.style || {} },
     props.label != null ? label : null,
     React.createElement('input', { type: 'range',
       id: 'slider_' + label,
       min: min, max: max,
       value: value,
       onChange: function onChange(ev) {
+        if (props.disabled) {
+          return;
+        }
         var val = ev.target.value;
         props.onChange(parseFloat(isFloat ? val / 10 : val));
       },
@@ -51,7 +58,8 @@ function Slider(props) {
     React.createElement(
       'div',
       { style: { display: 'inline-block' } },
-      React.createElement(NumberField, {
+      props.noNumberField ? null : React.createElement(NumberField, {
+        disabled: props.disabled,
         value: displayValue,
         onlyInt: !isFloat,
         onChange: function onChange(val) {
@@ -59,9 +67,7 @@ function Slider(props) {
         },
         submitOnBlur: false
       }),
-      '(',
-      originalValue,
-      ')'
+      props.noOriginalValue ? null : "(" + originalValue + ")"
     )
   );
 }

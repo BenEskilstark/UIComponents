@@ -10,7 +10,11 @@ const {useState, useMemo, useEffect} = React;
  *  onChange: (number) => void,
  *  step: ?number (1 if null),
  *  label: ?string,
- *  isFloat: ?boolean
+ *  isFloat: ?boolean,
+ *  noNumberField: ?boolean,
+ *  noOrignalValue: ?boolean,
+ *  inline: ?boolean,
+ *  style: ?Object,
  */
 function Slider(props) {
   const {isFloat} = props;
@@ -30,28 +34,34 @@ function Slider(props) {
     return displayValue;
   }, []);
   return (
-    <div>
+    <div style={props.style || {}}>
       {props.label != null ? label : null}
       <input type="range"
         id={'slider_' + label}
         min={min} max={max}
         value={value}
         onChange={(ev) => {
+          if (props.disabled) {
+            return;
+          }
           const val = ev.target.value;
           props.onChange(parseFloat(isFloat ? val / 10 : val));
         }}
         step={props.step != null ? props.step : 1}
       />
       <div style={{display: 'inline-block'}}>
-        <NumberField
-          value={displayValue}
-          onlyInt={!isFloat}
-          onChange={val => {
-            props.onChange(val);
-          }}
-          submitOnBlur={false}
-        />
-        ({originalValue})
+        {props.noNumberField ? null : (
+          <NumberField
+            disabled={props.disabled}
+            value={displayValue}
+            onlyInt={!isFloat}
+            onChange={val => {
+              props.onChange(val);
+            }}
+            submitOnBlur={false}
+          />
+        )}
+        {props.noOriginalValue ? null : "(" + originalValue + ")"}
       </div>
     </div>
   );
