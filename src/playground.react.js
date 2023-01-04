@@ -20,12 +20,18 @@ const RadioPicker = require('./RadioPicker.react.js');
 const Slider = require('./Slider.react.js');
 const Table = require('./Table.react.js');
 const TextField = require('./TextField.react.js');
-const {useEnhancedEffect, useEnhancedReducer} = require('./hooks.js');
+const {
+  useEnhancedEffect, useEnhancedReducer,
+  useMouseHandler,
+} = require('./hooks.js');
 
 
 function renderUI(root): React.Node {
   root.render(<Main />);
 }
+
+const CANVAS_WIDTH = 300;
+const CANVAS_HEIGHT = 300;
 
 
 const Main = (props) => {
@@ -35,21 +41,12 @@ const Main = (props) => {
   const [counter, setCounter] = useState({val: 0});
   const [counter2, setCounter2] = useEnhancedReducer(() => {}, {val: 0});
 
-  // useEnhancedEffect(() => {
-  //   console.log("counter1", counter, "counter2", counter2);
-  // }, [counter], [counter2]);
   useEffect(() => {
     console.log(
       "counter1", counter.val,
       "counter2", counter2.val,
     );
   }, [counter]);
-
-  useEffect(() => {
-    const canvasWidth = fullCanvas ? window.innerWidth : 300;
-    const canvasHeight = fullCanvas ? window.innerHeight : 300;
-    render(canvasWidth, canvasHeight);
-  }, []);
 
   const [table, updateTable] = useEnhancedReducer(
     (table, action) => {
@@ -73,6 +70,90 @@ const Main = (props) => {
       }
     },
   );
+
+  const [mouse, mouseDispatch, getMouseState] = useEnhancedReducer(
+    (mouse, action) => {
+      switch (action.type) {
+        case 'SET_MOUSE_DOWN': {
+          const {isLeft, isDown, downPixel} = action;
+          return {
+            ...mouse,
+            isLeftDown: isLeft ? isDown : mouse.isLeftDown,
+            isRightDown: isLeft ? mouse.isRightDown : isDown,
+            downPixel: isDown && downPixel != null ? downPixel : mouse.downPixel,
+          };
+        }
+        case 'SET_MOUSE_POS': {
+          const {curPixel} = action;
+          return {
+            ...mouse,
+            prevPixel: {...mouse.curPixel},
+            curPixel,
+          };
+        }
+        case 'ADD_LINE': {
+          return {
+            ...mouse,
+            lines: [...mouse.lines, action.line],
+          };
+        }
+      }
+      return mouse;
+    },
+    {
+      isLeftDown: false,
+      isRightDown: false,
+      downPixel: {x: 0, y: 0},
+      prevPixel: {x: 0, y: 0},
+      curPixel: {x: 0, y: 0},
+
+      canvasSize: {width: CANVAS_WIDTH, height: CANVAS_HEIGHT},
+      lines: [],
+      prevInteractPos: null,
+    }
+  );
+
+  const div = (pos, size) => {
+    return {x: pos.x / size.width, y: pos.y / size.height};
+  }
+
+  useMouseHandler(
+    "canvas", {dispatch: mouseDispatch, getState: getMouseState},
+    {
+      leftDown: (state, dispatch, pos) => {
+        console.log("click", pos);
+      },
+      mouseMove: (state, dispatch, gridPos) => {
+        if (!state.isLeftDown) return;
+        dispatch({inMove: true});
+
+        const {canvasSize} = state;
+        if (state.prevInteractPos) {
+          const prevPos = state.prevInteractPos;
+          dispatch({type: 'ADD_LINE',
+            line: {
+              start: div(prevPos, canvasSize),
+              end: div(gridPos, canvasSize),
+              color: 'red',
+            },
+          });
+          dispatch({prevInteractPos: gridPos});
+        } else {
+          dispatch({prevInteractPos: gridPos});
+        }
+      },
+      leftUp: (state, dispatch, gridPos) => {
+        dispatch({inMove: false});
+        dispatch({prevInteractPos: null});
+      },
+    },
+  );
+
+  useEffect(() => {
+    const canvasWidth = fullCanvas ? window.innerWidth : CANVAS_WIDTH;
+    const canvasHeight = fullCanvas ? window.innerHeight : CANVAS_HEIGHT;
+    render(canvasWidth, canvasHeight, mouse.lines);
+  }, [mouse.lines]);
 
   return (
     <div>
@@ -125,10 +206,14 @@ const Main = (props) => {
         }}
       >
         <Canvas
-          width={300}
-          height={300}
+          width={CANVAS_WIDTH}
+          height={CANVAS_HEIGHT}
           useFullScreen={fullCanvas}
-          onResize={render}
+          onResize={() => {
+            const canvasWidth = fullCanvas ? window.innerWidth : CANVAS_WIDTH;
+            const canvasHeight = fullCanvas ? window.innerHeight : CANVAS_HEIGHT;
+            render(canvasWidth, canvasHeight, mouse.lines);
+          }}
         />
         <Table
           style={{paddingTop: '3rem', fontSize: 19}}
@@ -214,8 +299,11 @@ const grid = {
   width: 500,
   height: 500,
 };
+const mult = (pos, size) => {
+  return {x: pos.x * size.width, y: pos.y * size.height};
+}
 
-const render = (canvasWidth, canvasHeight) => {
+const render = (canvasWidth, canvasHeight, lines) => {
   const cvs = document.getElementById('canvas');
   const ctx = cvs.getContext('2d');
 
@@ -228,6 +316,20 @@ const render = (canvasWidth, canvasHeight) => {
   ctx.fillRect(0, 0, grid.width, grid.height);
   ctx.fillStyle = 'steelblue';
   ctx.fillRect(25, 25, 250, 400);
+
+  ctx.lineWidth = 4;
+
+  ctx.beginPath();
+  for (const line of lines) {
+    const start = mult(line.start, grid);
+    const end = mult(line.end, grid);
+    ctx.strokeStyle = line.color;
+    ctx.moveTo(start.x, start.y);
+    ctx.lineTo(end.x, end.y);
+    ctx.stroke();
+  }
+  ctx.closePath();
+
   ctx.restore();
 }
 

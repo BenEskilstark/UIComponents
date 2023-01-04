@@ -1642,6 +1642,9 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 var React = require('react');
+
+var throttle = require('bens_utils').helpers.throttle;
+
 var useEffect = React.useEffect,
     useState = React.useState,
     useMemo = React.useMemo,
@@ -1671,6 +1674,181 @@ var useEnhancedReducer = function useEnhancedReducer(reducer, initState, initial
   }, initState, initializer)), [getState]);
 };
 
+// --------------------------------------------------------------------
+// UseMouseHandler
+// --------------------------------------------------------------------
+// NOTE:
+// type PseudoStore = {dispatch: (action) => void, getState: () => State}
+// type Handlers = {
+//  mouseMove,
+//  leftDown, leftUp,
+//  rightDown, rightUp,
+//  scroll,
+// };
+var useMouseHandler = function useMouseHandler(elementID, pseudoStore, handlers, dependencies) {
+  useEffect(function () {
+    if (handlers.mouseMove) {
+      document.onmousemove = throttle(onMove, [elementID, pseudoStore, handlers], 12);
+      document.ontouchmove = function (ev) {
+        if (ev.target.id === state.streamID + '_canvas') {
+          ev.preventDefault();
+        }
+        onMove(elementID, pseudoStore, handlers, ev);
+      };
+    } else {
+      document.onmousemove = null;
+      document.ontouchmove = null;
+    }
+    document.ontouchstart = function (ev) {
+      onMouseDown(elementID, pseudoStore, handlers, ev);
+    };
+    document.ontouchend = function (ev) {
+      onMouseUp(elementID, pseudoStore, handlers, ev);
+    };
+    document.ontouchcancel = function (ev) {
+      onMouseUp(elementID, pseudoStore, handlers, ev);
+    };
+    document.onmousedown = function (ev) {
+      onMouseDown(elementID, pseudoStore, handlers, ev);
+    };
+    document.onmouseup = function (ev) {
+      onMouseUp(elementID, pseudoStore, handlers, ev);
+    };
+    if (handlers.scroll) {
+      var scrollLocked = false;
+      document.onwheel = function (ev) {
+        if (!scrollLocked) {
+          onScroll(elementID, pseudoStore, handlers, ev);
+          scrollLocked = true;
+          setTimeout(function () {
+            scrollLocked = false;
+          }, 150);
+        }
+      };
+    }
+
+    return function () {
+      document.onmousemove = null;
+      document.ontouchmove = null;
+      document.ontouchstart = null;
+      document.ontouchend = null;
+      document.ontouchcancel = null;
+      document.onmousedown = null;
+      document.onmouseup = null;
+      document.onwheel = null;
+    };
+  }, dependencies || []);
+};
+
+var getMousePixel = function getMousePixel(elementID, ev) {
+  if (ev.target.id != elementID) return null;
+  var elem = document.getElementById(elementID);
+  if (!elem) return null;
+  var rect = elem.getBoundingClientRect();
+  var x = ev.clientX;
+  var y = ev.clientY;
+  if (ev.type === 'touchstart' || ev.type === 'touchmove') {
+    var touch = ev.touches[0];
+    x = touch.clientX;
+    y = touch.clientY;
+  }
+  if (ev.type == 'touchend') {
+    var _touch = ev.changedTouches[0];
+    x = _touch.clientX;
+    y = _touch.clientY;
+  }
+  var elemPos = {
+    x: x - rect.left,
+    y: y - rect.top
+  };
+
+  return elemPos;
+};
+
+var onScroll = function onScroll(elementID, pseudoStore, handlers, ev) {
+  if (ev.target.id != elementID) return null;
+  var getState = pseudoStore.getState,
+      dispatch = pseudoStore.dispatch;
+
+  handlers.scroll(getState(), dispatch, ev.wheelDelta < 0 ? 1 : -1);
+};
+
+var onMove = function onMove(elementID, pseudoStore, handlers, ev) {
+  var getState = pseudoStore.getState,
+      dispatch = pseudoStore.dispatch;
+
+  var pos = getMousePixel(elementID, ev);
+  if (!pos) return;
+
+  dispatch({ type: 'SET_MOUSE_POS', curPixel: pos });
+  if (handlers.mouseMove != null) {
+    handlers.mouseMove(getState(), dispatch, pos);
+  }
+};
+
+var onMouseDown = function onMouseDown(elementID, pseudoStore, handlers, ev) {
+  var elem = document.getElementById(elementID);
+  // don't open the normal right-click menu
+  if (elem != null) {
+    elem.addEventListener('contextmenu', function (ev) {
+      return ev.preventDefault();
+    });
+  }
+
+  var getState = pseudoStore.getState,
+      dispatch = pseudoStore.dispatch;
+
+  var pos = getMousePixel(elementID, ev);
+  if (!pos) return;
+
+  if (ev.button == 0 || ev.type == 'touchstart') {
+    // left click
+    dispatch({
+      type: 'SET_MOUSE_DOWN',
+      isLeft: true, isDown: true, downPixel: pos
+    });
+    if (handlers.leftDown != null) {
+      handlers.leftDown(getState(), dispatch, pos);
+    }
+  }
+  if (ev.button == 2) {
+    // right click
+    dispatch({
+      type: 'SET_MOUSE_DOWN',
+      isLeft: false, isDown: true, downPixel: pos
+    });
+    if (handlers.rightDown != null) {
+      handlers.rightDown(getState(), dispatch, pos);
+    }
+  }
+};
+
+var onMouseUp = function onMouseUp(elementID, pseudoStore, handlers, ev) {
+  var getState = pseudoStore.getState,
+      dispatch = pseudoStore.dispatch;
+
+  var pos = getMousePixel(elementID, ev);
+  if (!pos) return;
+
+  if (ev.button == 0 || ev.type == 'touchend' || ev.type == 'touchcancel') {
+    // left click
+    dispatch({ type: 'SET_MOUSE_DOWN', isLeft: true, isDown: false });
+    if (handlers.leftUp != null) {
+      handlers.leftUp(getState(), dispatch, pos);
+    }
+  }
+  if (ev.button == 2) {
+    // right click
+    dispatch({ type: 'SET_MOUSE_DOWN', isLeft: false, isDown: false });
+    if (handlers.rightUp != null) {
+      handlers.rightUp(getState(), dispatch, pos);
+    }
+  }
+};
+
+// --------------------------------------------------------------------
+// UseEnhanced Effect (experimental)
+// --------------------------------------------------------------------
 // pass accessibleVals that the effect can read but won't re-run when they change
 var useEnhancedEffect = function useEnhancedEffect(effectFn, dependencies, accessibleVals) {
   var compares = dependencies.map(useCompare);
@@ -1699,12 +1877,13 @@ function usePrevious(value) {
 
 module.exports = {
   useEnhancedReducer: useEnhancedReducer,
+  useMouseHandler: useMouseHandler,
   useEnhancedEffect: useEnhancedEffect,
   useCompare: useCompare,
   usePrevious: usePrevious
 
 };
-},{"react":33}],18:[function(require,module,exports){
+},{"bens_utils":26,"react":33}],18:[function(require,module,exports){
 'use strict';
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
@@ -1741,11 +1920,15 @@ var TextField = require('./TextField.react.js');
 
 var _require = require('./hooks.js'),
     useEnhancedEffect = _require.useEnhancedEffect,
-    useEnhancedReducer = _require.useEnhancedReducer;
+    useEnhancedReducer = _require.useEnhancedReducer,
+    useMouseHandler = _require.useMouseHandler;
 
 function renderUI(root) {
   root.render(React.createElement(Main, null));
 }
+
+var CANVAS_WIDTH = 300;
+var CANVAS_HEIGHT = 300;
 
 var Main = function Main(props) {
   var _useState = useState(null),
@@ -1768,20 +1951,9 @@ var Main = function Main(props) {
       counter2 = _useEnhancedReducer2[0],
       setCounter2 = _useEnhancedReducer2[1];
 
-  // useEnhancedEffect(() => {
-  //   console.log("counter1", counter, "counter2", counter2);
-  // }, [counter], [counter2]);
-
-
   useEffect(function () {
     console.log("counter1", counter.val, "counter2", counter2.val);
   }, [counter]);
-
-  useEffect(function () {
-    var canvasWidth = fullCanvas ? window.innerWidth : 300;
-    var canvasHeight = fullCanvas ? window.innerHeight : 300;
-    render(canvasWidth, canvasHeight);
-  }, []);
 
   var _useEnhancedReducer3 = useEnhancedReducer(function (table, action) {
     if (action.type == 'ADD_NAME') {
@@ -1803,6 +1975,93 @@ var Main = function Main(props) {
       _useEnhancedReducer4 = _slicedToArray(_useEnhancedReducer3, 2),
       table = _useEnhancedReducer4[0],
       updateTable = _useEnhancedReducer4[1];
+
+  var _useEnhancedReducer5 = useEnhancedReducer(function (mouse, action) {
+    switch (action.type) {
+      case 'SET_MOUSE_DOWN':
+        {
+          var isLeft = action.isLeft,
+              isDown = action.isDown,
+              downPixel = action.downPixel;
+
+          return _extends({}, mouse, {
+            isLeftDown: isLeft ? isDown : mouse.isLeftDown,
+            isRightDown: isLeft ? mouse.isRightDown : isDown,
+            downPixel: isDown && downPixel != null ? downPixel : mouse.downPixel
+          });
+        }
+      case 'SET_MOUSE_POS':
+        {
+          var curPixel = action.curPixel;
+
+          return _extends({}, mouse, {
+            prevPixel: _extends({}, mouse.curPixel),
+            curPixel: curPixel
+          });
+        }
+      case 'ADD_LINE':
+        {
+          return _extends({}, mouse, {
+            lines: [].concat(_toConsumableArray(mouse.lines), [action.line])
+          });
+        }
+    }
+    return mouse;
+  }, {
+    isLeftDown: false,
+    isRightDown: false,
+    downPixel: { x: 0, y: 0 },
+    prevPixel: { x: 0, y: 0 },
+    curPixel: { x: 0, y: 0 },
+
+    canvasSize: { width: CANVAS_WIDTH, height: CANVAS_HEIGHT },
+    lines: [],
+    prevInteractPos: null
+  }),
+      _useEnhancedReducer6 = _slicedToArray(_useEnhancedReducer5, 3),
+      mouse = _useEnhancedReducer6[0],
+      mouseDispatch = _useEnhancedReducer6[1],
+      getMouseState = _useEnhancedReducer6[2];
+
+  var div = function div(pos, size) {
+    return { x: pos.x / size.width, y: pos.y / size.height };
+  };
+
+  useMouseHandler("canvas", { dispatch: mouseDispatch, getState: getMouseState }, {
+    leftDown: function leftDown(state, dispatch, pos) {
+      console.log("click", pos);
+    },
+    mouseMove: function mouseMove(state, dispatch, gridPos) {
+      if (!state.isLeftDown) return;
+      dispatch({ inMove: true });
+
+      var canvasSize = state.canvasSize;
+
+      if (state.prevInteractPos) {
+        var prevPos = state.prevInteractPos;
+        dispatch({ type: 'ADD_LINE',
+          line: {
+            start: div(prevPos, canvasSize),
+            end: div(gridPos, canvasSize),
+            color: 'red'
+          }
+        });
+        dispatch({ prevInteractPos: gridPos });
+      } else {
+        dispatch({ prevInteractPos: gridPos });
+      }
+    },
+    leftUp: function leftUp(state, dispatch, gridPos) {
+      dispatch({ inMove: false });
+      dispatch({ prevInteractPos: null });
+    }
+  });
+
+  useEffect(function () {
+    var canvasWidth = fullCanvas ? window.innerWidth : CANVAS_WIDTH;
+    var canvasHeight = fullCanvas ? window.innerHeight : CANVAS_HEIGHT;
+    render(canvasWidth, canvasHeight, mouse.lines);
+  }, [mouse.lines]);
 
   return React.createElement(
     'div',
@@ -1868,10 +2127,14 @@ var Main = function Main(props) {
         }
       },
       React.createElement(Canvas, {
-        width: 300,
-        height: 300,
+        width: CANVAS_WIDTH,
+        height: CANVAS_HEIGHT,
         useFullScreen: fullCanvas,
-        onResize: render
+        onResize: function onResize() {
+          var canvasWidth = fullCanvas ? window.innerWidth : CANVAS_WIDTH;
+          var canvasHeight = fullCanvas ? window.innerHeight : CANVAS_HEIGHT;
+          render(canvasWidth, canvasHeight, mouse.lines);
+        }
       }),
       React.createElement(Table, {
         style: { paddingTop: '3rem', fontSize: 19 },
@@ -1962,8 +2225,11 @@ var grid = {
   width: 500,
   height: 500
 };
+var mult = function mult(pos, size) {
+  return { x: pos.x * size.width, y: pos.y * size.height };
+};
 
-var render = function render(canvasWidth, canvasHeight) {
+var render = function render(canvasWidth, canvasHeight, lines) {
   var cvs = document.getElementById('canvas');
   var ctx = cvs.getContext('2d');
 
@@ -1976,6 +2242,42 @@ var render = function render(canvasWidth, canvasHeight) {
   ctx.fillRect(0, 0, grid.width, grid.height);
   ctx.fillStyle = 'steelblue';
   ctx.fillRect(25, 25, 250, 400);
+
+  ctx.lineWidth = 4;
+
+  ctx.beginPath();
+  var _iteratorNormalCompletion = true;
+  var _didIteratorError = false;
+  var _iteratorError = undefined;
+
+  try {
+    for (var _iterator = lines[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+      var line = _step.value;
+
+      var start = mult(line.start, grid);
+      var end = mult(line.end, grid);
+      ctx.strokeStyle = line.color;
+      ctx.moveTo(start.x, start.y);
+      ctx.lineTo(end.x, end.y);
+      ctx.stroke();
+    }
+  } catch (err) {
+    _didIteratorError = true;
+    _iteratorError = err;
+  } finally {
+    try {
+      if (!_iteratorNormalCompletion && _iterator.return) {
+        _iterator.return();
+      }
+    } finally {
+      if (_didIteratorError) {
+        throw _iteratorError;
+      }
+    }
+  }
+
+  ctx.closePath();
+
   ctx.restore();
 };
 
