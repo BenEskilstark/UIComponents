@@ -8,6 +8,7 @@ const Button = require('./Button.react.js');
 const Canvas = require('./Canvas.react.js');
 const Checkbox = require('./Checkbox.react.js');
 const Divider = require('./Divider.react.js');
+const DragArea = require('./DragArea.react.js');
 const Dropdown = require('./Dropdown.react.js');
 const Indicator = require('./Indicator.react.js');
 const InfoCard = require('./InfoCard.react.js');
@@ -155,6 +156,12 @@ const Main = (props) => {
     render(canvasWidth, canvasHeight, mouse.lines);
   }, [mouse.lines]);
 
+  const [draggables, setDraggables] = useState([
+    <Draggable id={"drag3"} key={"drag3"} style={{top: 300, left: 250}} />,
+    <Draggable id={"drag4"} key={"drag4"} style={{top: 350, left: 150}} />,
+    <Draggable id={"drag5"} key={"drag5"} style={{top: 150, left: 150}} />
+  ]);
+
   return (
     <div>
       {modal}
@@ -202,7 +209,8 @@ const Main = (props) => {
       </div>
       <div
         style={{
-         display: 'flex',
+          display: 'flex',
+          marginTop: 50,
         }}
       >
         <Canvas
@@ -243,6 +251,40 @@ const Main = (props) => {
           }}
         />
       </div>
+      <DragArea
+        snapX={100}
+        snapY={100}
+        isDropAllowed={(id, position) => {
+          return true;
+        }}
+        onDrop={(id, position) => {
+          console.log(id, "dropped at", position);
+        }}
+        style={{
+          position: 'relative',
+          width: 400, height: 400,
+          border: '1px solid black',
+        }}
+      >
+        {draggables}
+      </DragArea>
+    </div>
+  );
+};
+
+const Draggable = (props) => {
+  return (
+    <div
+      id={props.id}
+      style={{
+        position: 'absolute',
+        width: 100, height: 100,
+        top: 200, left: 250, textAlign: 'center',
+        backgroundColor: 'green', borderRadius: '5%',
+        ...(props.style || {})
+      }}
+    >
+      {props.id}
     </div>
   );
 };

@@ -49,53 +49,51 @@ const useEnhancedReducer = (reducer, initState, initializer) => {
 // };
 const useMouseHandler = (elementID, pseudoStore, handlers, dependencies) => {
   useEffect(() => {
-    if (handlers.mouseMove) {
-      document.onmousemove = throttle(onMove, [elementID, pseudoStore, handlers], 12);
-      document.ontouchmove = (ev) => {
-        if (ev.target.id === state.streamID + '_canvas') {
-          ev.preventDefault();
-        }
-        onMove(elementID, pseudoStore, handlers, ev);
+    const mvFn = throttle(onMove, [elementID, pseudoStore, handlers], 12);
+    const touchMvFn = (ev) => {
+      if (ev.target.id === state.streamID + '_canvas') {
+        ev.preventDefault();
       }
-    } else {
-      document.onmousemove = null;
-      document.ontouchmove = null;
-    }
-    document.ontouchstart = (ev) => {
+      onMove(elementID, pseudoStore, handlers, ev);
+    };
+
+    const mouseDownFn = (ev) => {
       onMouseDown(elementID, pseudoStore, handlers, ev);
     }
-    document.ontouchend = (ev) => {
+    const mouseUpFn = (ev) => {
       onMouseUp(elementID, pseudoStore, handlers, ev);
-    }
-    document.ontouchcancel = (ev) => {
-      onMouseUp(elementID, pseudoStore, handlers, ev);
-    }
-    document.onmousedown = (ev) => {
-      onMouseDown(elementID, pseudoStore, handlers, ev);
-    }
-    document.onmouseup = (ev) => {
-      onMouseUp(elementID, pseudoStore, handlers, ev);
-    }
-    if (handlers.scroll) {
-      let scrollLocked = false;
-      document.onwheel = (ev) => {
-        if (!scrollLocked) {
-          onScroll(elementID, pseudoStore, handlers, ev);
-          scrollLocked = true;
-          setTimeout(() => {scrollLocked = false}, 150);
-        }
-      }
     }
 
+    let scrollLocked = false;
+    const scrollFn = (ev) => {
+      if (!scrollLocked) {
+        onScroll(elementID, pseudoStore, handlers, ev);
+        scrollLocked = true;
+        setTimeout(() => {scrollLocked = false}, 150);
+      }
+    }
+    if (handlers.scroll) {
+      window.addEventListener("scroll", scrollFn);
+    }
+    if (handlers.mouseMove) {
+      window.addEventListener("mousemove", mvFn);
+      window.addEventListener("touchmove", touchMvFn);
+    }
+    window.addEventListener("mousedown", mouseDownFn);
+    window.addEventListener("mouseup", mouseUpFn);
+    window.addEventListener("touchstart", mouseDownFn);
+    window.addEventListener("touchend", mouseUpFn);
+    window.addEventListener("touchcancel", mouseUpFn);
+
     return () => {
-      document.onmousemove = null;
-      document.ontouchmove = null;
-      document.ontouchstart = null;
-      document.ontouchend = null;
-      document.ontouchcancel = null;
-      document.onmousedown = null;
-      document.onmouseup = null;
-      document.onwheel = null;
+      window.removeEventListener("scroll", scrollFn);
+      window.removeEventListener("mousemove", mvFn);
+      window.removeEventListener("touchmove", touchMvFn);
+      window.removeEventListener("mousedown", mouseDownFn);
+      window.removeEventListener("mouseup", mouseUpFn);
+      window.removeEventListener("touchstart", mouseDownFn);
+      window.removeEventListener("touchend", mouseUpFn);
+      window.removeEventListener("touchcancel", mouseUpFn);
     }
   }, dependencies || []);
 }
@@ -195,7 +193,40 @@ const onMouseUp = (elementID, pseudoStore, handlers, ev) => {
   }
 }
 
+const mouseReducer = (mouse, action) => {
+  if (mouse == undefined) {
+    mouse = {
+      isLeftDown: false,
+      isRightDown: false,
+      downPixel: {x: 0, y: 0},
+      prevPixel: {x: 0, y: 0},
+      curPixel: {x: 0, y: 0},
 
+      prevInteractPos: null,
+    };
+  }
+
+  switch (action.type) {
+    case 'SET_MOUSE_DOWN': {
+      const {isLeft, isDown, downPixel} = action;
+      return {
+        ...mouse,
+        isLeftDown: isLeft ? isDown : mouse.isLeftDown,
+        isRightDown: isLeft ? mouse.isRightDown : isDown,
+        downPixel: isDown && downPixel != null ? downPixel : mouse.downPixel,
+      };
+    }
+    case 'SET_MOUSE_POS': {
+      const {curPixel} = action;
+      return {
+        ...mouse,
+        prevPixel: {...mouse.curPixel},
+        curPixel,
+      };
+    }
+  }
+  return mouse;
+};
 
 
 // --------------------------------------------------------------------
@@ -230,6 +261,7 @@ function usePrevious(value) {
 module.exports = {
   useEnhancedReducer,
   useMouseHandler,
+  mouseReducer,
   useEnhancedEffect,
   useCompare,
   usePrevious,

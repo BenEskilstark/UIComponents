@@ -50,55 +50,53 @@ var useEnhancedReducer = function useEnhancedReducer(reducer, initState, initial
 // };
 var useMouseHandler = function useMouseHandler(elementID, pseudoStore, handlers, dependencies) {
   useEffect(function () {
-    if (handlers.mouseMove) {
-      document.onmousemove = throttle(onMove, [elementID, pseudoStore, handlers], 12);
-      document.ontouchmove = function (ev) {
-        if (ev.target.id === state.streamID + '_canvas') {
-          ev.preventDefault();
-        }
-        onMove(elementID, pseudoStore, handlers, ev);
-      };
-    } else {
-      document.onmousemove = null;
-      document.ontouchmove = null;
-    }
-    document.ontouchstart = function (ev) {
+    var mvFn = throttle(onMove, [elementID, pseudoStore, handlers], 12);
+    var touchMvFn = function touchMvFn(ev) {
+      if (ev.target.id === state.streamID + '_canvas') {
+        ev.preventDefault();
+      }
+      onMove(elementID, pseudoStore, handlers, ev);
+    };
+
+    var mouseDownFn = function mouseDownFn(ev) {
       onMouseDown(elementID, pseudoStore, handlers, ev);
     };
-    document.ontouchend = function (ev) {
+    var mouseUpFn = function mouseUpFn(ev) {
       onMouseUp(elementID, pseudoStore, handlers, ev);
     };
-    document.ontouchcancel = function (ev) {
-      onMouseUp(elementID, pseudoStore, handlers, ev);
-    };
-    document.onmousedown = function (ev) {
-      onMouseDown(elementID, pseudoStore, handlers, ev);
-    };
-    document.onmouseup = function (ev) {
-      onMouseUp(elementID, pseudoStore, handlers, ev);
+
+    var scrollLocked = false;
+    var scrollFn = function scrollFn(ev) {
+      if (!scrollLocked) {
+        onScroll(elementID, pseudoStore, handlers, ev);
+        scrollLocked = true;
+        setTimeout(function () {
+          scrollLocked = false;
+        }, 150);
+      }
     };
     if (handlers.scroll) {
-      var scrollLocked = false;
-      document.onwheel = function (ev) {
-        if (!scrollLocked) {
-          onScroll(elementID, pseudoStore, handlers, ev);
-          scrollLocked = true;
-          setTimeout(function () {
-            scrollLocked = false;
-          }, 150);
-        }
-      };
+      window.addEventListener("scroll", scrollFn);
     }
+    if (handlers.mouseMove) {
+      window.addEventListener("mousemove", mvFn);
+      window.addEventListener("touchmove", touchMvFn);
+    }
+    window.addEventListener("mousedown", mouseDownFn);
+    window.addEventListener("mouseup", mouseUpFn);
+    window.addEventListener("touchstart", mouseDownFn);
+    window.addEventListener("touchend", mouseUpFn);
+    window.addEventListener("touchcancel", mouseUpFn);
 
     return function () {
-      document.onmousemove = null;
-      document.ontouchmove = null;
-      document.ontouchstart = null;
-      document.ontouchend = null;
-      document.ontouchcancel = null;
-      document.onmousedown = null;
-      document.onmouseup = null;
-      document.onwheel = null;
+      window.removeEventListener("scroll", scrollFn);
+      window.removeEventListener("mousemove", mvFn);
+      window.removeEventListener("touchmove", touchMvFn);
+      window.removeEventListener("mousedown", mouseDownFn);
+      window.removeEventListener("mouseup", mouseUpFn);
+      window.removeEventListener("touchstart", mouseDownFn);
+      window.removeEventListener("touchend", mouseUpFn);
+      window.removeEventListener("touchcancel", mouseUpFn);
     };
   }, dependencies || []);
 };
@@ -209,6 +207,45 @@ var onMouseUp = function onMouseUp(elementID, pseudoStore, handlers, ev) {
   }
 };
 
+var mouseReducer = function mouseReducer(mouse, action) {
+  if (mouse == undefined) {
+    mouse = {
+      isLeftDown: false,
+      isRightDown: false,
+      downPixel: { x: 0, y: 0 },
+      prevPixel: { x: 0, y: 0 },
+      curPixel: { x: 0, y: 0 },
+
+      prevInteractPos: null
+    };
+  }
+
+  switch (action.type) {
+    case 'SET_MOUSE_DOWN':
+      {
+        var isLeft = action.isLeft,
+            isDown = action.isDown,
+            downPixel = action.downPixel;
+
+        return _extends({}, mouse, {
+          isLeftDown: isLeft ? isDown : mouse.isLeftDown,
+          isRightDown: isLeft ? mouse.isRightDown : isDown,
+          downPixel: isDown && downPixel != null ? downPixel : mouse.downPixel
+        });
+      }
+    case 'SET_MOUSE_POS':
+      {
+        var curPixel = action.curPixel;
+
+        return _extends({}, mouse, {
+          prevPixel: _extends({}, mouse.curPixel),
+          curPixel: curPixel
+        });
+      }
+  }
+  return mouse;
+};
+
 // --------------------------------------------------------------------
 // UseEnhanced Effect (experimental)
 // --------------------------------------------------------------------
@@ -241,6 +278,7 @@ function usePrevious(value) {
 module.exports = {
   useEnhancedReducer: useEnhancedReducer,
   useMouseHandler: useMouseHandler,
+  mouseReducer: mouseReducer,
   useEnhancedEffect: useEnhancedEffect,
   useCompare: useCompare,
   usePrevious: usePrevious

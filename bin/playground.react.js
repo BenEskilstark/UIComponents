@@ -19,6 +19,7 @@ var Button = require('./Button.react.js');
 var Canvas = require('./Canvas.react.js');
 var Checkbox = require('./Checkbox.react.js');
 var Divider = require('./Divider.react.js');
+var DragArea = require('./DragArea.react.js');
 var Dropdown = require('./Dropdown.react.js');
 var Indicator = require('./Indicator.react.js');
 var InfoCard = require('./InfoCard.react.js');
@@ -177,6 +178,11 @@ var Main = function Main(props) {
     render(canvasWidth, canvasHeight, mouse.lines);
   }, [mouse.lines]);
 
+  var _useState7 = useState([React.createElement(Draggable, { id: "drag3", key: "drag3", style: { top: 300, left: 250 } }), React.createElement(Draggable, { id: "drag4", key: "drag4", style: { top: 350, left: 150 } }), React.createElement(Draggable, { id: "drag5", key: "drag5", style: { top: 150, left: 150 } })]),
+      _useState8 = _slicedToArray(_useState7, 2),
+      draggables = _useState8[0],
+      setDraggables = _useState8[1];
+
   return React.createElement(
     'div',
     null,
@@ -237,7 +243,8 @@ var Main = function Main(props) {
       'div',
       {
         style: {
-          display: 'flex'
+          display: 'flex',
+          marginTop: 50
         }
       },
       React.createElement(Canvas, {
@@ -279,7 +286,42 @@ var Main = function Main(props) {
           return setCounter2({ val: v });
         }
       })
+    ),
+    React.createElement(
+      DragArea,
+      {
+        snapX: 100,
+        snapY: 100,
+        isDropAllowed: function isDropAllowed(id, position) {
+          return true;
+        },
+        onDrop: function onDrop(id, position) {
+          console.log(id, "dropped at", position);
+        },
+        style: {
+          position: 'relative',
+          width: 400, height: 400,
+          border: '1px solid black'
+        }
+      },
+      draggables
     )
+  );
+};
+
+var Draggable = function Draggable(props) {
+  return React.createElement(
+    'div',
+    {
+      id: props.id,
+      style: _extends({
+        position: 'absolute',
+        width: 100, height: 100,
+        top: 200, left: 250, textAlign: 'center',
+        backgroundColor: 'green', borderRadius: '5%'
+      }, props.style || {})
+    },
+    props.id
   );
 };
 
