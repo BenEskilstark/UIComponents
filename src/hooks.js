@@ -63,6 +63,9 @@ const useMouseHandler = (elementID, pseudoStore, handlers, dependencies) => {
     const mouseUpFn = (ev) => {
       onMouseUp(elementID, pseudoStore, handlers, ev);
     }
+    const mouseLeaveFn = (ev) => {
+      onMouseLeave(elementID, pseudoStore, handlers, ev);
+    }
 
     let scrollLocked = false;
     const scrollFn = (ev) => {
@@ -84,6 +87,7 @@ const useMouseHandler = (elementID, pseudoStore, handlers, dependencies) => {
     window.addEventListener("touchstart", mouseDownFn);
     window.addEventListener("touchend", mouseUpFn);
     window.addEventListener("touchcancel", mouseUpFn);
+    window.addEventListener("mouseout", mouseLeaveFn);
 
     return () => {
       window.removeEventListener("scroll", scrollFn);
@@ -94,8 +98,9 @@ const useMouseHandler = (elementID, pseudoStore, handlers, dependencies) => {
       window.removeEventListener("touchstart", mouseDownFn);
       window.removeEventListener("touchend", mouseUpFn);
       window.removeEventListener("touchcancel", mouseUpFn);
+      window.removeEventListener("mouseleave", mouseLeaveFn);
     }
-  }, dependencies || []);
+  }, dependencies ?? []);
 }
 
 const getMousePixel = (elementID, ev) => {
@@ -130,6 +135,14 @@ const onScroll = (elementID, pseudoStore, handlers, ev) => {
   if (ev.target.id != elementID) return null;
   const {getState, dispatch} = pseudoStore;
   handlers.scroll(getState(), dispatch, ev.wheelDelta < 0 ? 1 : -1);
+};
+
+const onMouseLeave = (elementID, pseudoStore, handlers, ev) => {
+  if (ev.target.id != elementID) return null;
+  const {getState, dispatch} = pseudoStore;
+  if (handlers.mouseLeave) {
+    handlers.mouseLeave(getState(), dispatch);
+  }
 };
 
 const onMove = (elementID, pseudoStore, handlers, ev) => {

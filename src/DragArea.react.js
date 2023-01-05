@@ -3,16 +3,12 @@ const {
   useMouseHandler, mouseReducer,
   useEnhancedReducer,
 } = require('./hooks');
-const {subtract} = require('bens_utils').vectors;
+const {add, subtract} = require('bens_utils').vectors;
+const {clamp} = require('bens_utils').math;
 const {useEffect, useState, useMemo} = React;
 
 /**
  * TODO:
- *  - take in function for sending new position to parent
- *  - take in function for checking if drop position is allowed and sending back to start
- *    position otherwise
- *  - don't allow dragging outside parent
- *  - make sure that when children are added/removed that dragging works as expected
  */
 
 /*
@@ -22,7 +18,11 @@ const {useEffect, useState, useMemo} = React;
  *    snapX: number, // nearest multiple to snap to
  *    snapY: number,
  *    isDropAllowed: (id, position) => boolean,
- *    onDrop
+ *    onDrop: (id, position) => void,
+ *  Children Props:
+ *    id: string,
+ *    disabled: optional boolean, // not draggable
+ *    style: {top, left, width, height}
  */
 
 const DragArea = (props) => {
@@ -30,11 +30,10 @@ const DragArea = (props) => {
 
   // check for new draggables or removed draggables
   useEffect(() => {
-    console.log(props.children);
     dispatch({draggables: props.children.map(c => {
       const elem = document.getElementById(c.props.id);
       if (!elem) return {id: c.props.id};
-      return {id: c.props.id, style: {
+      return {id: c.props.id, disabled: c.props.disabled, style: {
         top: parseInt(elem.style.top), left: parseInt(elem.style.left),
         width: parseInt(elem.style.width), height: parseInt(elem.style.height),
       }};
@@ -94,14 +93,26 @@ const DragArea = (props) => {
         }
         if (!draggable) return;
 
+        const nextPosition = clampToArea(
+          id, subtract(pixel, state.selectedOffset), draggable.style,
+        );
         dispatch({
           type: 'SET_DRAGGABLE', id: state.selectedID,
-          position: subtract(pixel, state.selectedOffset),
+          position: nextPosition,
         });
+      },
+      mouseLeave: (state, dispatch) => {
+        if (!state.selectedID) return;
+        dispatch({
+          type: 'SET_DRAGGABLE', id: state.selectedID,
+          position: subtract(state.mouse.downPixel, state.selectedOffset),
+        });
+        dispatch({selectedID: null, selectedOffset: null});
+        dispatch({type: 'SET_MOUSE_DOWN', isDown: false, isLeft: true});
       },
       leftDown: (state, dispatch, pixel) => {
         for (const draggable of state.draggables) {
-          if (clickedInElem(pixel, draggable.style)) {
+          if (clickedInElem(pixel, draggable.style) && !draggable.disabled) {
             const selectedOffset = {
               x: pixel.x - draggable.style.left,
               y: pixel.y - draggable.style.top,
@@ -120,14 +131,17 @@ const DragArea = (props) => {
 
         let dropPosition = pixel;
         if (draggable && (props.snapX || props.snapY)) {
-          let snapX = props.snapX || 1;
-          let snapY = props.snapY || 1;
+          let snapX = props.snapX ?? 1;
+          let snapY = props.snapY ?? 1;
           const x = Math.round(draggable.style.left / snapX) * snapX;
           const y = Math.round(draggable.style.top / snapY) * snapY;
           dropPosition = {x, y};
         }
-        if (props.isDropAllowed && !props.isDropAllowed(id, dropPosition)) {
-          // TODO: rollback to initial position
+        if (props.isDropAllowed && !props.isDropAllowed(state.selectedID, dropPosition)) {
+          dispatch({
+            type: 'SET_DRAGGABLE', id: state.selectedID,
+            position: subtract(state.mouse.downPixel, state.selectedOffset),
+          });
         } else {
           dispatch({
             type: 'SET_DRAGGABLE', id: state.selectedID,
@@ -154,6 +168,8 @@ const DragArea = (props) => {
     <div
       id={id}
       style={{
+        cursor: state?.mouse?.isLeftDown && state.selectedID ? 'grabbing' : 'grab',
+        position: 'relative',
         ...(props.style ? props.style : {}),
       }}
     >
@@ -167,6 +183,26 @@ const clickedInElem = (pixel, style) => {
     pixel.x >= style.left && pixel.x <= style.left + style.width &&
     pixel.y >= style.top && pixel.y <= style.top + style.height
   );
+}
+
+const clampToArea = (dragAreaID, pixel, style) => {
+  const dragArea = document.getElementById(dragAreaID);
+  const {width, height} = dragArea.getBoundingClientRect();
+  return {
+    x: clamp(pixel.x, 0, width - style.width),
+    y: clamp(pixel.y, 0, height - style.height),
+  };
+}
+
+const mouseInsideDragArea = (dragAreaID, pixel) => {
+  const dragArea = document.getElementById(dragAreaID);
+  const {width, height} = dragArea.getBoundingClientRect();
+  const result = (
+    pixel.x >= 0 && pixel.x <= width &&
+    pixel.y >= 0 && pixel.y <= height
+  );
+  console.log("in drag area", result);
+  return result;
 }
 
 module.exports = DragArea;

@@ -1,6 +1,4 @@
-'use strict';
-
-var React = require('react');
+const React = require('react');
 
 /**
  * Props:
@@ -9,32 +7,26 @@ var React = require('react');
  * selected: string // which option is selected
  * onChange: (string) => void
  */
-var Dropdown = function Dropdown(props) {
-  var options = props.options,
-      selected = props.selected,
-      _onChange = props.onChange,
-      displayOptions = props.displayOptions;
-
-  var optionTags = options.map(function (option, i) {
-    var label = displayOptions != null && displayOptions[i] != null ? displayOptions[i] : option;
-    return React.createElement(
-      'option',
-      { key: 'option_' + option, value: option },
-      label
-    );
+const Dropdown = function (props) {
+  const {
+    options,
+    selected,
+    onChange,
+    displayOptions
+  } = props;
+  const optionTags = options.map((option, i) => {
+    const label = displayOptions != null && displayOptions[i] != null ? displayOptions[i] : option;
+    return /*#__PURE__*/React.createElement("option", {
+      key: 'option_' + option,
+      value: option
+    }, label);
   });
-
-  return React.createElement(
-    'select',
-    {
-      onChange: function onChange(ev) {
-        var val = ev.target.value;
-        _onChange(val);
-      },
-      value: selected
+  return /*#__PURE__*/React.createElement("select", {
+    onChange: ev => {
+      const val = ev.target.value;
+      onChange(val);
     },
-    optionTags
-  );
+    value: selected
+  }, optionTags);
 };
-
 module.exports = Dropdown;

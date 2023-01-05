@@ -8,7 +8,7 @@ const React = require('react');
  * selected: string // which option is selected
  * onChange: (string) => void
  */
-const Dropdown = function(props: Props) {
+const Dropdown = function(props) {
   const {options, selected, onChange, displayOptions} = props;
   const optionTags = options.map((option, i) => {
     const label = displayOptions != null && displayOptions[i] != null

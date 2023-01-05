@@ -1,19 +1,11 @@
-'use strict';
-
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
-
-function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
-var React = require('react');
-var Button = require('./Button.react');
-var Dropdown = require('./Dropdown.react');
-var useEffect = React.useEffect,
-    useMemo = React.useMemo,
-    useState = React.useState;
+const React = require('react');
+const Button = require('./Button.react');
+const Dropdown = require('./Dropdown.react');
+const {
+  useEffect,
+  useMemo,
+  useState
+} = React;
 
 /**
 type ColumnName = string;
@@ -32,250 +24,136 @@ type Props = {
 };
 */
 
-var tableStyle = {
+const tableStyle = {
   backgroundColor: '#faf8ef',
   width: '100%',
   borderRadius: 8
 };
-
 function Table(props) {
-  var columns = props.columns,
-      rows = props.rows,
-      hideColSorts = props.hideColSorts;
-
-  var colNames = [];
+  const {
+    columns,
+    rows,
+    hideColSorts
+  } = props;
+  let colNames = [];
   if (props.columns) {
     colNames = Object.keys(columns);
-  } else {}
-  // TODO: infer column names if not provided
-
+  } else {
+    // TODO: infer column names if not provided
+  }
 
   // sort by column
-
-  var _useState = useState({ by: 'ASC', name: null }),
-      _useState2 = _slicedToArray(_useState, 2),
-      sortByColumn = _useState2[0],
-      setSortByColumn = _useState2[1];
-
-  useEffect(function () {
+  const [sortByColumn, setSortByColumn] = useState({
+    by: 'ASC',
+    name: null
+  });
+  useEffect(() => {
     if (!colNames.includes(sortByColumn.name)) {
-      setSortByColumn({ by: 'ASC', name: null });
+      setSortByColumn({
+        by: 'ASC',
+        name: null
+      });
     }
   }, [columns]);
 
   // filter by column
-  var computeSelectedByColumn = function computeSelectedByColumn(colNames) {
-    var selected = {};
-    var _iteratorNormalCompletion = true;
-    var _didIteratorError = false;
-    var _iteratorError = undefined;
-
-    try {
-      for (var _iterator = colNames[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-        var col = _step.value;
-
-        if (columns[col].filterable) {
-          selected[col] = '*';
-        }
-      }
-    } catch (err) {
-      _didIteratorError = true;
-      _iteratorError = err;
-    } finally {
-      try {
-        if (!_iteratorNormalCompletion && _iterator.return) {
-          _iterator.return();
-        }
-      } finally {
-        if (_didIteratorError) {
-          throw _iteratorError;
-        }
+  const computeSelectedByColumn = colNames => {
+    const selected = {};
+    for (const col of colNames) {
+      if (columns[col].filterable) {
+        selected[col] = '*';
       }
     }
-
     return selected;
   };
-
-  var _useState3 = useState(computeSelectedByColumn(colNames)),
-      _useState4 = _slicedToArray(_useState3, 2),
-      selectedByColumn = _useState4[0],
-      setSelectedByColumn = _useState4[1];
-
-  useEffect(function () {
-    var selected = {};
-    var _iteratorNormalCompletion2 = true;
-    var _didIteratorError2 = false;
-    var _iteratorError2 = undefined;
-
-    try {
-      for (var _iterator2 = colNames[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-        var col = _step2.value;
-
-        if (columns[col].filterable) {
-          selected[col] = selectedByColumn[col] || '*';
-        }
-      }
-    } catch (err) {
-      _didIteratorError2 = true;
-      _iteratorError2 = err;
-    } finally {
-      try {
-        if (!_iteratorNormalCompletion2 && _iterator2.return) {
-          _iterator2.return();
-        }
-      } finally {
-        if (_didIteratorError2) {
-          throw _iteratorError2;
-        }
+  const [selectedByColumn, setSelectedByColumn] = useState(computeSelectedByColumn(colNames));
+  useEffect(() => {
+    const selected = {};
+    for (const col of colNames) {
+      if (columns[col].filterable) {
+        selected[col] = selectedByColumn[col] || '*';
       }
     }
-
     setSelectedByColumn(selected);
   }, [columns]);
-
-  var columnOptions = useMemo(function () {
-    var filters = {};
-    var _iteratorNormalCompletion3 = true;
-    var _didIteratorError3 = false;
-    var _iteratorError3 = undefined;
-
-    try {
-      for (var _iterator3 = colNames[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-        var col = _step3.value;
-
-        if (columns[col].filterable) {
-          filters[col] = ['*'];
-          var _iteratorNormalCompletion4 = true;
-          var _didIteratorError4 = false;
-          var _iteratorError4 = undefined;
-
-          try {
-            for (var _iterator4 = rows[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-              var row = _step4.value;
-
-              if (!filters[col].includes(row[col])) {
-                filters[col].push(row[col]);
-              }
-            }
-          } catch (err) {
-            _didIteratorError4 = true;
-            _iteratorError4 = err;
-          } finally {
-            try {
-              if (!_iteratorNormalCompletion4 && _iterator4.return) {
-                _iterator4.return();
-              }
-            } finally {
-              if (_didIteratorError4) {
-                throw _iteratorError4;
-              }
-            }
+  const columnOptions = useMemo(() => {
+    const filters = {};
+    for (const col of colNames) {
+      if (columns[col].filterable) {
+        filters[col] = ['*'];
+        for (const row of rows) {
+          if (!filters[col].includes(row[col])) {
+            filters[col].push(row[col]);
           }
         }
       }
-    } catch (err) {
-      _didIteratorError3 = true;
-      _iteratorError3 = err;
-    } finally {
-      try {
-        if (!_iteratorNormalCompletion3 && _iterator3.return) {
-          _iterator3.return();
-        }
-      } finally {
-        if (_didIteratorError3) {
-          throw _iteratorError3;
-        }
-      }
     }
-
     return filters;
   }, [columns]);
-
-  var headers = colNames.map(function (col) {
-    var filterDropdown = null;
+  const headers = colNames.map(col => {
+    let filterDropdown = null;
     if (columns[col].filterable) {
-      filterDropdown = React.createElement(Dropdown, {
+      filterDropdown = /*#__PURE__*/React.createElement(Dropdown, {
         options: columnOptions[col],
         selected: selectedByColumn[col] ? selectedByColumn[col].selected : '*',
-        onChange: function onChange(n) {
-          setSelectedByColumn(_extends({}, selectedByColumn, _defineProperty({}, col, n)));
+        onChange: n => {
+          setSelectedByColumn({
+            ...selectedByColumn,
+            [col]: n
+          });
         }
       });
     }
-    return React.createElement(
-      'th',
-      { key: 'header_' + col },
-      columns[col].displayName || col,
-      hideColSorts ? null : React.createElement(
-        'div',
-        { style: { fontWeight: 'normal' } },
-        'Sort:',
-        React.createElement(Button, {
-          label: '/\\',
-          fontSize: 12,
-          onClick: function onClick() {
-            setSortByColumn({ by: 'ASC', name: col });
-          }
-        }),
-        React.createElement(Button, {
-          label: '\\/',
-          fontSize: 12,
-          onClick: function onClick() {
-            setSortByColumn({ by: 'DESC', name: col });
-          }
-        }),
-        filterDropdown
-      )
-    );
+    return /*#__PURE__*/React.createElement("th", {
+      key: 'header_' + col
+    }, columns[col].displayName || col, hideColSorts ? null : /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontWeight: 'normal'
+      }
+    }, "Sort:", /*#__PURE__*/React.createElement(Button, {
+      label: "/\\\\",
+      fontSize: 12,
+      onClick: () => {
+        setSortByColumn({
+          by: 'ASC',
+          name: col
+        });
+      }
+    }), /*#__PURE__*/React.createElement(Button, {
+      label: "\\/",
+      fontSize: 12,
+      onClick: () => {
+        setSortByColumn({
+          by: 'DESC',
+          name: col
+        });
+      }
+    }), filterDropdown));
   });
-
-  var filteredRows = useMemo(function () {
-    var filtered = [];
-    var _iteratorNormalCompletion5 = true;
-    var _didIteratorError5 = false;
-    var _iteratorError5 = undefined;
-
-    try {
-      for (var _iterator5 = rows[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
-        var row = _step5.value;
-
-        var addRow = true;
-        for (var col in selectedByColumn) {
-          if (row[col] != selectedByColumn[col] && selectedByColumn[col] != '*') {
-            addRow = false;
-            break;
-          }
-        }
-        if (addRow) {
-          filtered.push(row);
+  const filteredRows = useMemo(() => {
+    const filtered = [];
+    for (const row of rows) {
+      let addRow = true;
+      for (const col in selectedByColumn) {
+        if (row[col] != selectedByColumn[col] && selectedByColumn[col] != '*') {
+          addRow = false;
+          break;
         }
       }
-    } catch (err) {
-      _didIteratorError5 = true;
-      _iteratorError5 = err;
-    } finally {
-      try {
-        if (!_iteratorNormalCompletion5 && _iterator5.return) {
-          _iterator5.return();
-        }
-      } finally {
-        if (_didIteratorError5) {
-          throw _iteratorError5;
-        }
+      if (addRow) {
+        filtered.push(row);
       }
     }
-
     return filtered;
   }, [rows, selectedByColumn, columnOptions]);
-
-  var sortedRows = useMemo(function () {
+  const sortedRows = useMemo(() => {
     if (sortByColumn.name == null) return filteredRows;
     if (columns[sortByColumn.name] == null) return filteredRows;
-    var sorted = [];
+    let sorted = [];
     if (columns[sortByColumn.name].sortFn != null) {
-      sorted = [].concat(_toConsumableArray(filteredRows)).sort(columns[sortByColumn.name].sortFn);
+      sorted = [...filteredRows].sort(columns[sortByColumn.name].sortFn);
     } else {
-      sorted = [].concat(_toConsumableArray(filteredRows)).sort(function (rowA, rowB) {
+      sorted = [...filteredRows].sort((rowA, rowB) => {
         if (rowA[sortByColumn.name] < rowB[sortByColumn.name]) {
           return -1;
         }
@@ -287,53 +165,22 @@ function Table(props) {
     }
     return sorted;
   }, [sortByColumn, filteredRows]);
-
-  var rowHTML = sortedRows.map(function (row, i) {
-    var rowData = colNames.map(function (col) {
-      var dataCell = columns[col].maxWidth ? ("" + row[col]).slice(0, columns[col].maxWidth) : row[col];
-      return React.createElement(
-        'td',
-        { key: 'cell_' + col + row[col] },
-        dataCell
-      );
+  const rowHTML = sortedRows.map((row, i) => {
+    const rowData = colNames.map(col => {
+      const dataCell = columns[col].maxWidth ? ("" + row[col]).slice(0, columns[col].maxWidth) : row[col];
+      return /*#__PURE__*/React.createElement("td", {
+        key: 'cell_' + col + row[col]
+      }, dataCell);
     });
-    return React.createElement(
-      'tr',
-      { key: 'row_' + i },
-      rowData
-    );
+    return /*#__PURE__*/React.createElement("tr", {
+      key: 'row_' + i
+    }, rowData);
   });
-
-  return React.createElement(
-    'div',
-    { style: _extends({}, tableStyle, props.style) },
-    props.hideNumRows ? null : React.createElement(
-      'span',
-      null,
-      'Total Rows: ',
-      rows.length,
-      ' Rows Displayed: ',
-      filteredRows.length
-    ),
-    React.createElement(
-      'table',
-      null,
-      React.createElement(
-        'thead',
-        null,
-        React.createElement(
-          'tr',
-          null,
-          headers
-        )
-      ),
-      React.createElement(
-        'tbody',
-        null,
-        rowHTML
-      )
-    )
-  );
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      ...tableStyle,
+      ...props.style
+    }
+  }, props.hideNumRows ? null : /*#__PURE__*/React.createElement("span", null, "Total Rows: ", rows.length, " Rows Displayed: ", filteredRows.length), /*#__PURE__*/React.createElement("table", null, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, headers)), /*#__PURE__*/React.createElement("tbody", null, rowHTML)));
 }
-
 module.exports = Table;

@@ -1,13 +1,11 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
-'use strict';
-
-var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
-
-var React = require('react');
-var Button = require('./Button.react');
-var useState = React.useState,
-    useEffect = React.useEffect,
-    useMemo = React.useMemo;
+const React = require('react');
+const Button = require('./Button.react');
+const {
+  useState,
+  useEffect,
+  useMemo
+} = React;
 
 /**
  * Props:
@@ -20,88 +18,166 @@ var useState = React.useState,
  *
  */
 
-var AudioWidget = function AudioWidget(props) {
-  var _useState = useState(!!props.isMuted),
-      _useState2 = _slicedToArray(_useState, 2),
-      isMuted = _useState2[0],
-      setIsMuted = _useState2[1];
-
-  var _useState3 = useState(0),
-      _useState4 = _slicedToArray(_useState3, 2),
-      playIndex = _useState4[0],
-      setPlayIndex = _useState4[1];
-
-  var playOrder = useMemo(function () {
-    var array = props.audioFiles.map(function (a, i) {
-      return i;
-    });
+const AudioWidget = props => {
+  const [isMuted, setIsMuted] = useState(!!props.isMuted);
+  const [playIndex, setPlayIndex] = useState(0);
+  const playOrder = useMemo(() => {
+    let array = props.audioFiles.map((a, i) => i);
     if (props.isShuffled) {
-      for (var i = array.length - 1; i > 0; i--) {
-        var j = Math.floor(Math.random() * (i + 1));
-        var temp = array[i];
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const temp = array[i];
         array[i] = array[j];
         array[j] = temp;
       }
       // initialOrder.sort(() => (Math.random() > 0.5) ? 1 : -1)
     }
+
     return array;
   }, [props.audioFiles]);
-
-  var widgetStyle = {
+  let widgetStyle = {
     margin: 5,
     borderRadius: 8,
     left: 5
   };
 
   // player
-  var audioPlayer = useMemo(function () {
-    var a = new Audio(props.audioFiles[playIndex].path);
+  const audioPlayer = useMemo(() => {
+    const a = new Audio(props.audioFiles[playIndex].path);
     return a;
   }, [playIndex, isMuted, props.audioFiles]);
-
-  useEffect(function () {
+  useEffect(() => {
     if (!isMuted) {
-      audioPlayer.addEventListener('loadeddata', function () {
+      audioPlayer.addEventListener('loadeddata', () => {
         audioPlayer.play();
-        setTimeout(function () {
-          return setPlayIndex((playIndex + 1) % props.audioFiles.length);
-        }, audioPlayer.duration * 1000);
+        setTimeout(() => setPlayIndex((playIndex + 1) % props.audioFiles.length), audioPlayer.duration * 1000);
       });
     }
-    return function () {
+    return () => {
       audioPlayer.pause();
     };
   }, [playIndex, isMuted, props.audioFiles, audioPlayer]);
-
-  return React.createElement(
-    'div',
-    {
-      style: props.style ? props.style : widgetStyle
-    },
-    React.createElement(Button, {
-      label: isMuted ? 'Turn Music ON' : 'Turn Music OFF',
-      onClick: function onClick() {
-        audioPlayer.pause();
-        setIsMuted(!isMuted);
-        if (props.setIsMuted) {
-          props.setIsMuted(!isMuted);
-        }
+  return /*#__PURE__*/React.createElement("div", {
+    style: props.style ? props.style : widgetStyle
+  }, /*#__PURE__*/React.createElement(Button, {
+    label: isMuted ? 'Turn Music ON' : 'Turn Music OFF',
+    onClick: () => {
+      audioPlayer.pause();
+      setIsMuted(!isMuted);
+      if (props.setIsMuted) {
+        props.setIsMuted(!isMuted);
       }
-    })
-  );
+    }
+  }));
 };
-
 module.exports = AudioWidget;
-},{"./Button.react":2,"react":34}],2:[function(require,module,exports){
-'use strict';
+},{"./Button.react":3,"react":37}],2:[function(require,module,exports){
+function _extends() { _extends = Object.assign ? Object.assign.bind() : function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
+const React = require('react');
+const DragArea = require('./DragArea.react.js');
+const {
+  useState,
+  useEffect,
+  useMemo,
+  useReducer
+} = React;
 
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+/*
+ * TODO
+ *  - call a function to make a piece move
+ *  - call a function to add/remove pieces
+ *  - pass through isDropAllowed and onDrop
+ */
 
-var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+/**
+ *  Props:
+ *    - pixelSize: {width, height}, // board size in pixels
+ *    - gridSize: {width, height}, // board size in squares
+ *    - pieces: Array<{id, position, ?size, ?disabled, sprite}>
+ *    - background: HTML, // background div
+ *    - onPieceMove: (id, position) => void, // board position
+ *    - isMoveAllowed: (id, position) => void, // board position
+ *
+ *  Props for pieces:
+ *    - sprite: see SpriteSheet.react
+ */
 
-var React = require('react');
-var useState = React.useState,
-    useEffect = React.useEffect;
+const Board = props => {
+  const id = props.id ?? "Board";
+  const {
+    pixelSize,
+    gridSize,
+    pieces
+  } = props;
+  const cellWidth = pixelSize.width / gridSize.width;
+  const cellHeight = pixelSize.height / gridSize.height;
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: 'relative'
+    }
+  }, props.background, /*#__PURE__*/React.createElement(DragArea, {
+    isDropAllowed: (id, position) => {
+      if (!props.isMoveAllowed) return true;
+      const x = Math.round(position.x / cellWidth);
+      const y = Math.round(position.y / cellHeight);
+      return props.isMoveAllowed(id, {
+        x,
+        y
+      });
+    },
+    onDrop: (id, position) => {
+      if (!props.onPieceMove) return;
+      const x = Math.round(position.x / cellWidth);
+      const y = Math.round(position.y / cellHeight);
+      props.onPieceMove(id, {
+        x,
+        y
+      });
+    },
+    id: id,
+    snapX: cellWidth,
+    snapY: cellHeight,
+    style: {
+      border: '1px solid black',
+      ...(props.style ?? {}),
+      ...pixelSize
+    }
+  }, pieces.map(p => {
+    return /*#__PURE__*/React.createElement(Piece, _extends({
+      key: p.id,
+      cellWidth: cellWidth,
+      cellHeight: cellHeight
+    }, p));
+  })));
+};
+const Piece = props => {
+  const {
+    cellWidth,
+    cellHeight
+  } = props;
+  const size = props.size ?? {
+    width: 1,
+    height: 1
+  };
+  return /*#__PURE__*/React.createElement("div", {
+    id: props.id,
+    disabled: props.disabled,
+    style: {
+      top: props.position.y * cellHeight,
+      left: props.position.x * cellWidth,
+      width: size.width * cellWidth,
+      height: size.height * cellHeight,
+      position: 'absolute'
+    }
+  }, props.sprite);
+};
+module.exports = Board;
+},{"./DragArea.react.js":8,"react":37}],3:[function(require,module,exports){
+const React = require('react');
+const {
+  useState,
+  useEffect
+} = React;
 
 // props:
 // id: ?string
@@ -113,105 +189,94 @@ var useState = React.useState,
 // style: optional Object
 
 function Button(props) {
-  var id = props.id || props.label;
-
-  var touchFn = function touchFn() {
+  const id = props.id || props.label;
+  const touchFn = () => {
     if (props.onMouseDown != null) {
       props.onMouseDown();
     } else {
       props.onClick();
     }
   };
-
-  var _useState = useState(null),
-      _useState2 = _slicedToArray(_useState, 2),
-      intervalID = _useState2[0],
-      setIntervalID = _useState2[1];
-
-  return React.createElement(
-    'button',
-    { type: 'button',
-      style: _extends({
-        touchAction: 'initial',
-        fontSize: '18px'
-      }, props.style),
-      key: id || label,
-      className: props.disabled ? 'buttonDisable' : '',
-      id: id.toUpperCase() + '_button',
-      onClick: props.disabled ? function () {} : props.onClick,
-      onTouchStart: function onTouchStart(ev) {
-        ev.preventDefault();
-        if (props.disabled) {
-          return;
-        }
-        if (intervalID) {
-          console.log("already in interval, clearing");
-          clearInterval(intervalID);
-          setIntervalID(null);
-        }
-        touchFn();
-        // HACK: if you set the right condition, allow repetive presses
-        if (false) {
-          var interval = setInterval(touchFn, 120);
-          setIntervalID(interval);
-        }
-      },
-      onTouchEnd: function onTouchEnd(ev) {
-        ev.preventDefault();
-        clearInterval(intervalID);
-        setIntervalID(null);
-        props.onMouseUp;
-      },
-      onTouchCancel: function onTouchCancel(ev) {
-        clearInterval(intervalID);
-        setIntervalID(null);
-        props.onMouseUp;
-      },
-      onTouchMove: function onTouchMove(ev) {
-        ev.preventDefault();
-      },
-      onMouseDown: props.onMouseDown,
-      onMouseUp: props.onMouseUp,
-      disabled: props.disabled
+  const [intervalID, setIntervalID] = useState(null);
+  return /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    style: {
+      touchAction: 'initial',
+      fontSize: '18px',
+      ...props.style
     },
-    props.label
-  );
+    key: id || label,
+    className: props.disabled ? 'buttonDisable' : '',
+    id: id.toUpperCase() + '_button',
+    onClick: props.disabled ? () => {} : props.onClick,
+    onTouchStart: ev => {
+      ev.preventDefault();
+      if (props.disabled) {
+        return;
+      }
+      if (intervalID) {
+        console.log("already in interval, clearing");
+        clearInterval(intervalID);
+        setIntervalID(null);
+      }
+      touchFn();
+      // HACK: if you set the right condition, allow repetive presses
+      if (false) {
+        const interval = setInterval(touchFn, 120);
+        setIntervalID(interval);
+      }
+    },
+    onTouchEnd: ev => {
+      ev.preventDefault();
+      clearInterval(intervalID);
+      setIntervalID(null);
+      props.onMouseUp;
+    },
+    onTouchCancel: ev => {
+      clearInterval(intervalID);
+      setIntervalID(null);
+      props.onMouseUp;
+    },
+    onTouchMove: ev => {
+      ev.preventDefault();
+    },
+    onMouseDown: props.onMouseDown,
+    onMouseUp: props.onMouseUp,
+    disabled: props.disabled
+  }, props.label);
 }
-
 module.exports = Button;
-},{"react":34}],3:[function(require,module,exports){
-'use strict';
-
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
-
-var React = require('react');
-var useEffect = React.useEffect,
-    useState = React.useState,
-    useMemo = React.useMemo,
-    Component = React.Component;
-
-
+},{"react":37}],4:[function(require,module,exports){
+const React = require('react');
+const {
+  useEffect,
+  useState,
+  useMemo,
+  Component
+} = React;
 function Canvas(props) {
-  var useFullScreen = props.useFullScreen,
-      width = props.width,
-      height = props.height,
-      style = props.style,
-      id = props.id,
-      onResize = props.onResize;
+  let {
+    useFullScreen,
+    // only necessary if not useFullScreen
+    width,
+    height,
+    style,
+    // style overrides
 
-  var _useState = useState(width && !useFullScreen ? width : window.innerWidth),
-      _useState2 = _slicedToArray(_useState, 2),
-      windowWidth = _useState2[0],
-      setWindowWidth = _useState2[1];
+    id,
+    // optional if you have multiple canvases on the same page
 
-  var _useState3 = useState(height && !useFullScreen ? height : window.innerHeight),
-      _useState4 = _slicedToArray(_useState3, 2),
-      windowHeight = _useState4[0],
-      setWindowHeight = _useState4[1];
+    onResize // optional function called when the canvas resizes
 
-  useEffect(function () {
+    // needed for resizing images on canvas relative to canvas size
+    // cellSize, // size in pixels of grid space
+    // dispatch,
+    // needed for focusing an entity (plus cellSize and dispatch)
+    // focus, // Entity
+  } = props;
+  const [windowWidth, setWindowWidth] = useState(width && !useFullScreen ? width : window.innerWidth);
+  const [windowHeight, setWindowHeight] = useState(height && !useFullScreen ? height : window.innerHeight);
+  useEffect(() => {
     function handleResize() {
       if (useFullScreen) {
         setWindowWidth(window.innerWidth);
@@ -221,47 +286,38 @@ function Canvas(props) {
         setWindowHeight(height);
       }
     }
-
     handleResize();
-
     if (useFullScreen) {
       window.addEventListener('resize', handleResize);
     }
-
-    return function () {
+    return () => {
       window.removeEventListener('resize', handleResize);
     };
   }, [useFullScreen, onResize]);
-
-  useEffect(function () {
+  useEffect(() => {
     if (onResize) {
       onResize(windowWidth, windowHeight);
     }
   }, [useFullScreen, onResize, windowWidth, windowHeight]);
-
-  return React.createElement(
-    'div',
-    { id: 'canvasWrapper',
-      style: {
-        width: width,
-        height: height
-      }
+  return /*#__PURE__*/React.createElement("div", {
+    id: "canvasWrapper",
+    style: {
+      width,
+      height
+    }
+  }, /*#__PURE__*/React.createElement("canvas", {
+    id: id || "canvas",
+    style: {
+      cursor: 'pointer',
+      ...(style ? style : {})
     },
-    React.createElement('canvas', {
-      id: id || "canvas", style: _extends({
-        cursor: 'pointer'
-      }, style ? style : {}),
-      width: useFullScreen ? windowWidth : width,
-      height: useFullScreen ? windowHeight : height
-    })
-  );
+    width: useFullScreen ? windowWidth : width,
+    height: useFullScreen ? windowHeight : height
+  }));
 }
-
 module.exports = React.memo(Canvas);
-},{"react":34}],4:[function(require,module,exports){
-'use strict';
-
-var React = require('react');
+},{"react":37}],5:[function(require,module,exports){
+const React = require('react');
 
 /**
  * Props:
@@ -270,81 +326,114 @@ var React = require('react');
  *  onChange: (value: boolean) => void
  */
 function Checkbox(props) {
-  var checked = props.checked,
-      label = props.label,
-      _onChange = props.onChange;
-
-  var checkbox = React.createElement('input', {
-    type: 'checkbox',
+  const {
+    checked,
+    label,
+    onChange
+  } = props;
+  const checkbox = /*#__PURE__*/React.createElement("input", {
+    type: "checkbox",
     checked: checked,
-    onChange: function onChange() {
-      _onChange(!checked);
+    onChange: () => {
+      onChange(!checked);
     }
   });
   if (label == null) {
     return checkbox;
   } else {
-    return React.createElement(
-      'div',
-      {
-        style: {
-          display: 'inline-block'
-        }
-      },
-      label,
-      checkbox
-    );
+    return /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: 'inline-block'
+      }
+    }, label, checkbox);
   }
 }
-
 module.exports = Checkbox;
-},{"react":34}],5:[function(require,module,exports){
-'use strict';
+},{"react":37}],6:[function(require,module,exports){
+const React = require('react');
 
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-var React = require('react');
-
+/**
+ *  Props:
+ *    - color1: cssColor,
+ *    - color2: cssColor,
+ *    - pixelSize: {width, height}, // board size in pixels
+ *    - gridSize: {width, height}, // board size in squares
+ */
+const CheckerboardBackground = props => {
+  const {
+    color1,
+    color2,
+    pixelSize,
+    gridSize
+  } = props;
+  const cellWidth = pixelSize.width / gridSize.width;
+  const cellHeight = pixelSize.height / gridSize.height;
+  const squares = [];
+  for (let x = 0; x < gridSize.width; x++) {
+    for (let y = 0; y < gridSize.height; y++) {
+      let backgroundColor = x % 2 == 1 ? color1 : color2;
+      if (y % 2 == 1) {
+        backgroundColor = x % 2 == 0 ? color1 : color2;
+      }
+      squares.push( /*#__PURE__*/React.createElement("div", {
+        key: "checker_" + x + "_" + y,
+        style: {
+          width: cellWidth,
+          height: cellHeight,
+          backgroundColor
+        }
+      }));
+    }
+  }
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      flexWrap: 'wrap',
+      position: 'absolute',
+      width: pixelSize.width,
+      height: pixelSize.height
+    }
+  }, squares);
+};
+module.exports = CheckerboardBackground;
+},{"react":37}],7:[function(require,module,exports){
+const React = require('react');
 function Divider(props) {
-  var style = props.style;
-
-  return React.createElement('div', {
-    style: _extends({
+  const {
+    style
+  } = props;
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
       width: '100%',
       height: '0px',
-      border: '1px solid black'
-    }, style)
+      border: '1px solid black',
+      ...style
+    }
   });
 }
-
 module.exports = Divider;
-},{"react":34}],6:[function(require,module,exports){
-'use strict';
-
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
-
-var React = require('react');
-
-var _require = require('./hooks'),
-    useMouseHandler = _require.useMouseHandler,
-    mouseReducer = _require.mouseReducer,
-    useEnhancedReducer = _require.useEnhancedReducer;
-
-var subtract = require('bens_utils').vectors.subtract;
-
-var useEffect = React.useEffect,
-    useState = React.useState,
-    useMemo = React.useMemo;
+},{"react":37}],8:[function(require,module,exports){
+const React = require('react');
+const {
+  useMouseHandler,
+  mouseReducer,
+  useEnhancedReducer
+} = require('./hooks');
+const {
+  add,
+  subtract
+} = require('bens_utils').vectors;
+const {
+  clamp
+} = require('bens_utils').math;
+const {
+  useEffect,
+  useState,
+  useMemo
+} = React;
 
 /**
  * TODO:
- *  - take in function for sending new position to parent
- *  - take in function for checking if drop position is allowed and sending back to start
- *    position otherwise
- *  - don't allow dragging outside parent
- *  - make sure that when children are added/removed that dragging works as expected
  */
 
 /*
@@ -354,260 +443,220 @@ var useEffect = React.useEffect,
  *    snapX: number, // nearest multiple to snap to
  *    snapY: number,
  *    isDropAllowed: (id, position) => boolean,
- *    onDrop
+ *    onDrop: (id, position) => void,
+ *  Children Props:
+ *    id: string,
+ *    disabled: optional boolean, // not draggable
+ *    style: {top, left, width, height}
  */
 
-var DragArea = function DragArea(props) {
-  var id = props.id ? props.id : "dragArea";
+const DragArea = props => {
+  var _state$mouse;
+  const id = props.id ? props.id : "dragArea";
 
   // check for new draggables or removed draggables
-  useEffect(function () {
-    console.log(props.children);
-    dispatch({ draggables: props.children.map(function (c) {
-        var elem = document.getElementById(c.props.id);
-        if (!elem) return { id: c.props.id };
-        return { id: c.props.id, style: {
-            top: parseInt(elem.style.top), left: parseInt(elem.style.left),
-            width: parseInt(elem.style.width), height: parseInt(elem.style.height)
-          } };
-      }).reverse() });
-    props.children.forEach(function (c) {
-      var elem = document.getElementById(c.props.id);
+  useEffect(() => {
+    dispatch({
+      draggables: props.children.map(c => {
+        const elem = document.getElementById(c.props.id);
+        if (!elem) return {
+          id: c.props.id
+        };
+        return {
+          id: c.props.id,
+          disabled: c.props.disabled,
+          style: {
+            top: parseInt(elem.style.top),
+            left: parseInt(elem.style.left),
+            width: parseInt(elem.style.width),
+            height: parseInt(elem.style.height)
+          }
+        };
+      }).reverse()
+    });
+    props.children.forEach(c => {
+      const elem = document.getElementById(c.props.id);
       elem.style["pointer-events"] = "none";
     });
   }, [props.children]);
 
   // handle state of everything
-
-  var _useEnhancedReducer = useEnhancedReducer(function (state, action) {
+  const [state, dispatch, getState] = useEnhancedReducer((state, action) => {
     switch (action.type) {
       case 'SET_DRAGGABLE':
         {
-          var _id = action.id,
-              position = action.position;
-
-          var nextDraggables = [];
-          var _iteratorNormalCompletion = true;
-          var _didIteratorError = false;
-          var _iteratorError = undefined;
-
-          try {
-            for (var _iterator = state.draggables[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-              var draggable = _step.value;
-
-              if (draggable.id == _id) {
-                nextDraggables.push(_extends({}, draggable, {
-                  style: _extends({}, draggable.style, {
-                    top: position.y,
-                    left: position.x
-                  })
-                }));
-              } else {
-                nextDraggables.push(draggable);
-              }
-            }
-          } catch (err) {
-            _didIteratorError = true;
-            _iteratorError = err;
-          } finally {
-            try {
-              if (!_iteratorNormalCompletion && _iterator.return) {
-                _iterator.return();
-              }
-            } finally {
-              if (_didIteratorError) {
-                throw _iteratorError;
-              }
+          const {
+            id,
+            position
+          } = action;
+          let nextDraggables = [];
+          for (const draggable of state.draggables) {
+            if (draggable.id == id) {
+              nextDraggables.push({
+                ...draggable,
+                style: {
+                  ...draggable.style,
+                  top: position.y,
+                  left: position.x
+                }
+              });
+            } else {
+              nextDraggables.push(draggable);
             }
           }
-
-          return _extends({}, state, {
+          return {
+            ...state,
             draggables: nextDraggables
-          });
+          };
         }
       case 'SET_MOUSE_DOWN':
       case 'SET_MOUSE_POS':
-        return _extends({}, state, {
+        return {
+          ...state,
           mouse: mouseReducer(state.mouse, action)
-        });
+        };
     }
     return state;
-  }, { mouse: null, selectedID: null, draggables: [], selectedOffset: null }),
-      _useEnhancedReducer2 = _slicedToArray(_useEnhancedReducer, 3),
-      state = _useEnhancedReducer2[0],
-      dispatch = _useEnhancedReducer2[1],
-      getState = _useEnhancedReducer2[2];
+  }, {
+    mouse: null,
+    selectedID: null,
+    draggables: [],
+    selectedOffset: null
+  });
 
   // drag handling
-
-
-  useMouseHandler(id, { dispatch: dispatch, getState: getState }, {
-    mouseMove: function mouseMove(state, dispatch, pixel) {
+  useMouseHandler(id, {
+    dispatch,
+    getState
+  }, {
+    mouseMove: (state, dispatch, pixel) => {
       if (!state.selectedID) return;
-      var draggable = null;
-      var _iteratorNormalCompletion2 = true;
-      var _didIteratorError2 = false;
-      var _iteratorError2 = undefined;
-
-      try {
-        for (var _iterator2 = state.draggables[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-          var d = _step2.value;
-
-          if (d.id == state.selectedID) draggable = d;
-        }
-      } catch (err) {
-        _didIteratorError2 = true;
-        _iteratorError2 = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion2 && _iterator2.return) {
-            _iterator2.return();
-          }
-        } finally {
-          if (_didIteratorError2) {
-            throw _iteratorError2;
-          }
-        }
+      let draggable = null;
+      for (const d of state.draggables) {
+        if (d.id == state.selectedID) draggable = d;
       }
-
       if (!draggable) return;
-
+      const nextPosition = clampToArea(id, subtract(pixel, state.selectedOffset), draggable.style);
       dispatch({
-        type: 'SET_DRAGGABLE', id: state.selectedID,
-        position: subtract(pixel, state.selectedOffset)
+        type: 'SET_DRAGGABLE',
+        id: state.selectedID,
+        position: nextPosition
       });
     },
-    leftDown: function leftDown(state, dispatch, pixel) {
-      var _iteratorNormalCompletion3 = true;
-      var _didIteratorError3 = false;
-      var _iteratorError3 = undefined;
-
-      try {
-        for (var _iterator3 = state.draggables[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-          var draggable = _step3.value;
-
-          if (clickedInElem(pixel, draggable.style)) {
-            var selectedOffset = {
-              x: pixel.x - draggable.style.left,
-              y: pixel.y - draggable.style.top
-            };
-            dispatch({ selectedID: draggable.id, selectedOffset: selectedOffset });
-            return;
-          }
-        }
-      } catch (err) {
-        _didIteratorError3 = true;
-        _iteratorError3 = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion3 && _iterator3.return) {
-            _iterator3.return();
-          }
-        } finally {
-          if (_didIteratorError3) {
-            throw _iteratorError3;
-          }
+    mouseLeave: (state, dispatch) => {
+      if (!state.selectedID) return;
+      dispatch({
+        type: 'SET_DRAGGABLE',
+        id: state.selectedID,
+        position: subtract(state.mouse.downPixel, state.selectedOffset)
+      });
+      dispatch({
+        selectedID: null,
+        selectedOffset: null
+      });
+      dispatch({
+        type: 'SET_MOUSE_DOWN',
+        isDown: false,
+        isLeft: true
+      });
+    },
+    leftDown: (state, dispatch, pixel) => {
+      for (const draggable of state.draggables) {
+        if (clickedInElem(pixel, draggable.style) && !draggable.disabled) {
+          const selectedOffset = {
+            x: pixel.x - draggable.style.left,
+            y: pixel.y - draggable.style.top
+          };
+          dispatch({
+            selectedID: draggable.id,
+            selectedOffset
+          });
+          return;
         }
       }
     },
-    leftUp: function leftUp(state, dispatch, pixel) {
+    leftUp: (state, dispatch, pixel) => {
       if (!state.selectedID) return;
-      var draggable = null;
-      var _iteratorNormalCompletion4 = true;
-      var _didIteratorError4 = false;
-      var _iteratorError4 = undefined;
-
-      try {
-        for (var _iterator4 = state.draggables[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-          var d = _step4.value;
-
-          if (d.id == state.selectedID) draggable = d;
-        }
-      } catch (err) {
-        _didIteratorError4 = true;
-        _iteratorError4 = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion4 && _iterator4.return) {
-            _iterator4.return();
-          }
-        } finally {
-          if (_didIteratorError4) {
-            throw _iteratorError4;
-          }
-        }
+      let draggable = null;
+      for (const d of state.draggables) {
+        if (d.id == state.selectedID) draggable = d;
       }
-
-      var dropPosition = pixel;
+      let dropPosition = pixel;
       if (draggable && (props.snapX || props.snapY)) {
-        var snapX = props.snapX || 1;
-        var snapY = props.snapY || 1;
-        var x = Math.round(draggable.style.left / snapX) * snapX;
-        var y = Math.round(draggable.style.top / snapY) * snapY;
-        dropPosition = { x: x, y: y };
+        let snapX = props.snapX ?? 1;
+        let snapY = props.snapY ?? 1;
+        const x = Math.round(draggable.style.left / snapX) * snapX;
+        const y = Math.round(draggable.style.top / snapY) * snapY;
+        dropPosition = {
+          x,
+          y
+        };
       }
-      if (props.isDropAllowed && !props.isDropAllowed(id, dropPosition)) {
-        // TODO: rollback to initial position
+      if (props.isDropAllowed && !props.isDropAllowed(state.selectedID, dropPosition)) {
+        dispatch({
+          type: 'SET_DRAGGABLE',
+          id: state.selectedID,
+          position: subtract(state.mouse.downPixel, state.selectedOffset)
+        });
       } else {
         dispatch({
-          type: 'SET_DRAGGABLE', id: state.selectedID,
+          type: 'SET_DRAGGABLE',
+          id: state.selectedID,
           position: dropPosition
         });
         if (props.onDrop) props.onDrop(state.selectedID, dropPosition);
       }
-      dispatch({ selectedID: null, selectedOffset: null });
+      dispatch({
+        selectedID: null,
+        selectedOffset: null
+      });
     }
   });
 
   // update element positions based on state
-  useEffect(function () {
-    var _iteratorNormalCompletion5 = true;
-    var _didIteratorError5 = false;
-    var _iteratorError5 = undefined;
-
-    try {
-      for (var _iterator5 = state.draggables[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
-        var draggable = _step5.value;
-
-        var elem = document.getElementById(draggable.id);
-        elem.style.left = draggable.style.left;
-        elem.style.top = draggable.style.top;
-      }
-    } catch (err) {
-      _didIteratorError5 = true;
-      _iteratorError5 = err;
-    } finally {
-      try {
-        if (!_iteratorNormalCompletion5 && _iterator5.return) {
-          _iterator5.return();
-        }
-      } finally {
-        if (_didIteratorError5) {
-          throw _iteratorError5;
-        }
-      }
+  useEffect(() => {
+    for (const draggable of state.draggables) {
+      const elem = document.getElementById(draggable.id);
+      elem.style.left = draggable.style.left;
+      elem.style.top = draggable.style.top;
     }
   }, [state.draggables]);
-
-  return React.createElement(
-    'div',
-    {
-      id: id,
-      style: _extends({}, props.style ? props.style : {})
-    },
-    props.children
-  );
+  return /*#__PURE__*/React.createElement("div", {
+    id: id,
+    style: {
+      cursor: state !== null && state !== void 0 && (_state$mouse = state.mouse) !== null && _state$mouse !== void 0 && _state$mouse.isLeftDown && state.selectedID ? 'grabbing' : 'grab',
+      position: 'relative',
+      ...(props.style ? props.style : {})
+    }
+  }, props.children);
 };
-
-var clickedInElem = function clickedInElem(pixel, style) {
+const clickedInElem = (pixel, style) => {
   return pixel.x >= style.left && pixel.x <= style.left + style.width && pixel.y >= style.top && pixel.y <= style.top + style.height;
 };
-
+const clampToArea = (dragAreaID, pixel, style) => {
+  const dragArea = document.getElementById(dragAreaID);
+  const {
+    width,
+    height
+  } = dragArea.getBoundingClientRect();
+  return {
+    x: clamp(pixel.x, 0, width - style.width),
+    y: clamp(pixel.y, 0, height - style.height)
+  };
+};
+const mouseInsideDragArea = (dragAreaID, pixel) => {
+  const dragArea = document.getElementById(dragAreaID);
+  const {
+    width,
+    height
+  } = dragArea.getBoundingClientRect();
+  const result = pixel.x >= 0 && pixel.x <= width && pixel.y >= 0 && pixel.y <= height;
+  console.log("in drag area", result);
+  return result;
+};
 module.exports = DragArea;
-},{"./hooks":18,"bens_utils":27,"react":34}],7:[function(require,module,exports){
-'use strict';
-
-var React = require('react');
+},{"./hooks":21,"bens_utils":30,"react":37}],9:[function(require,module,exports){
+const React = require('react');
 
 /**
  * Props:
@@ -616,41 +665,35 @@ var React = require('react');
  * selected: string // which option is selected
  * onChange: (string) => void
  */
-var Dropdown = function Dropdown(props) {
-  var options = props.options,
-      selected = props.selected,
-      _onChange = props.onChange,
-      displayOptions = props.displayOptions;
-
-  var optionTags = options.map(function (option, i) {
-    var label = displayOptions != null && displayOptions[i] != null ? displayOptions[i] : option;
-    return React.createElement(
-      'option',
-      { key: 'option_' + option, value: option },
-      label
-    );
+const Dropdown = function (props) {
+  const {
+    options,
+    selected,
+    onChange,
+    displayOptions
+  } = props;
+  const optionTags = options.map((option, i) => {
+    const label = displayOptions != null && displayOptions[i] != null ? displayOptions[i] : option;
+    return /*#__PURE__*/React.createElement("option", {
+      key: 'option_' + option,
+      value: option
+    }, label);
   });
-
-  return React.createElement(
-    'select',
-    {
-      onChange: function onChange(ev) {
-        var val = ev.target.value;
-        _onChange(val);
-      },
-      value: selected
+  return /*#__PURE__*/React.createElement("select", {
+    onChange: ev => {
+      const val = ev.target.value;
+      onChange(val);
     },
-    optionTags
-  );
+    value: selected
+  }, optionTags);
 };
-
 module.exports = Dropdown;
-},{"react":34}],8:[function(require,module,exports){
-'use strict';
-
-var React = require('react');
-var useEffect = React.useEffect,
-    useRef = React.useRef;
+},{"react":37}],10:[function(require,module,exports){
+const React = require('react');
+const {
+  useEffect,
+  useRef
+} = React;
 
 /**
  *
@@ -659,13 +702,12 @@ var useEffect = React.useEffect,
  *   minChange: ?number, // changes smaller than this won't be registered
  */
 
-var Indicator = function Indicator(props) {
-  var prev = usePrevious(props.value);
-
-  var minChange = props.minChange ? props.minChange : 0;
-  var change = props.value - prev;
-  var color = 'black';
-  var symbol = '-';
+const Indicator = props => {
+  const prev = usePrevious(props.value);
+  const minChange = props.minChange ? props.minChange : 0;
+  let change = props.value - prev;
+  let color = 'black';
+  let symbol = '-';
   if (Math.abs(change) > minChange) {
     if (change > 0) {
       color = 'green';
@@ -675,74 +717,51 @@ var Indicator = function Indicator(props) {
       symbol = '\\/';
     }
   }
-
-  return React.createElement(
-    'div',
-    {
-      style: {
-        display: 'inline',
-        color: color,
-        fontFamily: 'Times',
-        fontSize: 15
-      }
-    },
-    React.createElement(
-      'b',
-      null,
-      symbol
-    )
-  );
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'inline',
+      color,
+      fontFamily: 'Times',
+      fontSize: 15
+    }
+  }, /*#__PURE__*/React.createElement("b", null, symbol));
 };
-
-var usePrevious = function usePrevious(value) {
-  var ref = useRef();
-  useEffect(function () {
+const usePrevious = value => {
+  const ref = useRef();
+  useEffect(() => {
     ref.current = value;
   });
   return ref.current;
 };
-
 module.exports = Indicator;
-},{"react":34}],9:[function(require,module,exports){
-'use strict';
-
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-var React = require('react');
-
-var InfoCard = function InfoCard(props) {
-  var overrideStyle = props.style || {};
-  var underrideStyle = props.underrideStyle || {};
-  return React.createElement(
-    'div',
-    {
-      id: props.id ? props.id : '',
-      style: _extends({}, underrideStyle, {
-        border: props.border != null ? props.border : '1px solid black',
-        backgroundColor: 'white',
-        opacity: props.opacity != null ? props.opacity : 1,
-        // width: 200,
-        // height: 148,
-        verticalAlign: 'top',
-        marginBottom: 4,
-        marginLeft: 4,
-        display: 'inline-block',
-        padding: 4
-      }, overrideStyle)
-    },
-    props.children
-  );
+},{"react":37}],11:[function(require,module,exports){
+const React = require('react');
+const InfoCard = props => {
+  const overrideStyle = props.style || {};
+  const underrideStyle = props.underrideStyle || {};
+  return /*#__PURE__*/React.createElement("div", {
+    id: props.id ? props.id : '',
+    style: {
+      ...underrideStyle,
+      border: props.border != null ? props.border : '1px solid black',
+      backgroundColor: 'white',
+      opacity: props.opacity != null ? props.opacity : 1,
+      // width: 200,
+      // height: 148,
+      verticalAlign: 'top',
+      marginBottom: 4,
+      marginLeft: 4,
+      display: 'inline-block',
+      padding: 4,
+      ...overrideStyle
+    }
+  }, props.children);
 };
-
 module.exports = InfoCard;
-},{"react":34}],10:[function(require,module,exports){
-'use strict';
-
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-var React = require('react');
-var Button = require('./Button.react');
-var Divider = require('./Divider.react');
+},{"react":37}],12:[function(require,module,exports){
+const React = require('react');
+const Button = require('./Button.react');
+const Divider = require('./Divider.react');
 
 /*
 type Props = {
@@ -758,92 +777,70 @@ type Props = {
 */
 
 function Modal(props) {
-  var title = props.title,
-      body = props.body,
-      buttons = props.buttons,
-      style = props.style,
-      buttonStyle = props.buttonStyle;
-
-  var overrideStyle = style ? style : {};
-  var overrideButtonStyle = buttonStyle ? buttonStyle : {};
-
-  var buttonHTML = buttons.map(function (b) {
-    return React.createElement(Button, {
+  const {
+    title,
+    body,
+    buttons,
+    style,
+    buttonStyle
+  } = props;
+  const overrideStyle = style ? style : {};
+  const overrideButtonStyle = buttonStyle ? buttonStyle : {};
+  const buttonHTML = buttons.map(b => {
+    return /*#__PURE__*/React.createElement(Button, {
       key: "b_" + b.label,
       disabled: !!b.disabled,
-      label: b.label, onClick: b.onClick
+      label: b.label,
+      onClick: b.onClick
     });
   });
-
-  var rect = document.getElementById('container').getBoundingClientRect();
-  var width = props.width ? props.width : Math.min(rect.width * 0.8, 350);
-  return React.createElement(
-    'div',
-    {
-      style: {
-        position: 'absolute',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: '100%',
-        height: '100%'
-      }
-    },
-    React.createElement(
-      'div',
-      {
-        style: _extends({
-          backgroundColor: 'whitesmoke',
-          border: '1px solid black',
-          boxSizing: 'border-box',
-          boxShadow: '2px 2px #666666',
-          borderRadius: 3,
-          color: '#46403a',
-          textAlign: 'center',
-          width: width
-        }, overrideStyle)
-      },
-      React.createElement(
-        'div',
-        {
-          style: {
-            fontSize: '1.2em'
-          }
-        },
-        React.createElement(
-          'b',
-          null,
-          title
-        )
-      ),
-      body,
-      React.createElement(Divider, { style: {
-          marginTop: 4,
-          marginBottom: 4
-        } }),
-      React.createElement(
-        'div',
-        {
-          style: _extends({
-            marginBottom: 4
-          }, overrideButtonStyle)
-        },
-        buttonHTML
-      )
-    )
-  );
+  const rect = document.getElementById('container').getBoundingClientRect();
+  const width = props.width ? props.width : Math.min(rect.width * 0.8, 350);
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: 'absolute',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: '100%',
+      height: '100%'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      backgroundColor: 'whitesmoke',
+      border: '1px solid black',
+      boxSizing: 'border-box',
+      boxShadow: '2px 2px #666666',
+      borderRadius: 3,
+      color: '#46403a',
+      textAlign: 'center',
+      width,
+      ...overrideStyle
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '1.2em'
+    }
+  }, /*#__PURE__*/React.createElement("b", null, title)), body, /*#__PURE__*/React.createElement(Divider, {
+    style: {
+      marginTop: 4,
+      marginBottom: 4
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginBottom: 4,
+      ...overrideButtonStyle
+    }
+  }, buttonHTML)));
 }
-
 module.exports = Modal;
-},{"./Button.react":2,"./Divider.react":5,"react":34}],11:[function(require,module,exports){
-'use strict';
-
-var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
-
-var React = require('react');
-var useState = React.useState,
-    useMemo = React.useMemo,
-    useEffect = React.useEffect;
+},{"./Button.react":3,"./Divider.react":7,"react":37}],13:[function(require,module,exports){
+const React = require('react');
+const {
+  useState,
+  useMemo,
+  useEffect
+} = React;
 
 /**
  * props:
@@ -855,29 +852,20 @@ var useState = React.useState,
  * submitOnBlur: boolean,
  * disabled: ?boolean,
  */
-
-var NumberField = function NumberField(props) {
-  var value = props.value,
-      _onChange = props.onChange,
-      onlyInt = props.onlyInt,
-      submitOnEnter = props.submitOnEnter,
-      submitOnBlur = props.submitOnBlur;
-
-  var _useState = useState(value),
-      _useState2 = _slicedToArray(_useState, 2),
-      stateValue = _useState2[0],
-      setValue = _useState2[1];
-
-  useEffect(function () {
+const NumberField = props => {
+  const {
+    value,
+    onChange,
+    onlyInt,
+    submitOnEnter,
+    submitOnBlur
+  } = props;
+  const [stateValue, setValue] = useState(value);
+  useEffect(() => {
     setValue(value);
   }, [value]);
-
-  var _useState3 = useState(false),
-      _useState4 = _slicedToArray(_useState3, 2),
-      isFocused = _useState4[0],
-      setFocus = _useState4[1];
-
-  useEffect(function () {
+  const [isFocused, setFocus] = useState(false);
+  useEffect(() => {
     // document.onkeydown = (ev) => {
     //   if (ev.keyCode == 13)  { // Enter
     //     if (isFocused) {
@@ -886,37 +874,36 @@ var NumberField = function NumberField(props) {
     //   }
     // };
   }, [isFocused, stateValue]);
-
-  return React.createElement('input', { type: 'text',
+  return /*#__PURE__*/React.createElement("input", {
+    type: "text",
     style: {
       width: props.width != null ? props.width : 40
     },
     value: stateValue,
-    onFocus: function onFocus() {
+    onFocus: () => {
       setFocus(true);
     },
-    onBlur: function onBlur() {
+    onBlur: () => {
       setFocus(false);
       if (submitOnBlur) {
-        submitValue(_onChange, stateValue, onlyInt);
+        submitValue(onChange, stateValue, onlyInt);
       }
     },
-    onChange: function onChange(ev) {
+    onChange: ev => {
       if (props.disabled) {
         setValue(value);
         return;
       }
-      var nextVal = ev.target.value;
+      const nextVal = ev.target.value;
       if (isNaN(Number(nextVal))) return; // don't allow non-numerical input
       setValue(nextVal);
       if (!submitOnEnter && !submitOnBlur) {
-        submitValue(_onChange, nextVal, onlyInt);
+        submitValue(onChange, nextVal, onlyInt);
       }
     }
   });
 };
-
-var submitValue = function submitValue(onChange, nextVal, onlyInt) {
+const submitValue = (onChange, nextVal, onlyInt) => {
   if (nextVal === '') {
     onChange(0);
   } else if (!onlyInt && nextVal[nextVal.length - 1] === '.') {
@@ -924,35 +911,27 @@ var submitValue = function submitValue(onChange, nextVal, onlyInt) {
   } else if (isNaN(Number(nextVal))) {
     return; // ignore NaNs
   } else {
-    var num = onlyInt ? parseInt(nextVal) : parseFloat(nextVal);
+    const num = onlyInt ? parseInt(nextVal) : parseFloat(nextVal);
     onChange(num);
   }
 };
-
 module.exports = NumberField;
-},{"react":34}],12:[function(require,module,exports){
-'use strict';
-
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
-
-function _toArray(arr) { return Array.isArray(arr) ? arr : Array.from(arr); }
-
-function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
-
+},{"react":37}],14:[function(require,module,exports){
+function _extends() { _extends = Object.assign ? Object.assign.bind() : function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
 /**
  * See ~/Code/teaching/clusters for an example of how to use the plot
  * Specifically ui/Main and reducers/plotReducer
  */
 
-var React = require('react');
-var Button = require('./Button.react');
-var Canvas = require('./Canvas.react');
-var useState = React.useState,
-    useMemo = React.useMemo,
-    useEffect = React.useEffect,
-    useReducer = React.useReducer;
+const React = require('react');
+const Button = require('./Button.react');
+const Canvas = require('./Canvas.react');
+const {
+  useState,
+  useMemo,
+  useEffect,
+  useReducer
+} = React;
 
 // type Point = {
 //   x: number,
@@ -992,116 +971,65 @@ var useState = React.useState,
  *   height: number,
  */
 
-var Plot = function Plot(props) {
-
+const Plot = props => {
   // screen resizing
-  var _useState = useState(0),
-      _useState2 = _slicedToArray(_useState, 2),
-      resizeCount = _useState2[0],
-      setResize = _useState2[1];
-
-  useEffect(function () {
+  const [resizeCount, setResize] = useState(0);
+  useEffect(() => {
     function handleResize() {
       setResize(resizeCount + 1);
     }
     window.addEventListener('resize', handleResize);
-    return function () {
+    return () => {
       window.removeEventListener('resize', handleResize);
     };
   }, [resizeCount]);
 
   // rendering
-  useEffect(function () {
-    var canvas = document.getElementById(props.canvasID || 'canvas');
+  useEffect(() => {
+    const canvas = document.getElementById(props.canvasID || 'canvas');
     if (!canvas) return;
-    var ctx = canvas.getContext('2d');
-
-    var xAxis = props.xAxis,
-        yAxis = props.yAxis,
-        isLinear = props.isLinear;
-
-    var _canvas$getBoundingCl = canvas.getBoundingClientRect(),
-        width = _canvas$getBoundingCl.width,
-        height = _canvas$getBoundingCl.height;
-
-    var xmax = xAxis.max == null ? 10 : xAxis.max;
-    var xmin = xAxis.min == null ? 0 : xAxis.min;
-    var ymax = yAxis.max == null ? 10 : yAxis.max;
-    var ymin = yAxis.min == null ? 0 : yAxis.min;
+    const ctx = canvas.getContext('2d');
+    const {
+      xAxis,
+      yAxis,
+      isLinear
+    } = props;
+    const {
+      width,
+      height
+    } = canvas.getBoundingClientRect();
+    let xmax = xAxis.max == null ? 10 : xAxis.max;
+    let xmin = xAxis.min == null ? 0 : xAxis.min;
+    let ymax = yAxis.max == null ? 10 : yAxis.max;
+    let ymin = yAxis.min == null ? 0 : yAxis.min;
 
     // handling adaptive ranges
     if (xAxis.adaptiveRange) {
-      var _iteratorNormalCompletion = true;
-      var _didIteratorError = false;
-      var _iteratorError = undefined;
-
-      try {
-        for (var _iterator = allPoints[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-          var point = _step.value;
-
-          if (point.x < xmin) {
-            xmin = point.x;
-          }
-          if (point.x > xmax) {
-            xmax = point.x;
-          }
+      for (const point of allPoints) {
+        if (point.x < xmin) {
+          xmin = point.x;
         }
-      } catch (err) {
-        _didIteratorError = true;
-        _iteratorError = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion && _iterator.return) {
-            _iterator.return();
-          }
-        } finally {
-          if (_didIteratorError) {
-            throw _iteratorError;
-          }
+        if (point.x > xmax) {
+          xmax = point.x;
         }
       }
     }
     if (yAxis.adaptiveRange) {
-      var _iteratorNormalCompletion2 = true;
-      var _didIteratorError2 = false;
-      var _iteratorError2 = undefined;
-
-      try {
-        for (var _iterator2 = props.points[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-          var _point = _step2.value;
-
-          if (_point.y < ymin) {
-            ymin = _point.y;
-          }
-          if (_point.y > ymax) {
-            ymax = _point.y;
-          }
+      for (const point of props.points) {
+        if (point.y < ymin) {
+          ymin = point.y;
         }
-      } catch (err) {
-        _didIteratorError2 = true;
-        _iteratorError2 = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion2 && _iterator2.return) {
-            _iterator2.return();
-          }
-        } finally {
-          if (_didIteratorError2) {
-            throw _iteratorError2;
-          }
+        if (point.y > ymax) {
+          ymax = point.y;
         }
       }
     }
 
     // scaling props.points to canvas
-    var xTrans = width / (xmax - xmin);
-    var yTrans = height / (ymax - ymin);
-    var transX = function transX(x) {
-      return x * xTrans - xmin * xTrans;
-    };
-    var transY = function transY(y) {
-      return y * yTrans - ymin * yTrans;
-    };
+    const xTrans = width / (xmax - xmin);
+    const yTrans = height / (ymax - ymin);
+    const transX = x => x * xTrans - xmin * xTrans;
+    const transY = y => y * yTrans - ymin * yTrans;
 
     // clear canvas
     ctx.fillStyle = 'white';
@@ -1110,374 +1038,290 @@ var Plot = function Plot(props) {
     // drawing axes
     if (!xAxis.hidden) {
       ctx.fillStyle = 'black';
-      var xMajor = xAxis.majorTicks || 10;
-      for (var x = xmin; x < xmax; x += xMajor) {
-        drawLine(ctx, { x: transX(x), y: height }, { x: transX(x), y: height - 20 });
+      const xMajor = xAxis.majorTicks || 10;
+      for (let x = xmin; x < xmax; x += xMajor) {
+        drawLine(ctx, {
+          x: transX(x),
+          y: height
+        }, {
+          x: transX(x),
+          y: height - 20
+        });
       }
-      var xMinor = xAxis.minorTicks || 2;
-      for (var _x = xmin; _x < xmax; _x += xMinor) {
-        drawLine(ctx, { x: transX(_x), y: height }, { x: transX(_x), y: height - 10 });
+      const xMinor = xAxis.minorTicks || 2;
+      for (let x = xmin; x < xmax; x += xMinor) {
+        drawLine(ctx, {
+          x: transX(x),
+          y: height
+        }, {
+          x: transX(x),
+          y: height - 10
+        });
       }
     }
     if (!yAxis.hidden) {
-      var yMajor = yAxis.majorTicks || 10;
-      for (var y = ymin; y < ymax; y += yMajor) {
-        drawLine(ctx, { x: 0, y: transY(y) }, { x: 20, y: transY(y) });
+      const yMajor = yAxis.majorTicks || 10;
+      for (let y = ymin; y < ymax; y += yMajor) {
+        drawLine(ctx, {
+          x: 0,
+          y: transY(y)
+        }, {
+          x: 20,
+          y: transY(y)
+        });
       }
-      var yMinor = yAxis.minorTicks || 2;
-      for (var _y = ymin; _y < ymax; _y += yMinor) {
-        drawLine(ctx, { x: 0, y: transY(_y) }, { x: 10, y: transY(_y) });
+      const yMinor = yAxis.minorTicks || 2;
+      for (let y = ymin; y < ymax; y += yMinor) {
+        drawLine(ctx, {
+          x: 0,
+          y: transY(y)
+        }, {
+          x: 10,
+          y: transY(y)
+        });
       }
     }
 
     // drawing props.points
-    var sortedPoints = [].concat(_toConsumableArray(props.points)).sort(function (a, b) {
-      return a.x - b.x;
-    });
-    var prevPoint = null;
-    var _iteratorNormalCompletion3 = true;
-    var _didIteratorError3 = false;
-    var _iteratorError3 = undefined;
-
-    try {
-      for (var _iterator3 = sortedPoints[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-        var _point2 = _step3.value;
-
-        ctx.fillStyle = _point2.color ? _point2.color : 'black';
-        var _x2 = transX(_point2.x);
-        var _y2 = ymax * yTrans - ymin * yTrans - _point2.y * yTrans;
-        var size = 2;
-        if (!isLinear) {
-          ctx.fillRect(_x2 - size, _y2 - size, size * 2, size * 2);
-        }
-
-        if (isLinear && prevPoint != null) {
-          ctx.fillStyle = 'black';
-          drawLine(ctx, prevPoint, { x: _x2, y: _y2 });
-        }
-        prevPoint = { x: _x2, y: _y2 };
+    const sortedPoints = [...props.points].sort((a, b) => a.x - b.x);
+    let prevPoint = null;
+    for (const point of sortedPoints) {
+      ctx.fillStyle = point.color ? point.color : 'black';
+      const x = transX(point.x);
+      const y = ymax * yTrans - ymin * yTrans - point.y * yTrans;
+      const size = 2;
+      if (!isLinear) {
+        ctx.fillRect(x - size, y - size, size * 2, size * 2);
       }
-    } catch (err) {
-      _didIteratorError3 = true;
-      _iteratorError3 = err;
-    } finally {
-      try {
-        if (!_iteratorNormalCompletion3 && _iterator3.return) {
-          _iterator3.return();
-        }
-      } finally {
-        if (_didIteratorError3) {
-          throw _iteratorError3;
-        }
+      if (isLinear && prevPoint != null) {
+        ctx.fillStyle = 'black';
+        drawLine(ctx, prevPoint, {
+          x,
+          y
+        });
       }
+      prevPoint = {
+        x,
+        y
+      };
     }
   }, [props, resizeCount]);
 
   // axis labels
-  var xAxisLabel = null;
-  var yAxisLabel = null;
+  let xAxisLabel = null;
+  let yAxisLabel = null;
   if (props.xAxis.label != null) {
-    xAxisLabel = React.createElement(
-      'div',
-      { style: {
-          textAlign: 'center'
-        } },
-      props.xAxis.label
-    );
+    xAxisLabel = /*#__PURE__*/React.createElement("div", {
+      style: {
+        textAlign: 'center'
+      }
+    }, props.xAxis.label);
   }
   if (props.yAxis.label != null) {
-    yAxisLabel = React.createElement(
-      'div',
-      { style: {
-          display: 'table-cell',
-          verticalAlign: 'middle'
-        } },
-      props.yAxis.label
-    );
-  }
-
-  return React.createElement(
-    'div',
-    {
+    yAxisLabel = /*#__PURE__*/React.createElement("div", {
       style: {
-        width: 'fit-content',
-        display: props.inline ? 'inline' : 'table'
+        display: 'table-cell',
+        verticalAlign: 'middle'
       }
-    },
-    yAxisLabel,
-    React.createElement(
-      'div',
-      { style: { display: 'inline-block' } },
-      React.createElement(Canvas, {
-        id: props.canvasID,
-        useFullScreen: props.useFullScreen,
-        width: props.width,
-        height: props.height
-      })
-    ),
-    xAxisLabel
-  );
+    }, props.yAxis.label);
+  }
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: 'fit-content',
+      display: props.inline ? 'inline' : 'table'
+    }
+  }, yAxisLabel, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'inline-block'
+    }
+  }, /*#__PURE__*/React.createElement(Canvas, {
+    id: props.canvasID,
+    useFullScreen: props.useFullScreen,
+    width: props.width,
+    height: props.height
+  })), xAxisLabel);
 };
-
-var drawLine = function drawLine(ctx, p1, p2) {
+const drawLine = (ctx, p1, p2) => {
   ctx.beginPath();
   ctx.moveTo(p1.x, p1.y);
   ctx.lineTo(p2.x, p2.y);
   ctx.stroke();
   ctx.closePath();
 };
-
-var PlotWatcher = function PlotWatcher(props) {
+const PlotWatcher = props => {
   // track points with watching
-  var _useReducer = useReducer(function (state, action) {
+  const [pointState, dispatch] = useReducer((state, action) => {
     if (action.type == 'SET_ALL') {
-      return { points: [].concat(_toConsumableArray(action.points)) };
+      return {
+        points: [...action.points]
+      };
     }
-
-    var value = action.value;
+    const {
+      value
+    } = action;
     // don't add a point if we're changeOnly and value is the same
-
-    var prevVal = state.points.length > 0 ? state.points[state.points.length - 1].y : -1;
+    let prevVal = state.points.length > 0 ? state.points[state.points.length - 1].y : -1;
     if (props.changeOnly && value == prevVal) {
       return state;
     }
-    var point = { x: state.points.length, y: value };
+    const point = {
+      x: state.points.length,
+      y: value
+    };
     if (point.x < props.xAxis.max) {
-      return _extends({}, state, {
-        points: state.points ? [].concat(_toConsumableArray(state.points), [point]) : points
-      });
+      return {
+        ...state,
+        points: state.points ? [...state.points, point] : points
+      };
     } else {
-      var _state$points = _toArray(state.points),
-          _ = _state$points[0],
-          next = _state$points.slice(1);
-
-      var _iteratorNormalCompletion4 = true;
-      var _didIteratorError4 = false;
-      var _iteratorError4 = undefined;
-
-      try {
-        for (var _iterator4 = next[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-          var p = _step4.value;
-
-          p.x -= 1;
-        }
-      } catch (err) {
-        _didIteratorError4 = true;
-        _iteratorError4 = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion4 && _iterator4.return) {
-            _iterator4.return();
-          }
-        } finally {
-          if (_didIteratorError4) {
-            throw _iteratorError4;
-          }
-        }
+      const [_, ...next] = state.points;
+      for (const p of next) {
+        p.x -= 1;
       }
-
-      return _extends({}, state, {
-        points: state.points ? [].concat(_toConsumableArray(next), [point]) : points
-      });
+      return {
+        ...state,
+        points: state.points ? [...next, point] : points
+      };
     }
-  }, { points: [].concat(_toConsumableArray(props.points)) }),
-      _useReducer2 = _slicedToArray(_useReducer, 2),
-      pointState = _useReducer2[0],
-      dispatch = _useReducer2[1];
-
-  useEffect(function () {
+  }, {
+    points: [...props.points]
+  });
+  useEffect(() => {
     if (props.watch == null) {
-      dispatch({ type: 'SET_ALL', points: props.points });
+      dispatch({
+        type: 'SET_ALL',
+        points: props.points
+      });
     } else {
-      dispatch({ type: 'SET', value: props.watch });
+      dispatch({
+        type: 'SET',
+        value: props.watch
+      });
     }
   }, [props.watch, dispatch, props.points]);
-
-  return React.createElement(Plot, _extends({}, props, { points: pointState.points }));
+  return /*#__PURE__*/React.createElement(Plot, _extends({}, props, {
+    points: pointState.points
+  }));
 };
-
 module.exports = PlotWatcher;
-},{"./Button.react":2,"./Canvas.react":3,"react":34}],13:[function(require,module,exports){
-'use strict';
-
-var React = require('react');
-var Button = require('./Button.react');
-var Modal = require('./Modal.react');
-
-var isElectron = require('bens_utils').platform.isElectron;
-
-var useState = React.useState,
-    useEffect = React.useEffect,
-    useMemo = React.useMemo;
-
-
-var QuitButton = function QuitButton(props) {
-  var isInGame = props.isInGame,
-      dispatch = props.dispatch;
-
-
+},{"./Button.react":3,"./Canvas.react":4,"react":37}],15:[function(require,module,exports){
+const React = require('react');
+const Button = require('./Button.react');
+const Modal = require('./Modal.react');
+const {
+  isElectron
+} = require('bens_utils').platform;
+const {
+  useState,
+  useEffect,
+  useMemo
+} = React;
+const QuitButton = props => {
+  const {
+    isInGame,
+    dispatch
+  } = props;
   if (!isInGame && !isElectron()) return null;
-
-  var buttonStyle = isInGame ? {} : {
+  const buttonStyle = isInGame ? {} : {
     margin: 5,
     borderRadius: 8,
     left: 5
   };
-  return React.createElement(
-    'div',
-    {
-      style: buttonStyle
-    },
-    React.createElement(Button, {
-      label: 'Quit',
-      onClick: function onClick() {
-        if (!isInGame) {
-          remote.webFrame.context.close();
-        } else {
-          quitGameModal(dispatch);
-        }
+  return /*#__PURE__*/React.createElement("div", {
+    style: buttonStyle
+  }, /*#__PURE__*/React.createElement(Button, {
+    label: "Quit",
+    onClick: () => {
+      if (!isInGame) {
+        remote.webFrame.context.close();
+      } else {
+        quitGameModal(dispatch);
       }
-    })
-  );
+    }
+  }));
 };
-
-var quitGameModal = function quitGameModal(dispatch) {
-  dispatch({ type: 'STOP_TICK' });
-
-  var returnToMainMenuButton = {
+const quitGameModal = dispatch => {
+  dispatch({
+    type: 'STOP_TICK'
+  });
+  const returnToMainMenuButton = {
     label: 'Main Menu',
-    onClick: function onClick() {
-      dispatch({ type: 'DISMISS_MODAL' });
-      dispatch({ type: 'RETURN_TO_LOBBY' });
+    onClick: () => {
+      dispatch({
+        type: 'DISMISS_MODAL'
+      });
+      dispatch({
+        type: 'RETURN_TO_LOBBY'
+      });
     }
   };
-  var returnToGameButton = {
+  const returnToGameButton = {
     label: 'Return to Game',
-    onClick: function onClick() {
-      dispatch({ type: 'DISMISS_MODAL' });
-      dispatch({ type: 'START_TICK' });
+    onClick: () => {
+      dispatch({
+        type: 'DISMISS_MODAL'
+      });
+      dispatch({
+        type: 'START_TICK'
+      });
     }
   };
-  var quitAppButton = {
+  const quitAppButton = {
     label: 'Quit Application',
-    onClick: function onClick() {
+    onClick: () => {
       remote.webFrame.context.close();
     }
   };
-  var buttons = [returnToGameButton, returnToMainMenuButton];
+  const buttons = [returnToGameButton, returnToMainMenuButton];
   if (isElectron()) {
     buttons.push(quitAppButton);
   }
-
-  var body = React.createElement('div', null);
-
-  dispatch({ type: 'SET_MODAL',
-    modal: React.createElement(Modal, {
+  const body = /*#__PURE__*/React.createElement("div", null);
+  dispatch({
+    type: 'SET_MODAL',
+    modal: /*#__PURE__*/React.createElement(Modal, {
       title: 'Quit Game?',
       body: body,
       buttons: buttons
     })
   });
 };
-
 module.exports = QuitButton;
-},{"./Button.react":2,"./Modal.react":10,"bens_utils":27,"react":34}],14:[function(require,module,exports){
-'use strict';
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var React = require('react');
+},{"./Button.react":3,"./Modal.react":12,"bens_utils":30,"react":37}],16:[function(require,module,exports){
+const React = require('react');
 
 // props:
 // options: Array<string>
 // selected: string
 // onChange: (option) => void
 
-var RadioPicker = function (_React$Component) {
-  _inherits(RadioPicker, _React$Component);
-
-  function RadioPicker() {
-    _classCallCheck(this, RadioPicker);
-
-    return _possibleConstructorReturn(this, (RadioPicker.__proto__ || Object.getPrototypeOf(RadioPicker)).apply(this, arguments));
-  }
-
-  _createClass(RadioPicker, [{
-    key: 'render',
-    value: function render() {
-      var _this2 = this;
-
-      var optionToggles = [];
-      var _iteratorNormalCompletion = true;
-      var _didIteratorError = false;
-      var _iteratorError = undefined;
-
-      try {
-        var _loop = function _loop() {
-          var option = _step.value;
-
-          optionToggles.push(React.createElement(
-            'div',
-            {
-              key: 'radioOption_' + option,
-              className: 'radioOption'
-            },
-            option,
-            React.createElement('input', { type: 'radio',
-              className: 'radioCheckbox',
-              value: option,
-              checked: option === _this2.props.selected,
-              onChange: function onChange() {
-                return _this2.props.onChange(option);
-              }
-            })
-          ));
-        };
-
-        for (var _iterator = this.props.options[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-          _loop();
-        }
-      } catch (err) {
-        _didIteratorError = true;
-        _iteratorError = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion && _iterator.return) {
-            _iterator.return();
-          }
-        } finally {
-          if (_didIteratorError) {
-            throw _iteratorError;
-          }
-        }
-      }
-
-      return React.createElement(
-        'div',
-        null,
-        optionToggles
-      );
+class RadioPicker extends React.Component {
+  render() {
+    const optionToggles = [];
+    for (const option of this.props.options) {
+      optionToggles.push( /*#__PURE__*/React.createElement("div", {
+        key: 'radioOption_' + option,
+        className: "radioOption"
+      }, option, /*#__PURE__*/React.createElement("input", {
+        type: "radio",
+        className: "radioCheckbox",
+        value: option,
+        checked: option === this.props.selected,
+        onChange: () => this.props.onChange(option)
+      })));
     }
-  }]);
-
-  return RadioPicker;
-}(React.Component);
-
+    return /*#__PURE__*/React.createElement("div", null, optionToggles);
+  }
+}
 module.exports = RadioPicker;
-},{"react":34}],15:[function(require,module,exports){
-'use strict';
-
-var React = require('react');
-var NumberField = require('./NumberField.react');
-var useState = React.useState,
-    useMemo = React.useMemo,
-    useEffect = React.useEffect;
+},{"react":37}],17:[function(require,module,exports){
+const React = require('react');
+const NumberField = require('./NumberField.react');
+const {
+  useState,
+  useMemo,
+  useEffect
+} = React;
 
 /**
  *  props:
@@ -1492,77 +1336,107 @@ var useState = React.useState,
  *  inline: ?boolean,
  *  style: ?Object,
  */
-
 function Slider(props) {
-  var isFloat = props.isFloat;
-
-  var label = React.createElement(
-    'div',
-    { style: { display: 'inline-block' } },
-    props.label
-  );
-  var value = props.value != null ? props.value : props.min;
+  const {
+    isFloat
+  } = props;
+  const label = /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'inline-block'
+    }
+  }, props.label);
+  let value = props.value != null ? props.value : props.min;
   value = isFloat ? Math.floor(value * 10) : value;
-  var displayValue = isFloat ? value / 10 : value;
-
-  var min = isFloat ? props.min * 10 : props.min;
-  var max = isFloat ? props.max * 10 : props.max;
-
-  var originalValue = useMemo(function () {
+  const displayValue = isFloat ? value / 10 : value;
+  const min = isFloat ? props.min * 10 : props.min;
+  const max = isFloat ? props.max * 10 : props.max;
+  const originalValue = useMemo(() => {
     return displayValue;
   }, []);
-  return React.createElement(
-    'div',
-    { style: props.style || {} },
-    props.label != null ? label : null,
-    React.createElement('input', { type: 'range',
-      id: 'slider_' + label,
-      min: min, max: max,
-      value: value,
-      onChange: function onChange(ev) {
-        if (props.disabled) {
-          return;
-        }
-        var val = ev.target.value;
-        props.onChange(parseFloat(isFloat ? val / 10 : val));
-      },
-      step: props.step != null ? props.step : 1
-    }),
-    React.createElement(
-      'div',
-      { style: { display: 'inline-block' } },
-      props.noNumberField ? null : React.createElement(NumberField, {
-        disabled: props.disabled,
-        value: displayValue,
-        onlyInt: !isFloat,
-        onChange: function onChange(val) {
-          props.onChange(val);
-        },
-        submitOnBlur: false
-      }),
-      props.noOriginalValue ? null : "(" + originalValue + ")"
-    )
-  );
+  return /*#__PURE__*/React.createElement("div", {
+    style: props.style || {}
+  }, props.label != null ? label : null, /*#__PURE__*/React.createElement("input", {
+    type: "range",
+    id: 'slider_' + label,
+    min: min,
+    max: max,
+    value: value,
+    onChange: ev => {
+      if (props.disabled) {
+        return;
+      }
+      const val = ev.target.value;
+      props.onChange(parseFloat(isFloat ? val / 10 : val));
+    },
+    step: props.step != null ? props.step : 1
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'inline-block'
+    }
+  }, props.noNumberField ? null : /*#__PURE__*/React.createElement(NumberField, {
+    disabled: props.disabled,
+    value: displayValue,
+    onlyInt: !isFloat,
+    onChange: val => {
+      props.onChange(val);
+    },
+    submitOnBlur: false
+  }), props.noOriginalValue ? null : "(" + originalValue + ")"));
 }
-
 module.exports = Slider;
-},{"./NumberField.react":11,"react":34}],16:[function(require,module,exports){
-'use strict';
+},{"./NumberField.react":13,"react":37}],18:[function(require,module,exports){
+const React = require('react');
 
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+/**
+ *  Props:
+ *    - style: object, // additional styling for outer div
+ *    - width: px, height: px,
+ *    - src: string, // image source
+ *    - spriteSheet: {pxWidth, pxHeight, imagesAcross, imagesDown}, // width of a single image
+ *    - offset: {x, y}, // x and y positions inside the spritesheet indexed by image
+ *
+ */
 
-var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
-
-function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
-var React = require('react');
-var Button = require('./Button.react');
-var Dropdown = require('./Dropdown.react');
-var useEffect = React.useEffect,
-    useMemo = React.useMemo,
-    useState = React.useState;
+const SpriteSheet = props => {
+  const {
+    spriteSheet,
+    offset
+  } = props;
+  const {
+    pxWidth,
+    pxHeight,
+    imagesAcross,
+    imagesDown
+  } = spriteSheet;
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: props.width ?? '100%',
+      height: props.height ?? '100%',
+      overflow: 'hidden',
+      position: 'absolute',
+      ...(props.style ?? {})
+    }
+  }, /*#__PURE__*/React.createElement("img", {
+    src: props.src,
+    style: {
+      position: 'absolute',
+      width: pxWidth * imagesAcross,
+      height: pxHeight * imagesDown,
+      left: pxWidth * -1 * offset.x,
+      top: pxHeight * -1 * offset.y
+    }
+  }));
+};
+module.exports = SpriteSheet;
+},{"react":37}],19:[function(require,module,exports){
+const React = require('react');
+const Button = require('./Button.react');
+const Dropdown = require('./Dropdown.react');
+const {
+  useEffect,
+  useMemo,
+  useState
+} = React;
 
 /**
 type ColumnName = string;
@@ -1581,250 +1455,136 @@ type Props = {
 };
 */
 
-var tableStyle = {
+const tableStyle = {
   backgroundColor: '#faf8ef',
   width: '100%',
   borderRadius: 8
 };
-
 function Table(props) {
-  var columns = props.columns,
-      rows = props.rows,
-      hideColSorts = props.hideColSorts;
-
-  var colNames = [];
+  const {
+    columns,
+    rows,
+    hideColSorts
+  } = props;
+  let colNames = [];
   if (props.columns) {
     colNames = Object.keys(columns);
-  } else {}
-  // TODO: infer column names if not provided
-
+  } else {
+    // TODO: infer column names if not provided
+  }
 
   // sort by column
-
-  var _useState = useState({ by: 'ASC', name: null }),
-      _useState2 = _slicedToArray(_useState, 2),
-      sortByColumn = _useState2[0],
-      setSortByColumn = _useState2[1];
-
-  useEffect(function () {
+  const [sortByColumn, setSortByColumn] = useState({
+    by: 'ASC',
+    name: null
+  });
+  useEffect(() => {
     if (!colNames.includes(sortByColumn.name)) {
-      setSortByColumn({ by: 'ASC', name: null });
+      setSortByColumn({
+        by: 'ASC',
+        name: null
+      });
     }
   }, [columns]);
 
   // filter by column
-  var computeSelectedByColumn = function computeSelectedByColumn(colNames) {
-    var selected = {};
-    var _iteratorNormalCompletion = true;
-    var _didIteratorError = false;
-    var _iteratorError = undefined;
-
-    try {
-      for (var _iterator = colNames[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-        var col = _step.value;
-
-        if (columns[col].filterable) {
-          selected[col] = '*';
-        }
-      }
-    } catch (err) {
-      _didIteratorError = true;
-      _iteratorError = err;
-    } finally {
-      try {
-        if (!_iteratorNormalCompletion && _iterator.return) {
-          _iterator.return();
-        }
-      } finally {
-        if (_didIteratorError) {
-          throw _iteratorError;
-        }
+  const computeSelectedByColumn = colNames => {
+    const selected = {};
+    for (const col of colNames) {
+      if (columns[col].filterable) {
+        selected[col] = '*';
       }
     }
-
     return selected;
   };
-
-  var _useState3 = useState(computeSelectedByColumn(colNames)),
-      _useState4 = _slicedToArray(_useState3, 2),
-      selectedByColumn = _useState4[0],
-      setSelectedByColumn = _useState4[1];
-
-  useEffect(function () {
-    var selected = {};
-    var _iteratorNormalCompletion2 = true;
-    var _didIteratorError2 = false;
-    var _iteratorError2 = undefined;
-
-    try {
-      for (var _iterator2 = colNames[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-        var col = _step2.value;
-
-        if (columns[col].filterable) {
-          selected[col] = selectedByColumn[col] || '*';
-        }
-      }
-    } catch (err) {
-      _didIteratorError2 = true;
-      _iteratorError2 = err;
-    } finally {
-      try {
-        if (!_iteratorNormalCompletion2 && _iterator2.return) {
-          _iterator2.return();
-        }
-      } finally {
-        if (_didIteratorError2) {
-          throw _iteratorError2;
-        }
+  const [selectedByColumn, setSelectedByColumn] = useState(computeSelectedByColumn(colNames));
+  useEffect(() => {
+    const selected = {};
+    for (const col of colNames) {
+      if (columns[col].filterable) {
+        selected[col] = selectedByColumn[col] || '*';
       }
     }
-
     setSelectedByColumn(selected);
   }, [columns]);
-
-  var columnOptions = useMemo(function () {
-    var filters = {};
-    var _iteratorNormalCompletion3 = true;
-    var _didIteratorError3 = false;
-    var _iteratorError3 = undefined;
-
-    try {
-      for (var _iterator3 = colNames[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-        var col = _step3.value;
-
-        if (columns[col].filterable) {
-          filters[col] = ['*'];
-          var _iteratorNormalCompletion4 = true;
-          var _didIteratorError4 = false;
-          var _iteratorError4 = undefined;
-
-          try {
-            for (var _iterator4 = rows[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-              var row = _step4.value;
-
-              if (!filters[col].includes(row[col])) {
-                filters[col].push(row[col]);
-              }
-            }
-          } catch (err) {
-            _didIteratorError4 = true;
-            _iteratorError4 = err;
-          } finally {
-            try {
-              if (!_iteratorNormalCompletion4 && _iterator4.return) {
-                _iterator4.return();
-              }
-            } finally {
-              if (_didIteratorError4) {
-                throw _iteratorError4;
-              }
-            }
+  const columnOptions = useMemo(() => {
+    const filters = {};
+    for (const col of colNames) {
+      if (columns[col].filterable) {
+        filters[col] = ['*'];
+        for (const row of rows) {
+          if (!filters[col].includes(row[col])) {
+            filters[col].push(row[col]);
           }
         }
       }
-    } catch (err) {
-      _didIteratorError3 = true;
-      _iteratorError3 = err;
-    } finally {
-      try {
-        if (!_iteratorNormalCompletion3 && _iterator3.return) {
-          _iterator3.return();
-        }
-      } finally {
-        if (_didIteratorError3) {
-          throw _iteratorError3;
-        }
-      }
     }
-
     return filters;
   }, [columns]);
-
-  var headers = colNames.map(function (col) {
-    var filterDropdown = null;
+  const headers = colNames.map(col => {
+    let filterDropdown = null;
     if (columns[col].filterable) {
-      filterDropdown = React.createElement(Dropdown, {
+      filterDropdown = /*#__PURE__*/React.createElement(Dropdown, {
         options: columnOptions[col],
         selected: selectedByColumn[col] ? selectedByColumn[col].selected : '*',
-        onChange: function onChange(n) {
-          setSelectedByColumn(_extends({}, selectedByColumn, _defineProperty({}, col, n)));
+        onChange: n => {
+          setSelectedByColumn({
+            ...selectedByColumn,
+            [col]: n
+          });
         }
       });
     }
-    return React.createElement(
-      'th',
-      { key: 'header_' + col },
-      columns[col].displayName || col,
-      hideColSorts ? null : React.createElement(
-        'div',
-        { style: { fontWeight: 'normal' } },
-        'Sort:',
-        React.createElement(Button, {
-          label: '/\\',
-          fontSize: 12,
-          onClick: function onClick() {
-            setSortByColumn({ by: 'ASC', name: col });
-          }
-        }),
-        React.createElement(Button, {
-          label: '\\/',
-          fontSize: 12,
-          onClick: function onClick() {
-            setSortByColumn({ by: 'DESC', name: col });
-          }
-        }),
-        filterDropdown
-      )
-    );
+    return /*#__PURE__*/React.createElement("th", {
+      key: 'header_' + col
+    }, columns[col].displayName || col, hideColSorts ? null : /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontWeight: 'normal'
+      }
+    }, "Sort:", /*#__PURE__*/React.createElement(Button, {
+      label: "/\\\\",
+      fontSize: 12,
+      onClick: () => {
+        setSortByColumn({
+          by: 'ASC',
+          name: col
+        });
+      }
+    }), /*#__PURE__*/React.createElement(Button, {
+      label: "\\/",
+      fontSize: 12,
+      onClick: () => {
+        setSortByColumn({
+          by: 'DESC',
+          name: col
+        });
+      }
+    }), filterDropdown));
   });
-
-  var filteredRows = useMemo(function () {
-    var filtered = [];
-    var _iteratorNormalCompletion5 = true;
-    var _didIteratorError5 = false;
-    var _iteratorError5 = undefined;
-
-    try {
-      for (var _iterator5 = rows[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
-        var row = _step5.value;
-
-        var addRow = true;
-        for (var col in selectedByColumn) {
-          if (row[col] != selectedByColumn[col] && selectedByColumn[col] != '*') {
-            addRow = false;
-            break;
-          }
-        }
-        if (addRow) {
-          filtered.push(row);
+  const filteredRows = useMemo(() => {
+    const filtered = [];
+    for (const row of rows) {
+      let addRow = true;
+      for (const col in selectedByColumn) {
+        if (row[col] != selectedByColumn[col] && selectedByColumn[col] != '*') {
+          addRow = false;
+          break;
         }
       }
-    } catch (err) {
-      _didIteratorError5 = true;
-      _iteratorError5 = err;
-    } finally {
-      try {
-        if (!_iteratorNormalCompletion5 && _iterator5.return) {
-          _iterator5.return();
-        }
-      } finally {
-        if (_didIteratorError5) {
-          throw _iteratorError5;
-        }
+      if (addRow) {
+        filtered.push(row);
       }
     }
-
     return filtered;
   }, [rows, selectedByColumn, columnOptions]);
-
-  var sortedRows = useMemo(function () {
+  const sortedRows = useMemo(() => {
     if (sortByColumn.name == null) return filteredRows;
     if (columns[sortByColumn.name] == null) return filteredRows;
-    var sorted = [];
+    let sorted = [];
     if (columns[sortByColumn.name].sortFn != null) {
-      sorted = [].concat(_toConsumableArray(filteredRows)).sort(columns[sortByColumn.name].sortFn);
+      sorted = [...filteredRows].sort(columns[sortByColumn.name].sortFn);
     } else {
-      sorted = [].concat(_toConsumableArray(filteredRows)).sort(function (rowA, rowB) {
+      sorted = [...filteredRows].sort((rowA, rowB) => {
         if (rowA[sortByColumn.name] < rowB[sortByColumn.name]) {
           return -1;
         }
@@ -1836,60 +1596,27 @@ function Table(props) {
     }
     return sorted;
   }, [sortByColumn, filteredRows]);
-
-  var rowHTML = sortedRows.map(function (row, i) {
-    var rowData = colNames.map(function (col) {
-      var dataCell = columns[col].maxWidth ? ("" + row[col]).slice(0, columns[col].maxWidth) : row[col];
-      return React.createElement(
-        'td',
-        { key: 'cell_' + col + row[col] },
-        dataCell
-      );
+  const rowHTML = sortedRows.map((row, i) => {
+    const rowData = colNames.map(col => {
+      const dataCell = columns[col].maxWidth ? ("" + row[col]).slice(0, columns[col].maxWidth) : row[col];
+      return /*#__PURE__*/React.createElement("td", {
+        key: 'cell_' + col + row[col]
+      }, dataCell);
     });
-    return React.createElement(
-      'tr',
-      { key: 'row_' + i },
-      rowData
-    );
+    return /*#__PURE__*/React.createElement("tr", {
+      key: 'row_' + i
+    }, rowData);
   });
-
-  return React.createElement(
-    'div',
-    { style: _extends({}, tableStyle, props.style) },
-    props.hideNumRows ? null : React.createElement(
-      'span',
-      null,
-      'Total Rows: ',
-      rows.length,
-      ' Rows Displayed: ',
-      filteredRows.length
-    ),
-    React.createElement(
-      'table',
-      null,
-      React.createElement(
-        'thead',
-        null,
-        React.createElement(
-          'tr',
-          null,
-          headers
-        )
-      ),
-      React.createElement(
-        'tbody',
-        null,
-        rowHTML
-      )
-    )
-  );
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      ...tableStyle,
+      ...props.style
+    }
+  }, props.hideNumRows ? null : /*#__PURE__*/React.createElement("span", null, "Total Rows: ", rows.length, " Rows Displayed: ", filteredRows.length), /*#__PURE__*/React.createElement("table", null, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, headers)), /*#__PURE__*/React.createElement("tbody", null, rowHTML)));
 }
-
 module.exports = Table;
-},{"./Button.react":2,"./Dropdown.react":7,"react":34}],17:[function(require,module,exports){
-'use strict';
-
-var React = require('react');
+},{"./Button.react":3,"./Dropdown.react":9,"react":37}],20:[function(require,module,exports){
+const React = require('react');
 
 /**
  * Props:
@@ -1899,65 +1626,61 @@ var React = require('react');
  *  - onChange: (str) => void
  *  - style: Object
  */
-var TextField = function TextField(props) {
-  var value = props.value,
-      placeholder = props.placeholder,
-      password = props.password,
-      _onChange = props.onChange,
-      id = props.id;
-
-  var style = props.style != null ? props.style : {};
-  return React.createElement('input', {
+const TextField = props => {
+  const {
+    value,
+    placeholder,
+    password,
+    onChange,
+    id
+  } = props;
+  const style = props.style != null ? props.style : {};
+  return /*#__PURE__*/React.createElement("input", {
     id: id ? id : null,
     style: style,
     placeholder: placeholder,
     type: password ? 'password' : 'text',
     value: value,
-    onChange: function onChange(ev) {
-      _onChange(ev.target.value);
+    onChange: ev => {
+      onChange(ev.target.value);
     }
   });
 };
-
 module.exports = TextField;
-},{"react":34}],18:[function(require,module,exports){
-'use strict';
-
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
-
-var React = require('react');
-
-var throttle = require('bens_utils').helpers.throttle;
-
-var useEffect = React.useEffect,
-    useState = React.useState,
-    useMemo = React.useMemo,
-    useReducer = React.useReducer,
-    useRef = React.useRef,
-    useCallback = React.useCallback;
+},{"react":37}],21:[function(require,module,exports){
+const React = require('react');
+const {
+  throttle
+} = require('bens_utils').helpers;
+const {
+  useEffect,
+  useState,
+  useMemo,
+  useReducer,
+  useRef,
+  useCallback
+} = React;
 
 // use like
 // const [state, dispatch, getState] = useEnhancedReducer(reducer, initialState);
 // ALSO
 // can dispatch an action with no type and the action is simply merged into the state
 // with no need for handling
-
-var useEnhancedReducer = function useEnhancedReducer(reducer, initState, initializer) {
-  var lastState = useRef(initState);
-  var getState = useCallback(function () {
-    return lastState.current;
-  }, []);
-  return [].concat(_toConsumableArray(useReducer(function (state, action) {
-    var mergeReducer = function mergeReducer(state, action) {
+const useEnhancedReducer = (reducer, initState, initializer) => {
+  const lastState = useRef(initState);
+  const getState = useCallback(() => lastState.current, []);
+  return [...useReducer((state, action) => {
+    const mergeReducer = (state, action) => {
       if (action.type === undefined) {
-        return _extends({}, state, action);
+        return {
+          ...state,
+          ...action
+        };
       }
       return reducer(state, action);
     };
     return lastState.current = mergeReducer(state, action);
-  }, initState, initializer)), [getState]);
+  }, initState, initializer), getState];
 };
 
 // --------------------------------------------------------------------
@@ -1971,29 +1694,30 @@ var useEnhancedReducer = function useEnhancedReducer(reducer, initState, initial
 //  rightDown, rightUp,
 //  scroll,
 // };
-var useMouseHandler = function useMouseHandler(elementID, pseudoStore, handlers, dependencies) {
-  useEffect(function () {
-    var mvFn = throttle(onMove, [elementID, pseudoStore, handlers], 12);
-    var touchMvFn = function touchMvFn(ev) {
+const useMouseHandler = (elementID, pseudoStore, handlers, dependencies) => {
+  useEffect(() => {
+    const mvFn = throttle(onMove, [elementID, pseudoStore, handlers], 12);
+    const touchMvFn = ev => {
       if (ev.target.id === state.streamID + '_canvas') {
         ev.preventDefault();
       }
       onMove(elementID, pseudoStore, handlers, ev);
     };
-
-    var mouseDownFn = function mouseDownFn(ev) {
+    const mouseDownFn = ev => {
       onMouseDown(elementID, pseudoStore, handlers, ev);
     };
-    var mouseUpFn = function mouseUpFn(ev) {
+    const mouseUpFn = ev => {
       onMouseUp(elementID, pseudoStore, handlers, ev);
     };
-
-    var scrollLocked = false;
-    var scrollFn = function scrollFn(ev) {
+    const mouseLeaveFn = ev => {
+      onMouseLeave(elementID, pseudoStore, handlers, ev);
+    };
+    let scrollLocked = false;
+    const scrollFn = ev => {
       if (!scrollLocked) {
         onScroll(elementID, pseudoStore, handlers, ev);
         scrollLocked = true;
-        setTimeout(function () {
+        setTimeout(() => {
           scrollLocked = false;
         }, 150);
       }
@@ -2010,8 +1734,8 @@ var useMouseHandler = function useMouseHandler(elementID, pseudoStore, handlers,
     window.addEventListener("touchstart", mouseDownFn);
     window.addEventListener("touchend", mouseUpFn);
     window.addEventListener("touchcancel", mouseUpFn);
-
-    return function () {
+    window.addEventListener("mouseout", mouseLeaveFn);
+    return () => {
       window.removeEventListener("scroll", scrollFn);
       window.removeEventListener("mousemove", mvFn);
       window.removeEventListener("touchmove", touchMvFn);
@@ -2020,76 +1744,85 @@ var useMouseHandler = function useMouseHandler(elementID, pseudoStore, handlers,
       window.removeEventListener("touchstart", mouseDownFn);
       window.removeEventListener("touchend", mouseUpFn);
       window.removeEventListener("touchcancel", mouseUpFn);
+      window.removeEventListener("mouseleave", mouseLeaveFn);
     };
-  }, dependencies || []);
+  }, dependencies ?? []);
 };
-
-var getMousePixel = function getMousePixel(elementID, ev) {
+const getMousePixel = (elementID, ev) => {
   if (ev.target.id != elementID) return null;
-  var elem = document.getElementById(elementID);
+  const elem = document.getElementById(elementID);
   if (!elem) return null;
-  var rect = elem.getBoundingClientRect();
-  var x = ev.clientX;
-  var y = ev.clientY;
+  const rect = elem.getBoundingClientRect();
+  let x = ev.clientX;
+  let y = ev.clientY;
   if (ev.type === 'touchstart' || ev.type === 'touchmove') {
-    var touch = ev.touches[0];
+    const touch = ev.touches[0];
     x = touch.clientX;
     y = touch.clientY;
   }
   if (ev.type == 'touchend') {
-    var _touch = ev.changedTouches[0];
-    x = _touch.clientX;
-    y = _touch.clientY;
+    const touch = ev.changedTouches[0];
+    x = touch.clientX;
+    y = touch.clientY;
   }
-  var elemPos = {
+  const elemPos = {
     x: x - rect.left,
     y: y - rect.top
   };
-
   return elemPos;
 };
-
-var onScroll = function onScroll(elementID, pseudoStore, handlers, ev) {
+const onScroll = (elementID, pseudoStore, handlers, ev) => {
   if (ev.target.id != elementID) return null;
-  var getState = pseudoStore.getState,
-      dispatch = pseudoStore.dispatch;
-
+  const {
+    getState,
+    dispatch
+  } = pseudoStore;
   handlers.scroll(getState(), dispatch, ev.wheelDelta < 0 ? 1 : -1);
 };
-
-var onMove = function onMove(elementID, pseudoStore, handlers, ev) {
-  var getState = pseudoStore.getState,
-      dispatch = pseudoStore.dispatch;
-
-  var pos = getMousePixel(elementID, ev);
+const onMouseLeave = (elementID, pseudoStore, handlers, ev) => {
+  if (ev.target.id != elementID) return null;
+  const {
+    getState,
+    dispatch
+  } = pseudoStore;
+  if (handlers.mouseLeave) {
+    handlers.mouseLeave(getState(), dispatch);
+  }
+};
+const onMove = (elementID, pseudoStore, handlers, ev) => {
+  const {
+    getState,
+    dispatch
+  } = pseudoStore;
+  const pos = getMousePixel(elementID, ev);
   if (!pos) return;
-
-  dispatch({ type: 'SET_MOUSE_POS', curPixel: pos });
+  dispatch({
+    type: 'SET_MOUSE_POS',
+    curPixel: pos
+  });
   if (handlers.mouseMove != null) {
     handlers.mouseMove(getState(), dispatch, pos);
   }
 };
-
-var onMouseDown = function onMouseDown(elementID, pseudoStore, handlers, ev) {
-  var elem = document.getElementById(elementID);
+const onMouseDown = (elementID, pseudoStore, handlers, ev) => {
+  const elem = document.getElementById(elementID);
   // don't open the normal right-click menu
   if (elem != null) {
-    elem.addEventListener('contextmenu', function (ev) {
-      return ev.preventDefault();
-    });
+    elem.addEventListener('contextmenu', ev => ev.preventDefault());
   }
-
-  var getState = pseudoStore.getState,
-      dispatch = pseudoStore.dispatch;
-
-  var pos = getMousePixel(elementID, ev);
+  const {
+    getState,
+    dispatch
+  } = pseudoStore;
+  const pos = getMousePixel(elementID, ev);
   if (!pos) return;
-
   if (ev.button == 0 || ev.type == 'touchstart') {
     // left click
     dispatch({
       type: 'SET_MOUSE_DOWN',
-      isLeft: true, isDown: true, downPixel: pos
+      isLeft: true,
+      isDown: true,
+      downPixel: pos
     });
     if (handlers.leftDown != null) {
       handlers.leftDown(getState(), dispatch, pos);
@@ -2099,71 +1832,92 @@ var onMouseDown = function onMouseDown(elementID, pseudoStore, handlers, ev) {
     // right click
     dispatch({
       type: 'SET_MOUSE_DOWN',
-      isLeft: false, isDown: true, downPixel: pos
+      isLeft: false,
+      isDown: true,
+      downPixel: pos
     });
     if (handlers.rightDown != null) {
       handlers.rightDown(getState(), dispatch, pos);
     }
   }
 };
-
-var onMouseUp = function onMouseUp(elementID, pseudoStore, handlers, ev) {
-  var getState = pseudoStore.getState,
-      dispatch = pseudoStore.dispatch;
-
-  var pos = getMousePixel(elementID, ev);
+const onMouseUp = (elementID, pseudoStore, handlers, ev) => {
+  const {
+    getState,
+    dispatch
+  } = pseudoStore;
+  const pos = getMousePixel(elementID, ev);
   if (!pos) return;
-
   if (ev.button == 0 || ev.type == 'touchend' || ev.type == 'touchcancel') {
     // left click
-    dispatch({ type: 'SET_MOUSE_DOWN', isLeft: true, isDown: false });
+    dispatch({
+      type: 'SET_MOUSE_DOWN',
+      isLeft: true,
+      isDown: false
+    });
     if (handlers.leftUp != null) {
       handlers.leftUp(getState(), dispatch, pos);
     }
   }
   if (ev.button == 2) {
     // right click
-    dispatch({ type: 'SET_MOUSE_DOWN', isLeft: false, isDown: false });
+    dispatch({
+      type: 'SET_MOUSE_DOWN',
+      isLeft: false,
+      isDown: false
+    });
     if (handlers.rightUp != null) {
       handlers.rightUp(getState(), dispatch, pos);
     }
   }
 };
-
-var mouseReducer = function mouseReducer(mouse, action) {
+const mouseReducer = (mouse, action) => {
   if (mouse == undefined) {
     mouse = {
       isLeftDown: false,
       isRightDown: false,
-      downPixel: { x: 0, y: 0 },
-      prevPixel: { x: 0, y: 0 },
-      curPixel: { x: 0, y: 0 },
-
+      downPixel: {
+        x: 0,
+        y: 0
+      },
+      prevPixel: {
+        x: 0,
+        y: 0
+      },
+      curPixel: {
+        x: 0,
+        y: 0
+      },
       prevInteractPos: null
     };
   }
-
   switch (action.type) {
     case 'SET_MOUSE_DOWN':
       {
-        var isLeft = action.isLeft,
-            isDown = action.isDown,
-            downPixel = action.downPixel;
-
-        return _extends({}, mouse, {
+        const {
+          isLeft,
+          isDown,
+          downPixel
+        } = action;
+        return {
+          ...mouse,
           isLeftDown: isLeft ? isDown : mouse.isLeftDown,
           isRightDown: isLeft ? mouse.isRightDown : isDown,
           downPixel: isDown && downPixel != null ? downPixel : mouse.downPixel
-        });
+        };
       }
     case 'SET_MOUSE_POS':
       {
-        var curPixel = action.curPixel;
-
-        return _extends({}, mouse, {
-          prevPixel: _extends({}, mouse.curPixel),
-          curPixel: curPixel
-        });
+        const {
+          curPixel
+        } = action;
+        return {
+          ...mouse,
+          prevPixel: {
+            ...mouse.curPixel
+          },
+          curPixel
+        };
       }
   }
   return mouse;
@@ -2173,572 +1927,680 @@ var mouseReducer = function mouseReducer(mouse, action) {
 // UseEnhanced Effect (experimental)
 // --------------------------------------------------------------------
 // pass accessibleVals that the effect can read but won't re-run when they change
-var useEnhancedEffect = function useEnhancedEffect(effectFn, dependencies, accessibleVals) {
-  var compares = dependencies.map(useCompare);
-  useEffect(function () {
-    if (compares.filter(function (c) {
-      return c;
-    }).length == 0) return;
+const useEnhancedEffect = (effectFn, dependencies, accessibleVals) => {
+  const compares = dependencies.map(useCompare);
+  useEffect(() => {
+    if (compares.filter(c => c).length == 0) return;
     effectFn();
-  }, [].concat(_toConsumableArray(dependencies), _toConsumableArray(accessibleVals), _toConsumableArray(compares)));
+  }, [...dependencies, ...accessibleVals, ...compares]);
 };
 
 // Desired hook
 function useCompare(val) {
-  var prevVal = usePrevious(val);
+  const prevVal = usePrevious(val);
   return prevVal !== val;
 }
 
 // Helper hook
 function usePrevious(value) {
-  var ref = useRef();
-  useEffect(function () {
+  const ref = useRef();
+  useEffect(() => {
     ref.current = value;
   }, [value]);
   return ref.current;
 }
-
 module.exports = {
-  useEnhancedReducer: useEnhancedReducer,
-  useMouseHandler: useMouseHandler,
-  mouseReducer: mouseReducer,
-  useEnhancedEffect: useEnhancedEffect,
-  useCompare: useCompare,
-  usePrevious: usePrevious
-
+  useEnhancedReducer,
+  useMouseHandler,
+  mouseReducer,
+  useEnhancedEffect,
+  useCompare,
+  usePrevious
 };
-},{"bens_utils":27,"react":34}],19:[function(require,module,exports){
-'use strict';
-
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
-
-function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
-
-var React = require('react');
-var ReactDOM = require('react-dom/client');
-var useState = React.useState,
-    useEffect = React.useEffect,
-    useMemo = React.useMemo,
-    useReducer = React.useReducer;
-
-
-var AudioWidget = require('./AudioWidget.react.js');
-var Button = require('./Button.react.js');
-var Canvas = require('./Canvas.react.js');
-var Checkbox = require('./Checkbox.react.js');
-var Divider = require('./Divider.react.js');
-var DragArea = require('./DragArea.react.js');
-var Dropdown = require('./Dropdown.react.js');
-var Indicator = require('./Indicator.react.js');
-var InfoCard = require('./InfoCard.react.js');
-var Modal = require('./Modal.react.js');
-var NumberField = require('./NumberField.react.js');
-var Plot = require('./Plot.react.js');
-var plotReducer = require('./plotReducer.js').plotReducer;
-var QuitButton = require('./QuitButton.react.js');
-var RadioPicker = require('./RadioPicker.react.js');
-var Slider = require('./Slider.react.js');
-var Table = require('./Table.react.js');
-var TextField = require('./TextField.react.js');
-
-var _require = require('./hooks.js'),
-    useEnhancedEffect = _require.useEnhancedEffect,
-    useEnhancedReducer = _require.useEnhancedReducer,
-    useMouseHandler = _require.useMouseHandler;
-
+},{"bens_utils":30,"react":37}],22:[function(require,module,exports){
+const React = require('react');
+const ReactDOM = require('react-dom/client');
+const {
+  useState,
+  useEffect,
+  useMemo,
+  useReducer
+} = React;
+const {
+  oneOf,
+  randomIn
+} = require('bens_utils').stochastic;
+const AudioWidget = require('./AudioWidget.react.js');
+const Board = require('./Board.react.js');
+const Button = require('./Button.react.js');
+const Canvas = require('./Canvas.react.js');
+const Checkbox = require('./Checkbox.react.js');
+const CheckerBackground = require('./CheckerBackground.react.js');
+const Divider = require('./Divider.react.js');
+const DragArea = require('./DragArea.react.js');
+const Dropdown = require('./Dropdown.react.js');
+const Indicator = require('./Indicator.react.js');
+const InfoCard = require('./InfoCard.react.js');
+const Modal = require('./Modal.react.js');
+const NumberField = require('./NumberField.react.js');
+const Plot = require('./Plot.react.js');
+const plotReducer = require('./plotReducer.js').plotReducer;
+const QuitButton = require('./QuitButton.react.js');
+const RadioPicker = require('./RadioPicker.react.js');
+const Slider = require('./Slider.react.js');
+const SpriteSheet = require('./SpriteSheet.react.js');
+const Table = require('./Table.react.js');
+const TextField = require('./TextField.react.js');
+const {
+  useEnhancedEffect,
+  useEnhancedReducer,
+  useMouseHandler
+} = require('./hooks.js');
 function renderUI(root) {
-  root.render(React.createElement(Main, null));
+  root.render( /*#__PURE__*/React.createElement(Main, null));
 }
-
-var CANVAS_WIDTH = 300;
-var CANVAS_HEIGHT = 300;
-
-var Main = function Main(props) {
-  var _useState = useState(null),
-      _useState2 = _slicedToArray(_useState, 2),
-      modal = _useState2[0],
-      setModal = _useState2[1];
-
-  var _useState3 = useState(false),
-      _useState4 = _slicedToArray(_useState3, 2),
-      fullCanvas = _useState4[0],
-      setFullCanvas = _useState4[1];
-
-  var _useState5 = useState({ val: 0 }),
-      _useState6 = _slicedToArray(_useState5, 2),
-      counter = _useState6[0],
-      setCounter = _useState6[1];
-
-  var _useEnhancedReducer = useEnhancedReducer(function () {}, { val: 0 }),
-      _useEnhancedReducer2 = _slicedToArray(_useEnhancedReducer, 2),
-      counter2 = _useEnhancedReducer2[0],
-      setCounter2 = _useEnhancedReducer2[1];
-
-  useEffect(function () {
+const CANVAS_WIDTH = 300;
+const CANVAS_HEIGHT = 300;
+const Main = props => {
+  const [modal, setModal] = useState(null);
+  const [fullCanvas, setFullCanvas] = useState(false);
+  const [counter, setCounter] = useState({
+    val: 0
+  });
+  const [counter2, setCounter2] = useEnhancedReducer(() => {}, {
+    val: 0
+  });
+  useEffect(() => {
     console.log("counter1", counter.val, "counter2", counter2.val);
   }, [counter]);
-
-  var _useEnhancedReducer3 = useEnhancedReducer(function (table, action) {
+  const [table, updateTable] = useEnhancedReducer((table, action) => {
     if (action.type == 'ADD_NAME') {
-      var id = table.nextID++;
-      return _extends({}, table, {
-        columns: _extends({}, table.columns),
-        rows: [].concat(_toConsumableArray(table.rows), [{ id: table.nextID++, name: action.name }])
-      });
+      const id = table.nextID++;
+      return {
+        ...table,
+        columns: {
+          ...table.columns
+        },
+        rows: [...table.rows, {
+          id: table.nextID++,
+          name: action.name
+        }]
+      };
     }
     return table;
   }, {
     nextID: 1,
-    rows: [{ id: 0, name: 'ben' }],
+    rows: [{
+      id: 0,
+      name: 'ben'
+    }],
     columns: {
-      id: { filterable: true },
-      name: { filterable: true }
+      id: {
+        filterable: true
+      },
+      name: {
+        filterable: true
+      }
     }
-  }),
-      _useEnhancedReducer4 = _slicedToArray(_useEnhancedReducer3, 2),
-      table = _useEnhancedReducer4[0],
-      updateTable = _useEnhancedReducer4[1];
-
-  var _useEnhancedReducer5 = useEnhancedReducer(function (mouse, action) {
+  });
+  const [mouse, mouseDispatch, getMouseState] = useEnhancedReducer((mouse, action) => {
     switch (action.type) {
       case 'SET_MOUSE_DOWN':
         {
-          var isLeft = action.isLeft,
-              isDown = action.isDown,
-              downPixel = action.downPixel;
-
-          return _extends({}, mouse, {
+          const {
+            isLeft,
+            isDown,
+            downPixel
+          } = action;
+          return {
+            ...mouse,
             isLeftDown: isLeft ? isDown : mouse.isLeftDown,
             isRightDown: isLeft ? mouse.isRightDown : isDown,
             downPixel: isDown && downPixel != null ? downPixel : mouse.downPixel
-          });
+          };
         }
       case 'SET_MOUSE_POS':
         {
-          var curPixel = action.curPixel;
-
-          return _extends({}, mouse, {
-            prevPixel: _extends({}, mouse.curPixel),
-            curPixel: curPixel
-          });
+          const {
+            curPixel
+          } = action;
+          return {
+            ...mouse,
+            prevPixel: {
+              ...mouse.curPixel
+            },
+            curPixel
+          };
         }
       case 'ADD_LINE':
         {
-          return _extends({}, mouse, {
-            lines: [].concat(_toConsumableArray(mouse.lines), [action.line])
-          });
+          return {
+            ...mouse,
+            lines: [...mouse.lines, action.line]
+          };
         }
     }
     return mouse;
   }, {
     isLeftDown: false,
     isRightDown: false,
-    downPixel: { x: 0, y: 0 },
-    prevPixel: { x: 0, y: 0 },
-    curPixel: { x: 0, y: 0 },
-
-    canvasSize: { width: CANVAS_WIDTH, height: CANVAS_HEIGHT },
+    downPixel: {
+      x: 0,
+      y: 0
+    },
+    prevPixel: {
+      x: 0,
+      y: 0
+    },
+    curPixel: {
+      x: 0,
+      y: 0
+    },
+    canvasSize: {
+      width: CANVAS_WIDTH,
+      height: CANVAS_HEIGHT
+    },
     lines: [],
     prevInteractPos: null
-  }),
-      _useEnhancedReducer6 = _slicedToArray(_useEnhancedReducer5, 3),
-      mouse = _useEnhancedReducer6[0],
-      mouseDispatch = _useEnhancedReducer6[1],
-      getMouseState = _useEnhancedReducer6[2];
-
-  var div = function div(pos, size) {
-    return { x: pos.x / size.width, y: pos.y / size.height };
+  });
+  const div = (pos, size) => {
+    return {
+      x: pos.x / size.width,
+      y: pos.y / size.height
+    };
   };
-
-  useMouseHandler("canvas", { dispatch: mouseDispatch, getState: getMouseState }, {
-    leftDown: function leftDown(state, dispatch, pos) {
+  useMouseHandler("canvas", {
+    dispatch: mouseDispatch,
+    getState: getMouseState
+  }, {
+    leftDown: (state, dispatch, pos) => {
       console.log("click", pos);
     },
-    mouseMove: function mouseMove(state, dispatch, gridPos) {
+    mouseMove: (state, dispatch, gridPos) => {
       if (!state.isLeftDown) return;
-      dispatch({ inMove: true });
-
-      var canvasSize = state.canvasSize;
-
+      dispatch({
+        inMove: true
+      });
+      const {
+        canvasSize
+      } = state;
       if (state.prevInteractPos) {
-        var prevPos = state.prevInteractPos;
-        dispatch({ type: 'ADD_LINE',
+        const prevPos = state.prevInteractPos;
+        dispatch({
+          type: 'ADD_LINE',
           line: {
             start: div(prevPos, canvasSize),
             end: div(gridPos, canvasSize),
             color: 'red'
           }
         });
-        dispatch({ prevInteractPos: gridPos });
+        dispatch({
+          prevInteractPos: gridPos
+        });
       } else {
-        dispatch({ prevInteractPos: gridPos });
+        dispatch({
+          prevInteractPos: gridPos
+        });
       }
     },
-    leftUp: function leftUp(state, dispatch, gridPos) {
-      dispatch({ inMove: false });
-      dispatch({ prevInteractPos: null });
+    leftUp: (state, dispatch, gridPos) => {
+      dispatch({
+        inMove: false
+      });
+      dispatch({
+        prevInteractPos: null
+      });
     }
   });
-
-  useEffect(function () {
-    var canvasWidth = fullCanvas ? window.innerWidth : CANVAS_WIDTH;
-    var canvasHeight = fullCanvas ? window.innerHeight : CANVAS_HEIGHT;
+  useEffect(() => {
+    const canvasWidth = fullCanvas ? window.innerWidth : CANVAS_WIDTH;
+    const canvasHeight = fullCanvas ? window.innerHeight : CANVAS_HEIGHT;
     render(canvasWidth, canvasHeight, mouse.lines);
   }, [mouse.lines]);
-
-  var _useState7 = useState([React.createElement(Draggable, { id: "drag3", key: "drag3", style: { top: 300, left: 250 } }), React.createElement(Draggable, { id: "drag4", key: "drag4", style: { top: 350, left: 150 } }), React.createElement(Draggable, { id: "drag5", key: "drag5", style: { top: 150, left: 150 } })]),
-      _useState8 = _slicedToArray(_useState7, 2),
-      draggables = _useState8[0],
-      setDraggables = _useState8[1];
-
-  return React.createElement(
-    'div',
-    null,
-    modal,
-    React.createElement(
-      'div',
-      {
+  const [draggables, setDraggables] = useState([/*#__PURE__*/React.createElement(Draggable, {
+    id: "drag1",
+    disabled: true,
+    key: "drag1",
+    style: {
+      top: 300,
+      left: 200
+    }
+  }), /*#__PURE__*/React.createElement(Draggable, {
+    id: "drag2",
+    key: "drag2",
+    style: {
+      top: 300,
+      left: 100
+    }
+  }), /*#__PURE__*/React.createElement(Draggable, {
+    id: "drag3",
+    key: "drag3",
+    style: {
+      top: 100,
+      left: 100
+    }
+  })]);
+  return /*#__PURE__*/React.createElement("div", null, modal, /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: 'absolute',
+      top: 4,
+      left: 4,
+      zIndex: 5
+    }
+  }, /*#__PURE__*/React.createElement(Button, {
+    label: "Pressed " + counter.val + " times",
+    onClick: () => setCounter({
+      val: counter.val + 1
+    })
+  }), /*#__PURE__*/React.createElement(Button, {
+    label: "Add Draggable",
+    onClick: () => {
+      const nextID = "drag" + (draggables.length + 1);
+      setDraggables([...draggables, /*#__PURE__*/React.createElement(Draggable, {
+        id: nextID,
+        key: nextID,
         style: {
-          position: 'absolute',
-          top: 4,
-          left: 4,
-          zIndex: 5
+          top: randomIn(0, 3) * 100,
+          left: randomIn(0, 3) * 100,
+          backgroundColor: oneOf(['red', 'blue', 'orange', 'purple'])
         }
-      },
-      React.createElement(Button, {
-        label: "Pressed " + counter.val + " times",
-        onClick: function onClick() {
-          return setCounter({ val: counter.val + 1 });
-        }
-      }),
-      React.createElement(Button, {
-        label: "Pressed " + counter2.val + " times",
-        onClick: function onClick() {
-          return setCounter2({ val: counter2.val + 1 });
-        }
-      }),
-      React.createElement(Button, {
-        label: "Add Row",
-        onClick: function onClick() {
-          return updateTable({ type: 'ADD_NAME', name: 'foo' });
-        }
-      }),
-      React.createElement('div', null),
-      React.createElement(Button, {
-        label: "Display Modal",
-        disabled: modal != null,
-        onClick: function onClick() {
-          setModal(React.createElement(Modal, {
-            title: 'Modal',
-            body: React.createElement(ModalBody, {
-              counter: counter,
-              counter2: counter2
-            }),
-            buttons: [{ label: 'Dismiss', onClick: function onClick() {
-                return setModal(null);
-              } }]
-          }));
-        }
-      }),
-      React.createElement(Button, {
-        label: fullCanvas ? "Smaller Canvas" : "Set Full Screen Canvas",
-        onClick: function onClick() {
-          return setFullCanvas(!fullCanvas);
-        }
-      })
-    ),
-    React.createElement(
-      'div',
-      {
-        style: {
-          display: 'flex',
-          marginTop: 50
-        }
-      },
-      React.createElement(Canvas, {
-        width: CANVAS_WIDTH,
-        height: CANVAS_HEIGHT,
-        useFullScreen: fullCanvas,
-        onResize: function onResize() {
-          var canvasWidth = fullCanvas ? window.innerWidth : CANVAS_WIDTH;
-          var canvasHeight = fullCanvas ? window.innerHeight : CANVAS_HEIGHT;
-          render(canvasWidth, canvasHeight, mouse.lines);
-        }
-      }),
-      React.createElement(Table, {
-        style: { paddingTop: '3rem', fontSize: 19 },
-        rows: table.rows,
-        columns: table.columns
-      })
-    ),
-    React.createElement(
-      'div',
-      null,
-      React.createElement(Slider, {
-        label: 'Slider',
-        style: { display: 'inline' },
-        min: 0, max: 100,
-        value: counter.val,
-        noOriginalValue: true,
-        onChange: function onChange(v) {
-          return setCounter({ val: v });
-        }
-      }),
-      React.createElement(Slider, {
-        label: 'Slider 2',
-        style: { display: 'inline' },
-        min: 0, max: 100,
-        value: counter2.val,
-        noNumberField: true,
-        onChange: function onChange(v) {
-          return setCounter2({ val: v });
-        }
-      })
-    ),
-    React.createElement(
-      DragArea,
-      {
-        snapX: 100,
-        snapY: 100,
-        isDropAllowed: function isDropAllowed(id, position) {
-          return true;
-        },
-        onDrop: function onDrop(id, position) {
-          console.log(id, "dropped at", position);
-        },
-        style: {
-          position: 'relative',
-          width: 400, height: 400,
-          border: '1px solid black'
-        }
-      },
-      draggables
-    )
-  );
-};
-
-var Draggable = function Draggable(props) {
-  return React.createElement(
-    'div',
-    {
-      id: props.id,
-      style: _extends({
-        position: 'absolute',
-        width: 100, height: 100,
-        top: 200, left: 250, textAlign: 'center',
-        backgroundColor: 'green', borderRadius: '5%'
-      }, props.style || {})
+      })]);
+    }
+  }), /*#__PURE__*/React.createElement(Button, {
+    label: "Remove Draggable",
+    onClick: () => {
+      setDraggables(draggables.slice(0, -1));
+    }
+  }), /*#__PURE__*/React.createElement(Button, {
+    label: "Add Row",
+    onClick: () => updateTable({
+      type: 'ADD_NAME',
+      name: 'foo'
+    })
+  }), /*#__PURE__*/React.createElement("div", null), /*#__PURE__*/React.createElement(Button, {
+    label: "Display Modal",
+    disabled: modal != null,
+    onClick: () => {
+      setModal( /*#__PURE__*/React.createElement(Modal, {
+        title: "Modal",
+        body: /*#__PURE__*/React.createElement(ModalBody, {
+          counter: counter,
+          counter2: counter2
+        }),
+        buttons: [{
+          label: 'Dismiss',
+          onClick: () => setModal(null)
+        }]
+      }));
+    }
+  }), /*#__PURE__*/React.createElement(Button, {
+    label: fullCanvas ? "Smaller Canvas" : "Set Full Screen Canvas",
+    onClick: () => setFullCanvas(!fullCanvas)
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      marginTop: 50
+    }
+  }, /*#__PURE__*/React.createElement(Canvas, {
+    width: CANVAS_WIDTH,
+    height: CANVAS_HEIGHT,
+    useFullScreen: fullCanvas,
+    onResize: () => {
+      const canvasWidth = fullCanvas ? window.innerWidth : CANVAS_WIDTH;
+      const canvasHeight = fullCanvas ? window.innerHeight : CANVAS_HEIGHT;
+      render(canvasWidth, canvasHeight, mouse.lines);
+    }
+  }), /*#__PURE__*/React.createElement(Table, {
+    style: {
+      paddingTop: '3rem',
+      fontSize: 19
     },
-    props.id
-  );
-};
-
-var HorizontalSplitPane = function HorizontalSplitPane(props) {
-  return React.createElement(
-    'div',
-    {
-      style: {
-        display: "flex",
-        flexFlow: "column",
-        width: '100%'
+    rows: table.rows,
+    columns: table.columns
+  })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Slider, {
+    label: "Slider",
+    style: {
+      display: 'inline'
+    },
+    min: 0,
+    max: 100,
+    value: counter.val,
+    noOriginalValue: true,
+    onChange: v => {
+      return setCounter({
+        val: v
+      });
+    }
+  }), /*#__PURE__*/React.createElement(Slider, {
+    label: "Slider 2",
+    style: {
+      display: 'inline'
+    },
+    min: 0,
+    max: 100,
+    value: counter2.val,
+    noNumberField: true,
+    onChange: v => {
+      return setCounter2({
+        val: v
+      });
+    }
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex'
+    }
+  }, /*#__PURE__*/React.createElement(DragArea, {
+    snapX: 100,
+    snapY: 100,
+    isDropAllowed: (id, position) => {
+      console.log(id, position);
+      if (id == 'drag4') return false;
+      return true;
+    },
+    onDrop: (id, position) => {
+      console.log(id, "dropped at", position);
+    },
+    style: {
+      width: 400,
+      height: 400,
+      border: '1px solid black'
+    }
+  }, draggables), /*#__PURE__*/React.createElement(Board, {
+    pixelSize: {
+      width: 400,
+      height: 400
+    },
+    gridSize: {
+      width: 8,
+      height: 8
+    },
+    onPieceMove: (id, position) => {
+      console.log(id, "moved to", position);
+    },
+    isMoveAllowed: (id, position) => {
+      return true;
+    },
+    background: /*#__PURE__*/React.createElement(CheckerBackground, {
+      color1: "#6B8E23",
+      color2: "#FFFAF0",
+      pixelSize: {
+        width: 400,
+        height: 400
+      },
+      gridSize: {
+        width: 8,
+        height: 8
       }
-    },
-    React.createElement(
-      'div',
-      {
-        style: {
-          backgroundColor: 'red',
-          opacity: 0.2,
-          width: '100%',
-          borderBottom: '1px solid black'
-        }
+    }),
+    pieces: [{
+      id: 'whiteKing',
+      position: {
+        x: 1,
+        y: 1
       },
-      'Hello'
-    ),
-    React.createElement(
-      'div',
-      {
-        style: {
-          backgroundColor: 'steelblue',
-          opacity: 0.2,
-          width: '100%',
-          borderTop: '1px solid black'
+      sprite: /*#__PURE__*/React.createElement(SpriteSheet, {
+        src: '../chess.png',
+        offset: {
+          x: 0,
+          y: 0
+        },
+        spriteSheet: {
+          pxWidth: 50,
+          pxHeight: 50,
+          imagesAcross: 6,
+          imagesDown: 2
         }
+      })
+    }, {
+      id: 'whiteQueen',
+      position: {
+        x: 1,
+        y: 2
       },
-      'World'
-    )
-  );
+      sprite: /*#__PURE__*/React.createElement(SpriteSheet, {
+        src: '../chess.png',
+        offset: {
+          x: 1,
+          y: 0
+        },
+        spriteSheet: {
+          pxWidth: 50,
+          pxHeight: 50,
+          imagesAcross: 6,
+          imagesDown: 2
+        }
+      })
+    }, {
+      id: 'blackKing',
+      position: {
+        x: 7,
+        y: 7
+      },
+      sprite: /*#__PURE__*/React.createElement(SpriteSheet, {
+        src: '../chess.png',
+        offset: {
+          x: 0,
+          y: 1
+        },
+        spriteSheet: {
+          pxWidth: 50,
+          pxHeight: 50,
+          imagesAcross: 6,
+          imagesDown: 2
+        }
+      })
+    }, {
+      id: 'blackQueen',
+      position: {
+        x: 6,
+        y: 7
+      },
+      sprite: /*#__PURE__*/React.createElement(SpriteSheet, {
+        src: '../chess.png',
+        offset: {
+          x: 1,
+          y: 1
+        },
+        spriteSheet: {
+          pxWidth: 50,
+          pxHeight: 50,
+          imagesAcross: 6,
+          imagesDown: 2
+        }
+      })
+    }, {
+      id: 'whiteKnook',
+      position: {
+        x: 2,
+        y: 2
+      },
+      sprite: /*#__PURE__*/React.createElement(SpriteSheet, {
+        src: '../chess2.png',
+        offset: {
+          x: 6,
+          y: 0
+        },
+        spriteSheet: {
+          pxWidth: 50,
+          pxHeight: 50,
+          imagesAcross: 8,
+          imagesDown: 2
+        }
+      })
+    }]
+  })));
 };
-
-var ModalBody = function ModalBody(props) {
-  useEffect(function () {
+const Draggable = props => {
+  return /*#__PURE__*/React.createElement("div", {
+    id: props.id,
+    style: {
+      position: 'absolute',
+      width: 100,
+      height: 100,
+      top: 200,
+      left: 250,
+      textAlign: 'center',
+      backgroundColor: 'green',
+      borderRadius: '5%',
+      cursor: 'pointer',
+      ...(props.style || {})
+    }
+  }, props.id);
+};
+const HorizontalSplitPane = props => {
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      flexFlow: "column",
+      width: '100%'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      backgroundColor: 'red',
+      opacity: 0.2,
+      width: '100%',
+      borderBottom: '1px solid black'
+    }
+  }, "Hello"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      backgroundColor: 'steelblue',
+      opacity: 0.2,
+      width: '100%',
+      borderTop: '1px solid black'
+    }
+  }, "World"));
+};
+const ModalBody = props => {
+  useEffect(() => {
     console.log(props.counter.val, props.counter2.val);
-    return function () {
+    return () => {
       console.log(props.counter.val, props.counter2.val);
     };
   }, [props.counter]);
-
-  return React.createElement(
-    'div',
-    null,
-    'lorem ipsum the quick brown fox jumped over the lazy dog'
-  );
+  return /*#__PURE__*/React.createElement("div", null, "lorem ipsum the quick brown fox jumped over the lazy dog");
 };
-
-var grid = {
+const grid = {
   width: 500,
   height: 500
 };
-var mult = function mult(pos, size) {
-  return { x: pos.x * size.width, y: pos.y * size.height };
+const mult = (pos, size) => {
+  return {
+    x: pos.x * size.width,
+    y: pos.y * size.height
+  };
 };
-
-var render = function render(canvasWidth, canvasHeight, lines) {
-  var cvs = document.getElementById('canvas');
-  var ctx = cvs.getContext('2d');
-
+const render = (canvasWidth, canvasHeight, lines) => {
+  const cvs = document.getElementById('canvas');
+  const ctx = cvs.getContext('2d');
   ctx.save();
   ctx.fillStyle = 'gray';
-  var pxW = canvasWidth / grid.width;
-  var pxH = canvasHeight / grid.height;
+  const pxW = canvasWidth / grid.width;
+  const pxH = canvasHeight / grid.height;
   ctx.scale(pxW, pxH);
-
   ctx.fillRect(0, 0, grid.width, grid.height);
   ctx.fillStyle = 'steelblue';
   ctx.fillRect(25, 25, 250, 400);
-
   ctx.lineWidth = 4;
-
   ctx.beginPath();
-  var _iteratorNormalCompletion = true;
-  var _didIteratorError = false;
-  var _iteratorError = undefined;
-
-  try {
-    for (var _iterator = lines[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-      var line = _step.value;
-
-      var start = mult(line.start, grid);
-      var end = mult(line.end, grid);
-      ctx.strokeStyle = line.color;
-      ctx.moveTo(start.x, start.y);
-      ctx.lineTo(end.x, end.y);
-      ctx.stroke();
-    }
-  } catch (err) {
-    _didIteratorError = true;
-    _iteratorError = err;
-  } finally {
-    try {
-      if (!_iteratorNormalCompletion && _iterator.return) {
-        _iterator.return();
-      }
-    } finally {
-      if (_didIteratorError) {
-        throw _iteratorError;
-      }
-    }
+  for (const line of lines) {
+    const start = mult(line.start, grid);
+    const end = mult(line.end, grid);
+    ctx.strokeStyle = line.color;
+    ctx.moveTo(start.x, start.y);
+    ctx.lineTo(end.x, end.y);
+    ctx.stroke();
   }
-
   ctx.closePath();
-
   ctx.restore();
 };
-
-var root = ReactDOM.createRoot(document.getElementById('container'));
+const root = ReactDOM.createRoot(document.getElementById('container'));
 renderUI(root);
-},{"./AudioWidget.react.js":1,"./Button.react.js":2,"./Canvas.react.js":3,"./Checkbox.react.js":4,"./Divider.react.js":5,"./DragArea.react.js":6,"./Dropdown.react.js":7,"./Indicator.react.js":8,"./InfoCard.react.js":9,"./Modal.react.js":10,"./NumberField.react.js":11,"./Plot.react.js":12,"./QuitButton.react.js":13,"./RadioPicker.react.js":14,"./Slider.react.js":15,"./Table.react.js":16,"./TextField.react.js":17,"./hooks.js":18,"./plotReducer.js":20,"react":34,"react-dom/client":30}],20:[function(require,module,exports){
-'use strict';
+},{"./AudioWidget.react.js":1,"./Board.react.js":2,"./Button.react.js":3,"./Canvas.react.js":4,"./Checkbox.react.js":5,"./CheckerBackground.react.js":6,"./Divider.react.js":7,"./DragArea.react.js":8,"./Dropdown.react.js":9,"./Indicator.react.js":10,"./InfoCard.react.js":11,"./Modal.react.js":12,"./NumberField.react.js":13,"./Plot.react.js":14,"./QuitButton.react.js":15,"./RadioPicker.react.js":16,"./Slider.react.js":17,"./SpriteSheet.react.js":18,"./Table.react.js":19,"./TextField.react.js":20,"./hooks.js":21,"./plotReducer.js":23,"bens_utils":30,"react":37,"react-dom/client":33}],23:[function(require,module,exports){
+// type Point = {
+//   x: number,
+//   y: number,
+//   color: ?string, // css color
+// };
+//
+// type Axis = {
+//   dimension: 'x' | 'y',
+//   label: string,
+//   min: ?number,
+//   max: ?number,
+// };
 
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-function _toArray(arr) { return Array.isArray(arr) ? arr : Array.from(arr); }
-
-function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
-var plotReducer = function plotReducer(state, action) {
+const plotReducer = (state, action) => {
   switch (action.type) {
     case 'SET_AXIS':
-      var axis = action.axis;
-
-      var whichAxis = axis.dimension == 'x' ? 'xAxis' : 'yAxis';
-      return _extends({}, state, _defineProperty({}, whichAxis, _extends({ label: axis.dimension, min: 0, max: 100 }, axis)));
+      const {
+        axis
+      } = action;
+      const whichAxis = axis.dimension == 'x' ? 'xAxis' : 'yAxis';
+      return {
+        ...state,
+        [whichAxis]: {
+          label: axis.dimension,
+          min: 0,
+          max: 100,
+          ...axis
+        }
+      };
     case 'SET_POINTS':
-      var points = action.points;
-
-      return _extends({}, state, {
-        points: points
-      });
+      const {
+        points
+      } = action;
+      return {
+        ...state,
+        points
+      };
     case 'ADD_POINTS':
       {
-        var _points = action.points;
-
-        return _extends({}, state, {
-          points: state.points ? [].concat(_toConsumableArray(state.points), _toConsumableArray(_points)) : _points
-        });
+        const {
+          points
+        } = action;
+        return {
+          ...state,
+          points: state.points ? [...state.points, ...points] : points
+        };
       }
     case 'ADD_POINT_CIRCULAR':
       {
-        var point = action.point;
-
+        const {
+          point
+        } = action;
         if (point.x < state.xAxis.max) {
-          return _extends({}, state, {
-            points: state.points ? [].concat(_toConsumableArray(state.points), [point]) : points
-          });
+          return {
+            ...state,
+            points: state.points ? [...state.points, point] : points
+          };
         } else {
-          var _state$points = _toArray(state.points),
-              _ = _state$points[0],
-              next = _state$points.slice(1);
-
-          return _extends({}, state, {
-            points: state.points ? [].concat(_toConsumableArray(next), [point]) : points
-          });
+          const [_, ...next] = state.points;
+          return {
+            ...state,
+            points: state.points ? [...next, point] : points
+          };
         }
       }
     case 'CLEAR_POINTS':
       {
-        return _extends({}, state, {
+        return {
+          ...state,
           points: []
-        });
+        };
       }
     case 'PRINT_POINTS':
       {
-        var _iteratorNormalCompletion = true;
-        var _didIteratorError = false;
-        var _iteratorError = undefined;
-
-        try {
-          for (var _iterator = state.points[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-            var _point = _step.value;
-
-            console.log(_point.x + "," + _point.y);
-          }
-        } catch (err) {
-          _didIteratorError = true;
-          _iteratorError = err;
-        } finally {
-          try {
-            if (!_iteratorNormalCompletion && _iterator.return) {
-              _iterator.return();
-            }
-          } finally {
-            if (_didIteratorError) {
-              throw _iteratorError;
-            }
-          }
+        for (const point of state.points) {
+          console.log(point.x + "," + point.y);
         }
-
         return state;
       }
   }
 };
-
-module.exports = { plotReducer: plotReducer };
-},{}],21:[function(require,module,exports){
+module.exports = {
+  plotReducer
+};
+},{}],24:[function(require,module,exports){
 'use strict';
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
@@ -2902,7 +2764,7 @@ module.exports = {
   getEntityPositions: getEntityPositions,
   entityInsideGrid: entityInsideGrid
 };
-},{"./helpers":22,"./math":23,"./vectors":26}],22:[function(require,module,exports){
+},{"./helpers":25,"./math":26,"./vectors":29}],25:[function(require,module,exports){
 'use strict';
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
@@ -3049,7 +2911,7 @@ module.exports = {
   deepCopy: deepCopy,
   throttle: throttle
 };
-},{"./vectors":26}],23:[function(require,module,exports){
+},{"./vectors":29}],26:[function(require,module,exports){
 "use strict";
 
 var clamp = function clamp(val, min, max) {
@@ -3094,7 +2956,7 @@ module.exports = {
   clamp: clamp,
   subtractWithDeficit: subtractWithDeficit
 };
-},{}],24:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 'use strict';
 
 function isIpad() {
@@ -3120,7 +2982,7 @@ module.exports = {
   isIpad: isIpad,
   isMobile: isMobile
 };
-},{}],25:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 "use strict";
 
 var floor = Math.floor,
@@ -3175,7 +3037,7 @@ module.exports = {
   oneOf: oneOf,
   weightedOneOf: weightedOneOf
 };
-},{}],26:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 "use strict";
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
@@ -3374,7 +3236,7 @@ module.exports = {
   rotate: rotate,
   abs: abs
 };
-},{}],27:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 
 module.exports = {
   vectors: require('./bin/vectors'),
@@ -3385,7 +3247,7 @@ module.exports = {
   math: require('./bin/math'),
 }
 
-},{"./bin/gridHelpers":21,"./bin/helpers":22,"./bin/math":23,"./bin/platform":24,"./bin/stochastic":25,"./bin/vectors":26}],28:[function(require,module,exports){
+},{"./bin/gridHelpers":24,"./bin/helpers":25,"./bin/math":26,"./bin/platform":27,"./bin/stochastic":28,"./bin/vectors":29}],31:[function(require,module,exports){
 (function (process){(function (){
 /**
  * @license React
@@ -33257,7 +33119,7 @@ if (
 }
 
 }).call(this)}).call(this,require('_process'))
-},{"_process":38,"react":34,"scheduler":37}],29:[function(require,module,exports){
+},{"_process":41,"react":37,"scheduler":40}],32:[function(require,module,exports){
 /**
  * @license React
  * react-dom.production.min.js
@@ -33582,7 +33444,7 @@ exports.hydrateRoot=function(a,b,c){if(!ol(a))throw Error(p(405));var d=null!=c&
 e);return new nl(b)};exports.render=function(a,b,c){if(!pl(b))throw Error(p(200));return sl(null,a,b,!1,c)};exports.unmountComponentAtNode=function(a){if(!pl(a))throw Error(p(40));return a._reactRootContainer?(Sk(function(){sl(null,null,a,!1,function(){a._reactRootContainer=null;a[uf]=null})}),!0):!1};exports.unstable_batchedUpdates=Rk;
 exports.unstable_renderSubtreeIntoContainer=function(a,b,c,d){if(!pl(c))throw Error(p(200));if(null==a||void 0===a._reactInternals)throw Error(p(38));return sl(a,b,c,!1,d)};exports.version="18.2.0-next-9e3b772b8-20220608";
 
-},{"react":34,"scheduler":37}],30:[function(require,module,exports){
+},{"react":37,"scheduler":40}],33:[function(require,module,exports){
 (function (process){(function (){
 'use strict';
 
@@ -33611,7 +33473,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 }).call(this)}).call(this,require('_process'))
-},{"_process":38,"react-dom":31}],31:[function(require,module,exports){
+},{"_process":41,"react-dom":34}],34:[function(require,module,exports){
 (function (process){(function (){
 'use strict';
 
@@ -33653,7 +33515,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 }).call(this)}).call(this,require('_process'))
-},{"./cjs/react-dom.development.js":28,"./cjs/react-dom.production.min.js":29,"_process":38}],32:[function(require,module,exports){
+},{"./cjs/react-dom.development.js":31,"./cjs/react-dom.production.min.js":32,"_process":41}],35:[function(require,module,exports){
 (function (process){(function (){
 /**
  * @license React
@@ -36396,7 +36258,7 @@ if (
 }
 
 }).call(this)}).call(this,require('_process'))
-},{"_process":38}],33:[function(require,module,exports){
+},{"_process":41}],36:[function(require,module,exports){
 /**
  * @license React
  * react.production.min.js
@@ -36424,7 +36286,7 @@ exports.useCallback=function(a,b){return U.current.useCallback(a,b)};exports.use
 exports.useInsertionEffect=function(a,b){return U.current.useInsertionEffect(a,b)};exports.useLayoutEffect=function(a,b){return U.current.useLayoutEffect(a,b)};exports.useMemo=function(a,b){return U.current.useMemo(a,b)};exports.useReducer=function(a,b,e){return U.current.useReducer(a,b,e)};exports.useRef=function(a){return U.current.useRef(a)};exports.useState=function(a){return U.current.useState(a)};exports.useSyncExternalStore=function(a,b,e){return U.current.useSyncExternalStore(a,b,e)};
 exports.useTransition=function(){return U.current.useTransition()};exports.version="18.2.0";
 
-},{}],34:[function(require,module,exports){
+},{}],37:[function(require,module,exports){
 (function (process){(function (){
 'use strict';
 
@@ -36435,7 +36297,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 }).call(this)}).call(this,require('_process'))
-},{"./cjs/react.development.js":32,"./cjs/react.production.min.js":33,"_process":38}],35:[function(require,module,exports){
+},{"./cjs/react.development.js":35,"./cjs/react.production.min.js":36,"_process":41}],38:[function(require,module,exports){
 (function (process,setImmediate){(function (){
 /**
  * @license React
@@ -37073,7 +36935,7 @@ if (
 }
 
 }).call(this)}).call(this,require('_process'),require("timers").setImmediate)
-},{"_process":38,"timers":39}],36:[function(require,module,exports){
+},{"_process":41,"timers":42}],39:[function(require,module,exports){
 (function (setImmediate){(function (){
 /**
  * @license React
@@ -37096,7 +36958,7 @@ exports.unstable_scheduleCallback=function(a,b,c){var d=exports.unstable_now();"
 exports.unstable_shouldYield=M;exports.unstable_wrapCallback=function(a){var b=y;return function(){var c=y;y=b;try{return a.apply(this,arguments)}finally{y=c}}};
 
 }).call(this)}).call(this,require("timers").setImmediate)
-},{"timers":39}],37:[function(require,module,exports){
+},{"timers":42}],40:[function(require,module,exports){
 (function (process){(function (){
 'use strict';
 
@@ -37107,7 +36969,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 }).call(this)}).call(this,require('_process'))
-},{"./cjs/scheduler.development.js":35,"./cjs/scheduler.production.min.js":36,"_process":38}],38:[function(require,module,exports){
+},{"./cjs/scheduler.development.js":38,"./cjs/scheduler.production.min.js":39,"_process":41}],41:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -37293,7 +37155,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],39:[function(require,module,exports){
+},{}],42:[function(require,module,exports){
 (function (setImmediate,clearImmediate){(function (){
 var nextTick = require('process/browser.js').nextTick;
 var apply = Function.prototype.apply;
@@ -37372,4 +37234,4 @@ exports.clearImmediate = typeof clearImmediate === "function" ? clearImmediate :
   delete immediateIds[id];
 };
 }).call(this)}).call(this,require("timers").setImmediate,require("timers").clearImmediate)
-},{"process/browser.js":38,"timers":39}]},{},[19]);
+},{"process/browser.js":41,"timers":42}]},{},[22]);

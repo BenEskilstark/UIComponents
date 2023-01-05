@@ -13,16 +13,15 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "babel-preset-es2015": "^6.24.1",
-    "babel-preset-flow": "^6.23.0",
+    "babel-preset-es2021": "^1.0.0",
     "bens_utils": "^1.0.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "babel-cli": "^6.26.0",
-    "babel-core": "^6.26.3",
-    "babel-plugin-transform-object-rest-spread": "^6.26.0",
-    "babel-plugin-transform-react-jsx": "^6.24.1"
+    "@babel/cli": "^7.20.7",
+    "@babel/core": "^7.20.12",
+    "@babel/plugin-proposal-optional-chaining": "^7.20.7",
+    "@babel/plugin-transform-react-jsx": "^7.20.7"
   }
 }

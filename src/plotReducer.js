@@ -1,22 +1,19 @@
-// @flow
 
-import type {State, Action} from '../types';
-
-type Point = {
-  x: number,
-  y: number,
-  color: ?string, // css color
-};
-
-type Axis = {
-  dimension: 'x' | 'y',
-  label: string,
-  min: ?number,
-  max: ?number,
-};
+// type Point = {
+//   x: number,
+//   y: number,
+//   color: ?string, // css color
+// };
+//
+// type Axis = {
+//   dimension: 'x' | 'y',
+//   label: string,
+//   min: ?number,
+//   max: ?number,
+// };
 
 
-const plotReducer = (state: State, action: Action): State=> {
+const plotReducer = (state, action) => {
   switch (action.type) {
     case 'SET_AXIS':
       const {axis} = action;

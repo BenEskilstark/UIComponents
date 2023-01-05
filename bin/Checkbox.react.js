@@ -1,6 +1,4 @@
-'use strict';
-
-var React = require('react');
+const React = require('react');
 
 /**
  * Props:
@@ -9,31 +7,26 @@ var React = require('react');
  *  onChange: (value: boolean) => void
  */
 function Checkbox(props) {
-  var checked = props.checked,
-      label = props.label,
-      _onChange = props.onChange;
-
-  var checkbox = React.createElement('input', {
-    type: 'checkbox',
+  const {
+    checked,
+    label,
+    onChange
+  } = props;
+  const checkbox = /*#__PURE__*/React.createElement("input", {
+    type: "checkbox",
     checked: checked,
-    onChange: function onChange() {
-      _onChange(!checked);
+    onChange: () => {
+      onChange(!checked);
     }
   });
   if (label == null) {
     return checkbox;
   } else {
-    return React.createElement(
-      'div',
-      {
-        style: {
-          display: 'inline-block'
-        }
-      },
-      label,
-      checkbox
-    );
+    return /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: 'inline-block'
+      }
+    }, label, checkbox);
   }
 }
-
 module.exports = Checkbox;

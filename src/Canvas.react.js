@@ -1,7 +1,7 @@
 const React = require('react');
 const {useEffect, useState, useMemo, Component} = React;
 
-function Canvas(props: Props) {
+function Canvas(props) {
   let {
     useFullScreen,
     // only necessary if not useFullScreen

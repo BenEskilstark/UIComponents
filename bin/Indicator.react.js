@@ -1,8 +1,8 @@
-'use strict';
-
-var React = require('react');
-var useEffect = React.useEffect,
-    useRef = React.useRef;
+const React = require('react');
+const {
+  useEffect,
+  useRef
+} = React;
 
 /**
  *
@@ -11,13 +11,12 @@ var useEffect = React.useEffect,
  *   minChange: ?number, // changes smaller than this won't be registered
  */
 
-var Indicator = function Indicator(props) {
-  var prev = usePrevious(props.value);
-
-  var minChange = props.minChange ? props.minChange : 0;
-  var change = props.value - prev;
-  var color = 'black';
-  var symbol = '-';
+const Indicator = props => {
+  const prev = usePrevious(props.value);
+  const minChange = props.minChange ? props.minChange : 0;
+  let change = props.value - prev;
+  let color = 'black';
+  let symbol = '-';
   if (Math.abs(change) > minChange) {
     if (change > 0) {
       color = 'green';
@@ -27,31 +26,20 @@ var Indicator = function Indicator(props) {
       symbol = '\\/';
     }
   }
-
-  return React.createElement(
-    'div',
-    {
-      style: {
-        display: 'inline',
-        color: color,
-        fontFamily: 'Times',
-        fontSize: 15
-      }
-    },
-    React.createElement(
-      'b',
-      null,
-      symbol
-    )
-  );
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'inline',
+      color,
+      fontFamily: 'Times',
+      fontSize: 15
+    }
+  }, /*#__PURE__*/React.createElement("b", null, symbol));
 };
-
-var usePrevious = function usePrevious(value) {
-  var ref = useRef();
-  useEffect(function () {
+const usePrevious = value => {
+  const ref = useRef();
+  useEffect(() => {
     ref.current = value;
   });
   return ref.current;
 };
-
 module.exports = Indicator;

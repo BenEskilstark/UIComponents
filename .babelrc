@@ -1,8 +1,7 @@
 {
-  presets: ["flow", "es2015"],
   plugins: [
-    "transform-react-jsx",
-    "transform-object-rest-spread",
+    "@babel/plugin-transform-react-jsx",
+    "@babel/plugin-proposal-optional-chaining"
   ],
   ignore: [
   ],

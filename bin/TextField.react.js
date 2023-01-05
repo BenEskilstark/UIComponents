@@ -1,6 +1,4 @@
-'use strict';
-
-var React = require('react');
+const React = require('react');
 
 /**
  * Props:
@@ -10,24 +8,24 @@ var React = require('react');
  *  - onChange: (str) => void
  *  - style: Object
  */
-var TextField = function TextField(props) {
-  var value = props.value,
-      placeholder = props.placeholder,
-      password = props.password,
-      _onChange = props.onChange,
-      id = props.id;
-
-  var style = props.style != null ? props.style : {};
-  return React.createElement('input', {
+const TextField = props => {
+  const {
+    value,
+    placeholder,
+    password,
+    onChange,
+    id
+  } = props;
+  const style = props.style != null ? props.style : {};
+  return /*#__PURE__*/React.createElement("input", {
     id: id ? id : null,
     style: style,
     placeholder: placeholder,
     type: password ? 'password' : 'text',
     value: value,
-    onChange: function onChange(ev) {
-      _onChange(ev.target.value);
+    onChange: ev => {
+      onChange(ev.target.value);
     }
   });
 };
-
 module.exports = TextField;

@@ -2,11 +2,14 @@
 const React = require('react');
 const ReactDOM = require('react-dom/client');
 const {useState, useEffect, useMemo, useReducer} = React;
+const {oneOf, randomIn} = require('bens_utils').stochastic;
 
 const AudioWidget = require('./AudioWidget.react.js');
+const Board = require('./Board.react.js');
 const Button = require('./Button.react.js');
 const Canvas = require('./Canvas.react.js');
 const Checkbox = require('./Checkbox.react.js');
+const CheckerBackground = require('./CheckerBackground.react.js');
 const Divider = require('./Divider.react.js');
 const DragArea = require('./DragArea.react.js');
 const Dropdown = require('./Dropdown.react.js');
@@ -19,6 +22,7 @@ const plotReducer = require('./plotReducer.js').plotReducer;
 const QuitButton = require('./QuitButton.react.js');
 const RadioPicker = require('./RadioPicker.react.js');
 const Slider = require('./Slider.react.js');
+const SpriteSheet = require('./SpriteSheet.react.js');
 const Table = require('./Table.react.js');
 const TextField = require('./TextField.react.js');
 const {
@@ -27,7 +31,7 @@ const {
 } = require('./hooks.js');
 
 
-function renderUI(root): React.Node {
+function renderUI(root) {
   root.render(<Main />);
 }
 
@@ -157,9 +161,9 @@ const Main = (props) => {
   }, [mouse.lines]);
 
   const [draggables, setDraggables] = useState([
-    <Draggable id={"drag3"} key={"drag3"} style={{top: 300, left: 250}} />,
-    <Draggable id={"drag4"} key={"drag4"} style={{top: 350, left: 150}} />,
-    <Draggable id={"drag5"} key={"drag5"} style={{top: 150, left: 150}} />
+    <Draggable id={"drag1"} disabled={true} key={"drag1"} style={{top: 300, left: 200}} />,
+    <Draggable id={"drag2"} key={"drag2"} style={{top: 300, left: 100}} />,
+    <Draggable id={"drag3"} key={"drag3"} style={{top: 100, left: 100}} />
   ]);
 
   return (
@@ -178,8 +182,25 @@ const Main = (props) => {
           onClick={() => setCounter({val: counter.val + 1})}
         />
         <Button
-          label={"Pressed " + counter2.val + " times"}
-          onClick={() => setCounter2({val: counter2.val + 1})}
+          label={"Add Draggable"}
+          onClick={() => {
+            const nextID = "drag" + (draggables.length + 1);
+            setDraggables([
+              ...draggables,
+              <Draggable id={nextID} key={nextID}
+                style={{
+                  top: randomIn(0, 3) * 100, left: randomIn(0, 3) * 100,
+                  backgroundColor: oneOf(['red', 'blue', 'orange', 'purple']),
+                }}
+              />
+            ]);
+          }}
+        />
+        <Button
+          label={"Remove Draggable"}
+          onClick={() => {
+            setDraggables(draggables.slice(0, -1));
+          }}
         />
         <Button
           label={"Add Row"}
@@ -251,23 +272,72 @@ const Main = (props) => {
           }}
         />
       </div>
-      <DragArea
-        snapX={100}
-        snapY={100}
-        isDropAllowed={(id, position) => {
-          return true;
-        }}
-        onDrop={(id, position) => {
-          console.log(id, "dropped at", position);
-        }}
+      <div
         style={{
-          position: 'relative',
-          width: 400, height: 400,
-          border: '1px solid black',
+          display: 'flex',
         }}
       >
-        {draggables}
-      </DragArea>
+        <DragArea
+          snapX={100}
+          snapY={100}
+          isDropAllowed={(id, position) => {
+            console.log(id, position);
+            if (id == 'drag4') return false;
+            return true;
+          }}
+          onDrop={(id, position) => {
+            console.log(id, "dropped at", position);
+          }}
+          style={{
+            width: 400, height: 400,
+            border: '1px solid black',
+          }}
+        >
+          {draggables}
+        </DragArea>
+        <Board
+          pixelSize={{width: 400, height: 400}}
+          gridSize={{width: 8, height: 8}}
+          onPieceMove={(id, position) => {
+            console.log(id, "moved to", position);
+          }}
+          isMoveAllowed={(id, position) => {
+            return true;
+          }}
+          background={<CheckerBackground
+            color1="#6B8E23" color2="#FFFAF0"
+            pixelSize={{width: 400, height: 400}}
+            gridSize={{width: 8, height: 8}}
+          />}
+          pieces={[
+            {id: 'whiteKing', position: {x: 1, y: 1}, sprite: (
+              <SpriteSheet src={'../chess.png'} offset={{x:0,y:0}}
+                spriteSheet={{pxWidth: 50, pxHeight: 50, imagesAcross: 6, imagesDown: 2}}
+              />)
+            },
+            {id: 'whiteQueen', position: {x: 1, y: 2}, sprite: (
+              <SpriteSheet src={'../chess.png'} offset={{x:1,y:0}}
+                spriteSheet={{pxWidth: 50, pxHeight: 50, imagesAcross: 6, imagesDown: 2}}
+              />)
+            },
+            {id: 'blackKing', position: {x: 7, y: 7}, sprite: (
+              <SpriteSheet src={'../chess.png'} offset={{x:0,y:1}}
+                spriteSheet={{pxWidth: 50, pxHeight: 50, imagesAcross: 6, imagesDown: 2}}
+              />)
+            },
+            {id: 'blackQueen', position: {x: 6, y: 7}, sprite: (
+              <SpriteSheet src={'../chess.png'} offset={{x:1,y:1}}
+                spriteSheet={{pxWidth: 50, pxHeight: 50, imagesAcross: 6, imagesDown: 2}}
+              />)
+            },
+            {id: 'whiteKnook', position: {x: 2, y: 2}, sprite: (
+              <SpriteSheet src={'../chess2.png'} offset={{x:6,y:0}}
+                spriteSheet={{pxWidth: 50, pxHeight: 50, imagesAcross: 8, imagesDown: 2}}
+              />)
+            },
+          ]}
+        />
+      </div>
     </div>
   );
 };
@@ -281,6 +351,7 @@ const Draggable = (props) => {
         width: 100, height: 100,
         top: 200, left: 250, textAlign: 'center',
         backgroundColor: 'green', borderRadius: '5%',
+        cursor: 'pointer',
         ...(props.style || {})
       }}
     >
