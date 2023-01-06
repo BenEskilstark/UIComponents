@@ -1,12 +1,12 @@
 const React = require('react');
+const CheckerBackground = require('./CheckerBackground.react.js');
 const DragArea = require('./DragArea.react.js');
 const {useState, useEffect, useMemo, useReducer} = React;
 
 /*
  * TODO
- *  - call a function to make a piece move
+ *  - call a function to move a piece
  *  - call a function to add/remove pieces
- *  - pass through isDropAllowed and onDrop
  */
 
 /**
@@ -33,7 +33,13 @@ const Board = (props) => {
         position: 'relative',
       }}
     >
-      {props.background}
+      {props.background ?? (
+        <CheckerBackground
+          style={{marginTop: 1, marginLeft: 1}}
+          color1="#6B8E23" color2="#FFFAF0"
+          pixelSize={pixelSize} gridSize={gridSize}
+        />
+      )}
       <DragArea
         isDropAllowed={(id, position) => {
           if (!props.isMoveAllowed) return true;

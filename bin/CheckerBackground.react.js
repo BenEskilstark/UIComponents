@@ -39,7 +39,8 @@ const CheckerboardBackground = props => {
       flexWrap: 'wrap',
       position: 'absolute',
       width: pixelSize.width,
-      height: pixelSize.height
+      height: pixelSize.height,
+      ...(props.style ?? {})
     }
   }, squares);
 };

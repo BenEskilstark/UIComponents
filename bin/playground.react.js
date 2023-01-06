@@ -220,6 +220,7 @@ const Main = props => {
       left: 100
     }
   })]);
+  const [knookX, setKnookX] = useState(2);
   return /*#__PURE__*/React.createElement("div", null, modal, /*#__PURE__*/React.createElement("div", {
     style: {
       position: 'absolute',
@@ -257,6 +258,9 @@ const Main = props => {
       type: 'ADD_NAME',
       name: 'foo'
     })
+  }), /*#__PURE__*/React.createElement(Button, {
+    label: "Set KnookX",
+    onClick: () => setKnookX(randomIn(0, 7))
   }), /*#__PURE__*/React.createElement("div", null), /*#__PURE__*/React.createElement(Button, {
     label: "Display Modal",
     disabled: modal != null,
@@ -360,18 +364,6 @@ const Main = props => {
     isMoveAllowed: (id, position) => {
       return true;
     },
-    background: /*#__PURE__*/React.createElement(CheckerBackground, {
-      color1: "#6B8E23",
-      color2: "#FFFAF0",
-      pixelSize: {
-        width: 400,
-        height: 400
-      },
-      gridSize: {
-        width: 8,
-        height: 8
-      }
-    }),
     pieces: [{
       id: 'whiteKing',
       position: {
@@ -451,7 +443,7 @@ const Main = props => {
     }, {
       id: 'whiteKnook',
       position: {
-        x: 2,
+        x: knookX,
         y: 2
       },
       sprite: /*#__PURE__*/React.createElement(SpriteSheet, {

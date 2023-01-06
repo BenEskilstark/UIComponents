@@ -160,8 +160,13 @@ const DragArea = (props) => {
       const elem = document.getElementById(draggable.id);
       elem.style.left = draggable.style.left;
       elem.style.top = draggable.style.top;
+      if (draggable.id == state.selectedID) {
+        elem.style.zIndex = 5;
+      } else {
+        elem.style.zIndex = 1;
+      }
     }
-  }, [state.draggables]);
+  }, [state.draggables, state.selectedID]);
 
 
   return (

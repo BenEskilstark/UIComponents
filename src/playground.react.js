@@ -166,6 +166,8 @@ const Main = (props) => {
     <Draggable id={"drag3"} key={"drag3"} style={{top: 100, left: 100}} />
   ]);
 
+  const [knookX, setKnookX] = useState(2);
+
   return (
     <div>
       {modal}
@@ -205,6 +207,10 @@ const Main = (props) => {
         <Button
           label={"Add Row"}
           onClick={() => updateTable({type: 'ADD_NAME', name: 'foo'})}
+        />
+        <Button
+          label={"Set KnookX"}
+          onClick={() => setKnookX(randomIn(0, 7))}
         />
         <div></div>
         <Button
@@ -304,11 +310,6 @@ const Main = (props) => {
           isMoveAllowed={(id, position) => {
             return true;
           }}
-          background={<CheckerBackground
-            color1="#6B8E23" color2="#FFFAF0"
-            pixelSize={{width: 400, height: 400}}
-            gridSize={{width: 8, height: 8}}
-          />}
           pieces={[
             {id: 'whiteKing', position: {x: 1, y: 1}, sprite: (
               <SpriteSheet src={'../chess.png'} offset={{x:0,y:0}}
@@ -330,7 +331,7 @@ const Main = (props) => {
                 spriteSheet={{pxWidth: 50, pxHeight: 50, imagesAcross: 6, imagesDown: 2}}
               />)
             },
-            {id: 'whiteKnook', position: {x: 2, y: 2}, sprite: (
+            {id: 'whiteKnook', position: {x: knookX, y: 2}, sprite: (
               <SpriteSheet src={'../chess2.png'} offset={{x:6,y:0}}
                 spriteSheet={{pxWidth: 50, pxHeight: 50, imagesAcross: 8, imagesDown: 2}}
               />)

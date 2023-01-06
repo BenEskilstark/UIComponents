@@ -74,6 +74,7 @@ module.exports = AudioWidget;
 },{"./Button.react":3,"react":37}],2:[function(require,module,exports){
 function _extends() { _extends = Object.assign ? Object.assign.bind() : function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
 const React = require('react');
+const CheckerBackground = require('./CheckerBackground.react.js');
 const DragArea = require('./DragArea.react.js');
 const {
   useState,
@@ -84,9 +85,8 @@ const {
 
 /*
  * TODO
- *  - call a function to make a piece move
+ *  - call a function to move a piece
  *  - call a function to add/remove pieces
- *  - pass through isDropAllowed and onDrop
  */
 
 /**
@@ -115,7 +115,16 @@ const Board = props => {
     style: {
       position: 'relative'
     }
-  }, props.background, /*#__PURE__*/React.createElement(DragArea, {
+  }, props.background ?? /*#__PURE__*/React.createElement(CheckerBackground, {
+    style: {
+      marginTop: 1,
+      marginLeft: 1
+    },
+    color1: "#6B8E23",
+    color2: "#FFFAF0",
+    pixelSize: pixelSize,
+    gridSize: gridSize
+  }), /*#__PURE__*/React.createElement(DragArea, {
     isDropAllowed: (id, position) => {
       if (!props.isMoveAllowed) return true;
       const x = Math.round(position.x / cellWidth);
@@ -172,7 +181,7 @@ const Piece = props => {
   }, props.sprite);
 };
 module.exports = Board;
-},{"./DragArea.react.js":8,"react":37}],3:[function(require,module,exports){
+},{"./CheckerBackground.react.js":6,"./DragArea.react.js":8,"react":37}],3:[function(require,module,exports){
 const React = require('react');
 const {
   useState,
@@ -391,7 +400,8 @@ const CheckerboardBackground = props => {
       flexWrap: 'wrap',
       position: 'absolute',
       width: pixelSize.width,
-      height: pixelSize.height
+      height: pixelSize.height,
+      ...(props.style ?? {})
     }
   }, squares);
 };
@@ -619,8 +629,13 @@ const DragArea = props => {
       const elem = document.getElementById(draggable.id);
       elem.style.left = draggable.style.left;
       elem.style.top = draggable.style.top;
+      if (draggable.id == state.selectedID) {
+        elem.style.zIndex = 5;
+      } else {
+        elem.style.zIndex = 1;
+      }
     }
-  }, [state.draggables]);
+  }, [state.draggables, state.selectedID]);
   return /*#__PURE__*/React.createElement("div", {
     id: id,
     style: {
@@ -2180,6 +2195,7 @@ const Main = props => {
       left: 100
     }
   })]);
+  const [knookX, setKnookX] = useState(2);
   return /*#__PURE__*/React.createElement("div", null, modal, /*#__PURE__*/React.createElement("div", {
     style: {
       position: 'absolute',
@@ -2217,6 +2233,9 @@ const Main = props => {
       type: 'ADD_NAME',
       name: 'foo'
     })
+  }), /*#__PURE__*/React.createElement(Button, {
+    label: "Set KnookX",
+    onClick: () => setKnookX(randomIn(0, 7))
   }), /*#__PURE__*/React.createElement("div", null), /*#__PURE__*/React.createElement(Button, {
     label: "Display Modal",
     disabled: modal != null,
@@ -2320,18 +2339,6 @@ const Main = props => {
     isMoveAllowed: (id, position) => {
       return true;
     },
-    background: /*#__PURE__*/React.createElement(CheckerBackground, {
-      color1: "#6B8E23",
-      color2: "#FFFAF0",
-      pixelSize: {
-        width: 400,
-        height: 400
-      },
-      gridSize: {
-        width: 8,
-        height: 8
-      }
-    }),
     pieces: [{
       id: 'whiteKing',
       position: {
@@ -2411,7 +2418,7 @@ const Main = props => {
     }, {
       id: 'whiteKnook',
       position: {
-        x: 2,
+        x: knookX,
         y: 2
       },
       sprite: /*#__PURE__*/React.createElement(SpriteSheet, {

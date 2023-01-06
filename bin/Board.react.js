@@ -1,5 +1,6 @@
 function _extends() { _extends = Object.assign ? Object.assign.bind() : function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
 const React = require('react');
+const CheckerBackground = require('./CheckerBackground.react.js');
 const DragArea = require('./DragArea.react.js');
 const {
   useState,
@@ -10,9 +11,8 @@ const {
 
 /*
  * TODO
- *  - call a function to make a piece move
+ *  - call a function to move a piece
  *  - call a function to add/remove pieces
- *  - pass through isDropAllowed and onDrop
  */
 
 /**
@@ -41,7 +41,16 @@ const Board = props => {
     style: {
       position: 'relative'
     }
-  }, props.background, /*#__PURE__*/React.createElement(DragArea, {
+  }, props.background ?? /*#__PURE__*/React.createElement(CheckerBackground, {
+    style: {
+      marginTop: 1,
+      marginLeft: 1
+    },
+    color1: "#6B8E23",
+    color2: "#FFFAF0",
+    pixelSize: pixelSize,
+    gridSize: gridSize
+  }), /*#__PURE__*/React.createElement(DragArea, {
     isDropAllowed: (id, position) => {
       if (!props.isMoveAllowed) return true;
       const x = Math.round(position.x / cellWidth);
