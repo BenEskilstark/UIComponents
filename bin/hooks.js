@@ -48,9 +48,7 @@ const useMouseHandler = (elementID, pseudoStore, handlers, dependencies) => {
   useEffect(() => {
     const mvFn = throttle(onMove, [elementID, pseudoStore, handlers], 12);
     const touchMvFn = ev => {
-      if (ev.target.id === state.streamID + '_canvas') {
-        ev.preventDefault();
-      }
+      // if (ev.target.id != elementID) ev.preventDefault();
       onMove(elementID, pseudoStore, handlers, ev);
     };
     const mouseDownFn = ev => {

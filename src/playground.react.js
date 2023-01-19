@@ -167,6 +167,7 @@ const Main = (props) => {
   ]);
 
   const [knookX, setKnookX] = useState(2);
+  const [isRotated, setIsRotated] = useState(false);
 
   return (
     <div>
@@ -211,6 +212,10 @@ const Main = (props) => {
         <Button
           label={"Set KnookX"}
           onClick={() => setKnookX(randomIn(0, 7))}
+        />
+        <Button
+          label={"Rotate Board"}
+          onClick={() => setIsRotated(!isRotated)}
         />
         <div></div>
         <Button
@@ -304,11 +309,18 @@ const Main = (props) => {
         <Board
           pixelSize={{width: 400, height: 400}}
           gridSize={{width: 8, height: 8}}
+          isRotated={isRotated}
           onPieceMove={(id, position) => {
             console.log(id, "moved to", position);
           }}
+          onPiecePickup={(id, position) => {
+            console.log(id, "picked up at", position);
+          }}
           isMoveAllowed={(id, position) => {
             return true;
+          }}
+          onMoveCancel={(id) => {
+            console.log("cancel", id);
           }}
           pieces={[
             {id: 'whiteKing', position: {x: 1, y: 1}, sprite: (

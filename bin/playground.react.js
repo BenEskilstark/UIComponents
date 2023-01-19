@@ -221,6 +221,7 @@ const Main = props => {
     }
   })]);
   const [knookX, setKnookX] = useState(2);
+  const [isRotated, setIsRotated] = useState(false);
   return /*#__PURE__*/React.createElement("div", null, modal, /*#__PURE__*/React.createElement("div", {
     style: {
       position: 'absolute',
@@ -261,6 +262,9 @@ const Main = props => {
   }), /*#__PURE__*/React.createElement(Button, {
     label: "Set KnookX",
     onClick: () => setKnookX(randomIn(0, 7))
+  }), /*#__PURE__*/React.createElement(Button, {
+    label: "Rotate Board",
+    onClick: () => setIsRotated(!isRotated)
   }), /*#__PURE__*/React.createElement("div", null), /*#__PURE__*/React.createElement(Button, {
     label: "Display Modal",
     disabled: modal != null,
@@ -358,11 +362,18 @@ const Main = props => {
       width: 8,
       height: 8
     },
+    isRotated: isRotated,
     onPieceMove: (id, position) => {
       console.log(id, "moved to", position);
     },
+    onPiecePickup: (id, position) => {
+      console.log(id, "picked up at", position);
+    },
     isMoveAllowed: (id, position) => {
       return true;
+    },
+    onMoveCancel: id => {
+      console.log("cancel", id);
     },
     pieces: [{
       id: 'whiteKing',

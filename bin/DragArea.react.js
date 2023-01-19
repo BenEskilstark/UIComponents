@@ -29,6 +29,8 @@ const {
  *    snapY: number,
  *    isDropAllowed: (id, position) => boolean,
  *    onDrop: (id, position) => void,
+ *    onPickup: (id, position) => void,
+ *    onCancel: (id) => void,
  *  Children Props:
  *    id: string,
  *    disabled: optional boolean, // not draggable
@@ -44,9 +46,7 @@ const DragArea = props => {
     dispatch({
       draggables: props.children.map(c => {
         const elem = document.getElementById(c.props.id);
-        if (!elem) return {
-          id: c.props.id
-        };
+        if (!elem) return null;
         return {
           id: c.props.id,
           disabled: c.props.disabled,
@@ -57,7 +57,7 @@ const DragArea = props => {
             height: parseInt(elem.style.height)
           }
         };
-      }).reverse()
+      }).filter(e => e != null).reverse()
     });
     props.children.forEach(c => {
       const elem = document.getElementById(c.props.id);
@@ -72,7 +72,9 @@ const DragArea = props => {
         {
           const {
             id,
-            position
+            position,
+            selectedID,
+            selectedOffset
           } = action;
           let nextDraggables = [];
           for (const draggable of state.draggables) {
@@ -91,7 +93,9 @@ const DragArea = props => {
           }
           return {
             ...state,
-            draggables: nextDraggables
+            draggables: nextDraggables,
+            selectedID: selectedID !== undefined ? selectedID : state.selectedID,
+            selectedOffset: selectedOffset !== undefined ? selectedOffset : state.selectedOffset
           };
         }
       case 'SET_MOUSE_DOWN':
@@ -130,6 +134,7 @@ const DragArea = props => {
     },
     mouseLeave: (state, dispatch) => {
       if (!state.selectedID) return;
+      const id = state.selectedID;
       dispatch({
         type: 'SET_DRAGGABLE',
         id: state.selectedID,
@@ -144,6 +149,7 @@ const DragArea = props => {
         isDown: false,
         isLeft: true
       });
+      if (props.onCancel) props.onCancel(id);
     },
     leftDown: (state, dispatch, pixel) => {
       for (const draggable of state.draggables) {
@@ -156,12 +162,14 @@ const DragArea = props => {
             selectedID: draggable.id,
             selectedOffset
           });
+          if (props.onPickup) props.onPickup(draggable.id, pixel);
           return;
         }
       }
     },
     leftUp: (state, dispatch, pixel) => {
       if (!state.selectedID) return;
+      const id = state.selectedID;
       let draggable = null;
       for (const d of state.draggables) {
         if (d.id == state.selectedID) draggable = d;
@@ -181,20 +189,21 @@ const DragArea = props => {
         dispatch({
           type: 'SET_DRAGGABLE',
           id: state.selectedID,
-          position: subtract(state.mouse.downPixel, state.selectedOffset)
+          position: subtract(state.mouse.downPixel, state.selectedOffset),
+          selectedID: null,
+          selectedOffset: null
         });
+        if (props.onCancel) props.onCancel(id);
       } else {
         dispatch({
           type: 'SET_DRAGGABLE',
           id: state.selectedID,
-          position: dropPosition
+          position: dropPosition,
+          selectedID: null,
+          selectedOffset: null
         });
-        if (props.onDrop) props.onDrop(state.selectedID, dropPosition);
+        if (props.onDrop) props.onDrop(id, dropPosition);
       }
-      dispatch({
-        selectedID: null,
-        selectedOffset: null
-      });
     }
   });
 
@@ -202,6 +211,7 @@ const DragArea = props => {
   useEffect(() => {
     for (const draggable of state.draggables) {
       const elem = document.getElementById(draggable.id);
+      if (!elem) continue;
       elem.style.left = draggable.style.left;
       elem.style.top = draggable.style.top;
       if (draggable.id == state.selectedID) {
@@ -233,15 +243,5 @@ const clampToArea = (dragAreaID, pixel, style) => {
     x: clamp(pixel.x, 0, width - style.width),
     y: clamp(pixel.y, 0, height - style.height)
   };
-};
-const mouseInsideDragArea = (dragAreaID, pixel) => {
-  const dragArea = document.getElementById(dragAreaID);
-  const {
-    width,
-    height
-  } = dragArea.getBoundingClientRect();
-  const result = pixel.x >= 0 && pixel.x <= width && pixel.y >= 0 && pixel.y <= height;
-  console.log("in drag area", result);
-  return result;
 };
 module.exports = DragArea;

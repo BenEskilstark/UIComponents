@@ -83,20 +83,17 @@ const {
   useReducer
 } = React;
 
-/*
- * TODO
- *  - call a function to move a piece
- *  - call a function to add/remove pieces
- */
-
 /**
  *  Props:
  *    - pixelSize: {width, height}, // board size in pixels
  *    - gridSize: {width, height}, // board size in squares
  *    - pieces: Array<{id, position, ?size, ?disabled, sprite}>
  *    - background: HTML, // background div
+ *    - onPiecePickup: (id, position) => void, // board position
+ *    - onMoveCancel: (id) => void, // NOTE: must setTimeout any state updates here
  *    - onPieceMove: (id, position) => void, // board position
  *    - isMoveAllowed: (id, position) => void, // board position
+ *    - isRotated: ?boolean, // whether to rotate the board 180 degrees
  *
  *  Props for pieces:
  *    - sprite: see SpriteSheet.react
@@ -107,7 +104,8 @@ const Board = props => {
   const {
     pixelSize,
     gridSize,
-    pieces
+    pieces,
+    isRotated
   } = props;
   const cellWidth = pixelSize.width / gridSize.width;
   const cellHeight = pixelSize.height / gridSize.height;
@@ -129,19 +127,32 @@ const Board = props => {
       if (!props.isMoveAllowed) return true;
       const x = Math.round(position.x / cellWidth);
       const y = Math.round(position.y / cellHeight);
-      return props.isMoveAllowed(id, {
+      return props.isMoveAllowed(id, rotateCoord({
         x,
         y
-      });
+      }, gridSize, isRotated));
     },
     onDrop: (id, position) => {
       if (!props.onPieceMove) return;
       const x = Math.round(position.x / cellWidth);
       const y = Math.round(position.y / cellHeight);
-      props.onPieceMove(id, {
+      props.onPieceMove(id, rotateCoord({
         x,
         y
-      });
+      }, gridSize, isRotated));
+    },
+    onPickup: (id, position) => {
+      if (!props.onPiecePickup) return;
+      const x = Math.round(position.x / cellWidth);
+      const y = Math.round(position.y / cellHeight);
+      props.onPiecePickup(id, rotateCoord({
+        x,
+        y
+      }, gridSize, isRotated));
+    },
+    onCancel: id => {
+      if (!props.onMoveCancel) return;
+      props.onMoveCancel(id);
     },
     id: id,
     snapX: cellWidth,
@@ -156,7 +167,9 @@ const Board = props => {
       key: p.id,
       cellWidth: cellWidth,
       cellHeight: cellHeight
-    }, p));
+    }, p, {
+      position: rotateCoord(p.position, gridSize, isRotated)
+    }));
   })));
 };
 const Piece = props => {
@@ -179,6 +192,13 @@ const Piece = props => {
       position: 'absolute'
     }
   }, props.sprite);
+};
+const rotateCoord = (pos, size, isRotated) => {
+  if (!isRotated) return pos;
+  return {
+    x: size.width - pos.x - 1,
+    y: size.height - pos.y - 1
+  };
 };
 module.exports = Board;
 },{"./CheckerBackground.react.js":6,"./DragArea.react.js":8,"react":37}],3:[function(require,module,exports){
@@ -454,6 +474,8 @@ const {
  *    snapY: number,
  *    isDropAllowed: (id, position) => boolean,
  *    onDrop: (id, position) => void,
+ *    onPickup: (id, position) => void,
+ *    onCancel: (id) => void,
  *  Children Props:
  *    id: string,
  *    disabled: optional boolean, // not draggable
@@ -469,9 +491,7 @@ const DragArea = props => {
     dispatch({
       draggables: props.children.map(c => {
         const elem = document.getElementById(c.props.id);
-        if (!elem) return {
-          id: c.props.id
-        };
+        if (!elem) return null;
         return {
           id: c.props.id,
           disabled: c.props.disabled,
@@ -482,7 +502,7 @@ const DragArea = props => {
             height: parseInt(elem.style.height)
           }
         };
-      }).reverse()
+      }).filter(e => e != null).reverse()
     });
     props.children.forEach(c => {
       const elem = document.getElementById(c.props.id);
@@ -497,7 +517,9 @@ const DragArea = props => {
         {
           const {
             id,
-            position
+            position,
+            selectedID,
+            selectedOffset
           } = action;
           let nextDraggables = [];
           for (const draggable of state.draggables) {
@@ -516,7 +538,9 @@ const DragArea = props => {
           }
           return {
             ...state,
-            draggables: nextDraggables
+            draggables: nextDraggables,
+            selectedID: selectedID !== undefined ? selectedID : state.selectedID,
+            selectedOffset: selectedOffset !== undefined ? selectedOffset : state.selectedOffset
           };
         }
       case 'SET_MOUSE_DOWN':
@@ -555,6 +579,7 @@ const DragArea = props => {
     },
     mouseLeave: (state, dispatch) => {
       if (!state.selectedID) return;
+      const id = state.selectedID;
       dispatch({
         type: 'SET_DRAGGABLE',
         id: state.selectedID,
@@ -569,6 +594,7 @@ const DragArea = props => {
         isDown: false,
         isLeft: true
       });
+      if (props.onCancel) props.onCancel(id);
     },
     leftDown: (state, dispatch, pixel) => {
       for (const draggable of state.draggables) {
@@ -581,12 +607,14 @@ const DragArea = props => {
             selectedID: draggable.id,
             selectedOffset
           });
+          if (props.onPickup) props.onPickup(draggable.id, pixel);
           return;
         }
       }
     },
     leftUp: (state, dispatch, pixel) => {
       if (!state.selectedID) return;
+      const id = state.selectedID;
       let draggable = null;
       for (const d of state.draggables) {
         if (d.id == state.selectedID) draggable = d;
@@ -606,20 +634,21 @@ const DragArea = props => {
         dispatch({
           type: 'SET_DRAGGABLE',
           id: state.selectedID,
-          position: subtract(state.mouse.downPixel, state.selectedOffset)
+          position: subtract(state.mouse.downPixel, state.selectedOffset),
+          selectedID: null,
+          selectedOffset: null
         });
+        if (props.onCancel) props.onCancel(id);
       } else {
         dispatch({
           type: 'SET_DRAGGABLE',
           id: state.selectedID,
-          position: dropPosition
+          position: dropPosition,
+          selectedID: null,
+          selectedOffset: null
         });
-        if (props.onDrop) props.onDrop(state.selectedID, dropPosition);
+        if (props.onDrop) props.onDrop(id, dropPosition);
       }
-      dispatch({
-        selectedID: null,
-        selectedOffset: null
-      });
     }
   });
 
@@ -627,6 +656,7 @@ const DragArea = props => {
   useEffect(() => {
     for (const draggable of state.draggables) {
       const elem = document.getElementById(draggable.id);
+      if (!elem) continue;
       elem.style.left = draggable.style.left;
       elem.style.top = draggable.style.top;
       if (draggable.id == state.selectedID) {
@@ -658,16 +688,6 @@ const clampToArea = (dragAreaID, pixel, style) => {
     x: clamp(pixel.x, 0, width - style.width),
     y: clamp(pixel.y, 0, height - style.height)
   };
-};
-const mouseInsideDragArea = (dragAreaID, pixel) => {
-  const dragArea = document.getElementById(dragAreaID);
-  const {
-    width,
-    height
-  } = dragArea.getBoundingClientRect();
-  const result = pixel.x >= 0 && pixel.x <= width && pixel.y >= 0 && pixel.y <= height;
-  console.log("in drag area", result);
-  return result;
 };
 module.exports = DragArea;
 },{"./hooks":21,"bens_utils":30,"react":37}],9:[function(require,module,exports){
@@ -1713,9 +1733,7 @@ const useMouseHandler = (elementID, pseudoStore, handlers, dependencies) => {
   useEffect(() => {
     const mvFn = throttle(onMove, [elementID, pseudoStore, handlers], 12);
     const touchMvFn = ev => {
-      if (ev.target.id === state.streamID + '_canvas') {
-        ev.preventDefault();
-      }
+      // if (ev.target.id != elementID) ev.preventDefault();
       onMove(elementID, pseudoStore, handlers, ev);
     };
     const mouseDownFn = ev => {
@@ -2196,6 +2214,7 @@ const Main = props => {
     }
   })]);
   const [knookX, setKnookX] = useState(2);
+  const [isRotated, setIsRotated] = useState(false);
   return /*#__PURE__*/React.createElement("div", null, modal, /*#__PURE__*/React.createElement("div", {
     style: {
       position: 'absolute',
@@ -2236,6 +2255,9 @@ const Main = props => {
   }), /*#__PURE__*/React.createElement(Button, {
     label: "Set KnookX",
     onClick: () => setKnookX(randomIn(0, 7))
+  }), /*#__PURE__*/React.createElement(Button, {
+    label: "Rotate Board",
+    onClick: () => setIsRotated(!isRotated)
   }), /*#__PURE__*/React.createElement("div", null), /*#__PURE__*/React.createElement(Button, {
     label: "Display Modal",
     disabled: modal != null,
@@ -2333,11 +2355,18 @@ const Main = props => {
       width: 8,
       height: 8
     },
+    isRotated: isRotated,
     onPieceMove: (id, position) => {
       console.log(id, "moved to", position);
     },
+    onPiecePickup: (id, position) => {
+      console.log(id, "picked up at", position);
+    },
     isMoveAllowed: (id, position) => {
       return true;
+    },
+    onMoveCancel: id => {
+      console.log("cancel", id);
     },
     pieces: [{
       id: 'whiteKing',
