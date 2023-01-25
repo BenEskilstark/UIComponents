@@ -1,5 +1,8 @@
 const React = require('react');
 const {
+  useResponsiveDimensions
+} = require('./hooks');
+const {
   useEffect,
   useState,
   useMemo,
@@ -25,31 +28,7 @@ function Canvas(props) {
     // needed for focusing an entity (plus cellSize and dispatch)
     // focus, // Entity
   } = props;
-  const [windowWidth, setWindowWidth] = useState(width && !useFullScreen ? width : window.innerWidth);
-  const [windowHeight, setWindowHeight] = useState(height && !useFullScreen ? height : window.innerHeight);
-  useEffect(() => {
-    function handleResize() {
-      if (useFullScreen) {
-        setWindowWidth(window.innerWidth);
-        setWindowHeight(window.innerHeight);
-      } else {
-        setWindowWidth(width);
-        setWindowHeight(height);
-      }
-    }
-    handleResize();
-    if (useFullScreen) {
-      window.addEventListener('resize', handleResize);
-    }
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  }, [useFullScreen, onResize]);
-  useEffect(() => {
-    if (onResize) {
-      onResize(windowWidth, windowHeight);
-    }
-  }, [useFullScreen, onResize, windowWidth, windowHeight]);
+  const [windowWidth, windowHeight] = useResponsiveDimensions(onResize);
   return /*#__PURE__*/React.createElement("div", {
     id: "canvasWrapper",
     style: {

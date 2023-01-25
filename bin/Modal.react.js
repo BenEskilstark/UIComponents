@@ -42,7 +42,10 @@ function Modal(props) {
       alignItems: 'center',
       justifyContent: 'center',
       width: '100%',
-      height: '100%'
+      height: '100%',
+      top: 0,
+      left: 0,
+      zIndex: 10
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {

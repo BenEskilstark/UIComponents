@@ -93,7 +93,6 @@ const {
  *    - onMoveCancel: (id) => void, // NOTE: must setTimeout any state updates here
  *    - onPieceMove: (id, position) => void, // board position
  *    - isMoveAllowed: (id, position) => void, // board position
- *    - isRotated: ?boolean, // whether to rotate the board 180 degrees
  *
  *  Props for pieces:
  *    - sprite: see SpriteSheet.react
@@ -104,8 +103,7 @@ const Board = props => {
   const {
     pixelSize,
     gridSize,
-    pieces,
-    isRotated
+    pieces
   } = props;
   const cellWidth = pixelSize.width / gridSize.width;
   const cellHeight = pixelSize.height / gridSize.height;
@@ -127,28 +125,28 @@ const Board = props => {
       if (!props.isMoveAllowed) return true;
       const x = Math.round(position.x / cellWidth);
       const y = Math.round(position.y / cellHeight);
-      return props.isMoveAllowed(id, rotateCoord({
+      return props.isMoveAllowed(id, {
         x,
         y
-      }, gridSize, isRotated));
+      });
     },
     onDrop: (id, position) => {
       if (!props.onPieceMove) return;
       const x = Math.round(position.x / cellWidth);
       const y = Math.round(position.y / cellHeight);
-      props.onPieceMove(id, rotateCoord({
+      props.onPieceMove(id, {
         x,
         y
-      }, gridSize, isRotated));
+      });
     },
     onPickup: (id, position) => {
       if (!props.onPiecePickup) return;
       const x = Math.round(position.x / cellWidth);
       const y = Math.round(position.y / cellHeight);
-      props.onPiecePickup(id, rotateCoord({
+      props.onPiecePickup(id, {
         x,
         y
-      }, gridSize, isRotated));
+      });
     },
     onCancel: id => {
       if (!props.onMoveCancel) return;
@@ -167,9 +165,7 @@ const Board = props => {
       key: p.id,
       cellWidth: cellWidth,
       cellHeight: cellHeight
-    }, p, {
-      position: rotateCoord(p.position, gridSize, isRotated)
-    }));
+    }, p));
   })));
 };
 const Piece = props => {
@@ -192,13 +188,6 @@ const Piece = props => {
       position: 'absolute'
     }
   }, props.sprite);
-};
-const rotateCoord = (pos, size, isRotated) => {
-  if (!isRotated) return pos;
-  return {
-    x: size.width - pos.x - 1,
-    y: size.height - pos.y - 1
-  };
 };
 module.exports = Board;
 },{"./CheckerBackground.react.js":6,"./DragArea.react.js":8,"react":37}],3:[function(require,module,exports){
@@ -278,6 +267,9 @@ module.exports = Button;
 },{"react":37}],4:[function(require,module,exports){
 const React = require('react');
 const {
+  useResponsiveDimensions
+} = require('./hooks');
+const {
   useEffect,
   useState,
   useMemo,
@@ -303,31 +295,7 @@ function Canvas(props) {
     // needed for focusing an entity (plus cellSize and dispatch)
     // focus, // Entity
   } = props;
-  const [windowWidth, setWindowWidth] = useState(width && !useFullScreen ? width : window.innerWidth);
-  const [windowHeight, setWindowHeight] = useState(height && !useFullScreen ? height : window.innerHeight);
-  useEffect(() => {
-    function handleResize() {
-      if (useFullScreen) {
-        setWindowWidth(window.innerWidth);
-        setWindowHeight(window.innerHeight);
-      } else {
-        setWindowWidth(width);
-        setWindowHeight(height);
-      }
-    }
-    handleResize();
-    if (useFullScreen) {
-      window.addEventListener('resize', handleResize);
-    }
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  }, [useFullScreen, onResize]);
-  useEffect(() => {
-    if (onResize) {
-      onResize(windowWidth, windowHeight);
-    }
-  }, [useFullScreen, onResize, windowWidth, windowHeight]);
+  const [windowWidth, windowHeight] = useResponsiveDimensions(onResize);
   return /*#__PURE__*/React.createElement("div", {
     id: "canvasWrapper",
     style: {
@@ -345,7 +313,7 @@ function Canvas(props) {
   }));
 }
 module.exports = React.memo(Canvas);
-},{"react":37}],5:[function(require,module,exports){
+},{"./hooks":21,"react":37}],5:[function(require,module,exports){
 const React = require('react');
 
 /**
@@ -838,7 +806,10 @@ function Modal(props) {
       alignItems: 'center',
       justifyContent: 'center',
       width: '100%',
-      height: '100%'
+      height: '100%',
+      top: 0,
+      left: 0,
+      zIndex: 10
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -1696,6 +1667,9 @@ const {
   useCallback
 } = React;
 
+// --------------------------------------------------------------------
+// UseEnhancedReducer
+// --------------------------------------------------------------------
 // use like
 // const [state, dispatch, getState] = useEnhancedReducer(reducer, initialState);
 // ALSO
@@ -1716,6 +1690,33 @@ const useEnhancedReducer = (reducer, initState, initializer) => {
     };
     return lastState.current = mergeReducer(state, action);
   }, initState, initializer), getState];
+};
+
+// --------------------------------------------------------------------
+// UseResponsiveDimensions
+// --------------------------------------------------------------------
+// use like
+// const [width, height] = useResponsiveDimensions((width, height) => doStuff);
+const useResponsiveDimensions = onResize => {
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const [windowHeight, setWindowHeight] = useState(window.innerHeight);
+  useEffect(() => {
+    function handleResize() {
+      setWindowWidth(window.innerWidth);
+      setWindowHeight(window.innerHeight);
+    }
+    handleResize();
+    window.addEventListener('resize', throttle(handleResize, [], 200));
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [onResize]);
+  useEffect(() => {
+    if (onResize) {
+      onResize(windowWidth, windowHeight);
+    }
+  }, [windowWidth, windowHeight]);
+  return [windowWidth, windowHeight];
 };
 
 // --------------------------------------------------------------------
@@ -1986,6 +1987,7 @@ module.exports = {
   useEnhancedReducer,
   useMouseHandler,
   mouseReducer,
+  useResponsiveDimensions,
   useEnhancedEffect,
   useCompare,
   usePrevious
@@ -2112,6 +2114,13 @@ const Main = props => {
             lines: [...mouse.lines, action.line]
           };
         }
+      case 'CHANGE_CANVAS_SIZE':
+        {
+          return {
+            ...mouse,
+            canvasSize: action.canvasSize
+          };
+        }
     }
     return mouse;
   }, {
@@ -2189,7 +2198,7 @@ const Main = props => {
     const canvasWidth = fullCanvas ? window.innerWidth : CANVAS_WIDTH;
     const canvasHeight = fullCanvas ? window.innerHeight : CANVAS_HEIGHT;
     render(canvasWidth, canvasHeight, mouse.lines);
-  }, [mouse.lines]);
+  }, [mouse.lines, fullCanvas]);
   const [draggables, setDraggables] = useState([/*#__PURE__*/React.createElement(Draggable, {
     id: "drag1",
     disabled: true,
@@ -2289,6 +2298,13 @@ const Main = props => {
     onResize: () => {
       const canvasWidth = fullCanvas ? window.innerWidth : CANVAS_WIDTH;
       const canvasHeight = fullCanvas ? window.innerHeight : CANVAS_HEIGHT;
+      mouseDispatch({
+        type: 'CHANGE_CANVAS_SIZE',
+        canvasSize: {
+          width: canvasWidth,
+          height: canvasHeight
+        }
+      });
       render(canvasWidth, canvasHeight, mouse.lines);
     }
   }), /*#__PURE__*/React.createElement(Table, {
@@ -2459,7 +2475,7 @@ const Main = props => {
         spriteSheet: {
           pxWidth: 50,
           pxHeight: 50,
-          imagesAcross: 8,
+          imagesAcross: 10,
           imagesDown: 2
         }
       })

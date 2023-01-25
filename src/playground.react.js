@@ -102,6 +102,12 @@ const Main = (props) => {
             lines: [...mouse.lines, action.line],
           };
         }
+        case 'CHANGE_CANVAS_SIZE': {
+          return {
+            ...mouse,
+            canvasSize: action.canvasSize,
+          };
+        }
       }
       return mouse;
     },
@@ -158,7 +164,7 @@ const Main = (props) => {
     const canvasWidth = fullCanvas ? window.innerWidth : CANVAS_WIDTH;
     const canvasHeight = fullCanvas ? window.innerHeight : CANVAS_HEIGHT;
     render(canvasWidth, canvasHeight, mouse.lines);
-  }, [mouse.lines]);
+  }, [mouse.lines, fullCanvas]);
 
   const [draggables, setDraggables] = useState([
     <Draggable id={"drag1"} disabled={true} key={"drag1"} style={{top: 300, left: 200}} />,
@@ -252,6 +258,9 @@ const Main = (props) => {
           onResize={() => {
             const canvasWidth = fullCanvas ? window.innerWidth : CANVAS_WIDTH;
             const canvasHeight = fullCanvas ? window.innerHeight : CANVAS_HEIGHT;
+            mouseDispatch({type: 'CHANGE_CANVAS_SIZE',
+              canvasSize: {width: canvasWidth, height: canvasHeight},
+            });
             render(canvasWidth, canvasHeight, mouse.lines);
           }}
         />
@@ -345,7 +354,7 @@ const Main = (props) => {
             },
             {id: 'whiteKnook', position: {x: knookX, y: 2}, sprite: (
               <SpriteSheet src={'../chess2.png'} offset={{x:6,y:0}}
-                spriteSheet={{pxWidth: 50, pxHeight: 50, imagesAcross: 8, imagesDown: 2}}
+                spriteSheet={{pxWidth: 50, pxHeight: 50, imagesAcross: 10, imagesDown: 2}}
               />)
             },
           ]}

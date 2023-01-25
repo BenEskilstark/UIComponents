@@ -19,7 +19,6 @@ const {
  *    - onMoveCancel: (id) => void, // NOTE: must setTimeout any state updates here
  *    - onPieceMove: (id, position) => void, // board position
  *    - isMoveAllowed: (id, position) => void, // board position
- *    - isRotated: ?boolean, // whether to rotate the board 180 degrees
  *
  *  Props for pieces:
  *    - sprite: see SpriteSheet.react
@@ -30,8 +29,7 @@ const Board = props => {
   const {
     pixelSize,
     gridSize,
-    pieces,
-    isRotated
+    pieces
   } = props;
   const cellWidth = pixelSize.width / gridSize.width;
   const cellHeight = pixelSize.height / gridSize.height;
@@ -53,28 +51,28 @@ const Board = props => {
       if (!props.isMoveAllowed) return true;
       const x = Math.round(position.x / cellWidth);
       const y = Math.round(position.y / cellHeight);
-      return props.isMoveAllowed(id, rotateCoord({
+      return props.isMoveAllowed(id, {
         x,
         y
-      }, gridSize, isRotated));
+      });
     },
     onDrop: (id, position) => {
       if (!props.onPieceMove) return;
       const x = Math.round(position.x / cellWidth);
       const y = Math.round(position.y / cellHeight);
-      props.onPieceMove(id, rotateCoord({
+      props.onPieceMove(id, {
         x,
         y
-      }, gridSize, isRotated));
+      });
     },
     onPickup: (id, position) => {
       if (!props.onPiecePickup) return;
       const x = Math.round(position.x / cellWidth);
       const y = Math.round(position.y / cellHeight);
-      props.onPiecePickup(id, rotateCoord({
+      props.onPiecePickup(id, {
         x,
         y
-      }, gridSize, isRotated));
+      });
     },
     onCancel: id => {
       if (!props.onMoveCancel) return;
@@ -93,9 +91,7 @@ const Board = props => {
       key: p.id,
       cellWidth: cellWidth,
       cellHeight: cellHeight
-    }, p, {
-      position: rotateCoord(p.position, gridSize, isRotated)
-    }));
+    }, p));
   })));
 };
 const Piece = props => {
@@ -118,12 +114,5 @@ const Piece = props => {
       position: 'absolute'
     }
   }, props.sprite);
-};
-const rotateCoord = (pos, size, isRotated) => {
-  if (!isRotated) return pos;
-  return {
-    x: size.width - pos.x - 1,
-    y: size.height - pos.y - 1
-  };
 };
 module.exports = Board;

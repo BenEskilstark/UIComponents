@@ -119,6 +119,13 @@ const Main = props => {
             lines: [...mouse.lines, action.line]
           };
         }
+      case 'CHANGE_CANVAS_SIZE':
+        {
+          return {
+            ...mouse,
+            canvasSize: action.canvasSize
+          };
+        }
     }
     return mouse;
   }, {
@@ -196,7 +203,7 @@ const Main = props => {
     const canvasWidth = fullCanvas ? window.innerWidth : CANVAS_WIDTH;
     const canvasHeight = fullCanvas ? window.innerHeight : CANVAS_HEIGHT;
     render(canvasWidth, canvasHeight, mouse.lines);
-  }, [mouse.lines]);
+  }, [mouse.lines, fullCanvas]);
   const [draggables, setDraggables] = useState([/*#__PURE__*/React.createElement(Draggable, {
     id: "drag1",
     disabled: true,
@@ -296,6 +303,13 @@ const Main = props => {
     onResize: () => {
       const canvasWidth = fullCanvas ? window.innerWidth : CANVAS_WIDTH;
       const canvasHeight = fullCanvas ? window.innerHeight : CANVAS_HEIGHT;
+      mouseDispatch({
+        type: 'CHANGE_CANVAS_SIZE',
+        canvasSize: {
+          width: canvasWidth,
+          height: canvasHeight
+        }
+      });
       render(canvasWidth, canvasHeight, mouse.lines);
     }
   }), /*#__PURE__*/React.createElement(Table, {
@@ -466,7 +480,7 @@ const Main = props => {
         spriteSheet: {
           pxWidth: 50,
           pxHeight: 50,
-          imagesAcross: 8,
+          imagesAcross: 10,
           imagesDown: 2
         }
       })

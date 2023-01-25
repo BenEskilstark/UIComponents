@@ -11,6 +11,9 @@ const {
   useCallback
 } = React;
 
+// --------------------------------------------------------------------
+// UseEnhancedReducer
+// --------------------------------------------------------------------
 // use like
 // const [state, dispatch, getState] = useEnhancedReducer(reducer, initialState);
 // ALSO
@@ -31,6 +34,33 @@ const useEnhancedReducer = (reducer, initState, initializer) => {
     };
     return lastState.current = mergeReducer(state, action);
   }, initState, initializer), getState];
+};
+
+// --------------------------------------------------------------------
+// UseResponsiveDimensions
+// --------------------------------------------------------------------
+// use like
+// const [width, height] = useResponsiveDimensions((width, height) => doStuff);
+const useResponsiveDimensions = onResize => {
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const [windowHeight, setWindowHeight] = useState(window.innerHeight);
+  useEffect(() => {
+    function handleResize() {
+      setWindowWidth(window.innerWidth);
+      setWindowHeight(window.innerHeight);
+    }
+    handleResize();
+    window.addEventListener('resize', throttle(handleResize, [], 200));
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [onResize]);
+  useEffect(() => {
+    if (onResize) {
+      onResize(windowWidth, windowHeight);
+    }
+  }, [windowWidth, windowHeight]);
+  return [windowWidth, windowHeight];
 };
 
 // --------------------------------------------------------------------
@@ -301,6 +331,7 @@ module.exports = {
   useEnhancedReducer,
   useMouseHandler,
   mouseReducer,
+  useResponsiveDimensions,
   useEnhancedEffect,
   useCompare,
   usePrevious
