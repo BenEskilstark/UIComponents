@@ -7,13 +7,13 @@ const React = require('react');
  *    - pixelSize: {width, height}, // board size in pixels
  *    - gridSize: {width, height}, // board size in squares
  */
-const CheckerboardBackground = (props) => {
+const CheckerBackground = (props) => {
   const {color1, color2, pixelSize, gridSize} = props;
   const cellWidth = pixelSize.width / gridSize.width;
   const cellHeight = pixelSize.height / gridSize.height;
   const squares = [];
-  for (let x = 0; x < gridSize.width; x++) {
-    for (let y = 0; y < gridSize.height; y++) {
+  for (let y = 0; y < gridSize.height; y++) {
+    for (let x = 0; x < gridSize.width; x++) {
       let backgroundColor = x % 2 == 1 ? color1 : color2;
       if (y % 2 == 1) {
         backgroundColor = x % 2 == 0 ? color1 : color2;
@@ -43,4 +43,4 @@ const CheckerboardBackground = (props) => {
   );
 };
 
-module.exports = CheckerboardBackground;
+module.exports = CheckerBackground;

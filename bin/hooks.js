@@ -50,7 +50,7 @@ const useResponsiveDimensions = onResize => {
       setWindowHeight(window.innerHeight);
     }
     handleResize();
-    window.addEventListener('resize', throttle(handleResize, [], 200));
+    window.addEventListener('resize', handleResize);
     return () => {
       window.removeEventListener('resize', handleResize);
     };

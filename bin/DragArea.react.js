@@ -40,11 +40,13 @@ const {
 const DragArea = props => {
   var _state$mouse;
   const id = props.id ? props.id : "dragArea";
+  let children = props.children.length ? props.children : [props.children];
+  // let children = props.children;
 
   // check for new draggables or removed draggables
   useEffect(() => {
     dispatch({
-      draggables: props.children.map(c => {
+      draggables: children.map(c => {
         const elem = document.getElementById(c.props.id);
         if (!elem) return null;
         return {
@@ -59,11 +61,11 @@ const DragArea = props => {
         };
       }).filter(e => e != null).reverse()
     });
-    props.children.forEach(c => {
+    children.forEach(c => {
       const elem = document.getElementById(c.props.id);
       elem.style["pointer-events"] = "none";
     });
-  }, [props.children]);
+  }, [children]);
 
   // handle state of everything
   const [state, dispatch, getState] = useEnhancedReducer((state, action) => {
@@ -198,7 +200,7 @@ const DragArea = props => {
         dispatch({
           type: 'SET_DRAGGABLE',
           id: state.selectedID,
-          position: dropPosition,
+          position: subtract(dropPosition, state.selectedOffset),
           selectedID: null,
           selectedOffset: null
         });
@@ -228,7 +230,7 @@ const DragArea = props => {
       position: 'relative',
       ...(props.style ? props.style : {})
     }
-  }, props.children);
+  }, children);
 };
 const clickedInElem = (pixel, style) => {
   return pixel.x >= style.left && pixel.x <= style.left + style.width && pixel.y >= style.top && pixel.y <= style.top + style.height;

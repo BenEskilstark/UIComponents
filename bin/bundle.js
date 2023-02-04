@@ -356,7 +356,7 @@ const React = require('react');
  *    - pixelSize: {width, height}, // board size in pixels
  *    - gridSize: {width, height}, // board size in squares
  */
-const CheckerboardBackground = props => {
+const CheckerBackground = props => {
   const {
     color1,
     color2,
@@ -366,8 +366,8 @@ const CheckerboardBackground = props => {
   const cellWidth = pixelSize.width / gridSize.width;
   const cellHeight = pixelSize.height / gridSize.height;
   const squares = [];
-  for (let x = 0; x < gridSize.width; x++) {
-    for (let y = 0; y < gridSize.height; y++) {
+  for (let y = 0; y < gridSize.height; y++) {
+    for (let x = 0; x < gridSize.width; x++) {
       let backgroundColor = x % 2 == 1 ? color1 : color2;
       if (y % 2 == 1) {
         backgroundColor = x % 2 == 0 ? color1 : color2;
@@ -393,7 +393,7 @@ const CheckerboardBackground = props => {
     }
   }, squares);
 };
-module.exports = CheckerboardBackground;
+module.exports = CheckerBackground;
 },{"react":37}],7:[function(require,module,exports){
 const React = require('react');
 function Divider(props) {
@@ -453,11 +453,13 @@ const {
 const DragArea = props => {
   var _state$mouse;
   const id = props.id ? props.id : "dragArea";
+  let children = props.children.length ? props.children : [props.children];
+  // let children = props.children;
 
   // check for new draggables or removed draggables
   useEffect(() => {
     dispatch({
-      draggables: props.children.map(c => {
+      draggables: children.map(c => {
         const elem = document.getElementById(c.props.id);
         if (!elem) return null;
         return {
@@ -472,11 +474,11 @@ const DragArea = props => {
         };
       }).filter(e => e != null).reverse()
     });
-    props.children.forEach(c => {
+    children.forEach(c => {
       const elem = document.getElementById(c.props.id);
       elem.style["pointer-events"] = "none";
     });
-  }, [props.children]);
+  }, [children]);
 
   // handle state of everything
   const [state, dispatch, getState] = useEnhancedReducer((state, action) => {
@@ -611,7 +613,7 @@ const DragArea = props => {
         dispatch({
           type: 'SET_DRAGGABLE',
           id: state.selectedID,
-          position: dropPosition,
+          position: subtract(dropPosition, state.selectedOffset),
           selectedID: null,
           selectedOffset: null
         });
@@ -641,7 +643,7 @@ const DragArea = props => {
       position: 'relative',
       ...(props.style ? props.style : {})
     }
-  }, props.children);
+  }, children);
 };
 const clickedInElem = (pixel, style) => {
   return pixel.x >= style.left && pixel.x <= style.left + style.width && pixel.y >= style.top && pixel.y <= style.top + style.height;
@@ -1637,18 +1639,28 @@ const TextField = props => {
     value,
     placeholder,
     password,
+    id,
     onChange,
-    id
+    onBlur,
+    onFocus,
+    className
   } = props;
   const style = props.style != null ? props.style : {};
   return /*#__PURE__*/React.createElement("input", {
     id: id ? id : null,
+    className: className ? className : null,
     style: style,
     placeholder: placeholder,
     type: password ? 'password' : 'text',
     value: value,
     onChange: ev => {
-      onChange(ev.target.value);
+      if (props.onChange) onChange(ev.target.value);
+    },
+    onBlur: ev => {
+      if (props.onBlur) onBlur(ev.target.value);
+    },
+    onFocus: ev => {
+      if (props.onFocus) onFocus(ev.target.value);
     }
   });
 };
@@ -1706,7 +1718,7 @@ const useResponsiveDimensions = onResize => {
       setWindowHeight(window.innerHeight);
     }
     handleResize();
-    window.addEventListener('resize', throttle(handleResize, [], 200));
+    window.addEventListener('resize', handleResize);
     return () => {
       window.removeEventListener('resize', handleResize);
     };
@@ -2201,7 +2213,7 @@ const Main = props => {
   }, [mouse.lines, fullCanvas]);
   const [draggables, setDraggables] = useState([/*#__PURE__*/React.createElement(Draggable, {
     id: "drag1",
-    disabled: true,
+    disabled: false,
     key: "drag1",
     style: {
       top: 300,
@@ -2267,7 +2279,12 @@ const Main = props => {
   }), /*#__PURE__*/React.createElement(Button, {
     label: "Rotate Board",
     onClick: () => setIsRotated(!isRotated)
-  }), /*#__PURE__*/React.createElement("div", null), /*#__PURE__*/React.createElement(Button, {
+  }), /*#__PURE__*/React.createElement("div", null), /*#__PURE__*/React.createElement(TextField, {
+    value: "hello",
+    onBlur: val => {
+      console.log(val);
+    }
+  }), /*#__PURE__*/React.createElement(Button, {
     label: "Display Modal",
     disabled: modal != null,
     onClick: () => {
@@ -2346,9 +2363,10 @@ const Main = props => {
     style: {
       display: 'flex'
     }
-  }, /*#__PURE__*/React.createElement(DragArea, {
-    snapX: 100,
-    snapY: 100,
+  }, /*#__PURE__*/React.createElement(DragArea
+  // snapX={100}
+  // snapY={100}
+  , {
     isDropAllowed: (id, position) => {
       console.log(id, position);
       if (id == 'drag4') return false;

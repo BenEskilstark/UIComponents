@@ -206,7 +206,7 @@ const Main = props => {
   }, [mouse.lines, fullCanvas]);
   const [draggables, setDraggables] = useState([/*#__PURE__*/React.createElement(Draggable, {
     id: "drag1",
-    disabled: true,
+    disabled: false,
     key: "drag1",
     style: {
       top: 300,
@@ -272,7 +272,12 @@ const Main = props => {
   }), /*#__PURE__*/React.createElement(Button, {
     label: "Rotate Board",
     onClick: () => setIsRotated(!isRotated)
-  }), /*#__PURE__*/React.createElement("div", null), /*#__PURE__*/React.createElement(Button, {
+  }), /*#__PURE__*/React.createElement("div", null), /*#__PURE__*/React.createElement(TextField, {
+    value: "hello",
+    onBlur: val => {
+      console.log(val);
+    }
+  }), /*#__PURE__*/React.createElement(Button, {
     label: "Display Modal",
     disabled: modal != null,
     onClick: () => {
@@ -351,9 +356,10 @@ const Main = props => {
     style: {
       display: 'flex'
     }
-  }, /*#__PURE__*/React.createElement(DragArea, {
-    snapX: 100,
-    snapY: 100,
+  }, /*#__PURE__*/React.createElement(DragArea
+  // snapX={100}
+  // snapY={100}
+  , {
     isDropAllowed: (id, position) => {
       console.log(id, position);
       if (id == 'drag4') return false;

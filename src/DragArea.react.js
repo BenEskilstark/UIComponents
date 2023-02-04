@@ -29,10 +29,12 @@ const {useEffect, useState, useMemo} = React;
 
 const DragArea = (props) => {
   const id = props.id ? props.id : "dragArea";
+  let children = props.children.length ? props.children : [props.children];
+  // let children = props.children;
 
   // check for new draggables or removed draggables
   useEffect(() => {
-    dispatch({draggables: props.children.map(c => {
+    dispatch({draggables: children.map(c => {
       const elem = document.getElementById(c.props.id);
       if (!elem) return null;
       return {id: c.props.id, disabled: c.props.disabled, style: {
@@ -40,11 +42,11 @@ const DragArea = (props) => {
         width: parseInt(elem.style.width), height: parseInt(elem.style.height),
       }};
     }).filter(e => e != null).reverse()});
-    props.children.forEach(c => {
+    children.forEach(c => {
       const elem = document.getElementById(c.props.id);
       elem.style["pointer-events"] = "none";
     });
-  }, [props.children]);
+  }, [children]);
 
   // handle state of everything
   const [state, dispatch, getState] = useEnhancedReducer(
@@ -155,7 +157,7 @@ const DragArea = (props) => {
         } else {
           dispatch({
             type: 'SET_DRAGGABLE', id: state.selectedID,
-            position: dropPosition,
+            position: subtract(dropPosition, state.selectedOffset),
             selectedID: null, selectedOffset: null,
           });
           if (props.onDrop) props.onDrop(id, dropPosition);
@@ -189,7 +191,7 @@ const DragArea = (props) => {
         ...(props.style ? props.style : {}),
       }}
     >
-      {props.children}
+      {children}
     </div>
   );
 };

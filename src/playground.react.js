@@ -167,7 +167,7 @@ const Main = (props) => {
   }, [mouse.lines, fullCanvas]);
 
   const [draggables, setDraggables] = useState([
-    <Draggable id={"drag1"} disabled={true} key={"drag1"} style={{top: 300, left: 200}} />,
+    <Draggable id={"drag1"} disabled={false} key={"drag1"} style={{top: 300, left: 200}} />,
     <Draggable id={"drag2"} key={"drag2"} style={{top: 300, left: 100}} />,
     <Draggable id={"drag3"} key={"drag3"} style={{top: 100, left: 100}} />
   ]);
@@ -224,6 +224,12 @@ const Main = (props) => {
           onClick={() => setIsRotated(!isRotated)}
         />
         <div></div>
+        <TextField
+          value={"hello"}
+          onBlur={(val) => {
+            console.log(val);
+          }}
+        />
         <Button
           label={"Display Modal"}
           disabled={modal != null}
@@ -298,8 +304,8 @@ const Main = (props) => {
         }}
       >
         <DragArea
-          snapX={100}
-          snapY={100}
+          // snapX={100}
+          // snapY={100}
           isDropAllowed={(id, position) => {
             console.log(id, position);
             if (id == 'drag4') return false;

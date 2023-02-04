@@ -13,18 +13,28 @@ const TextField = props => {
     value,
     placeholder,
     password,
+    id,
     onChange,
-    id
+    onBlur,
+    onFocus,
+    className
   } = props;
   const style = props.style != null ? props.style : {};
   return /*#__PURE__*/React.createElement("input", {
     id: id ? id : null,
+    className: className ? className : null,
     style: style,
     placeholder: placeholder,
     type: password ? 'password' : 'text',
     value: value,
     onChange: ev => {
-      onChange(ev.target.value);
+      if (props.onChange) onChange(ev.target.value);
+    },
+    onBlur: ev => {
+      if (props.onBlur) onBlur(ev.target.value);
+    },
+    onFocus: ev => {
+      if (props.onFocus) onFocus(ev.target.value);
     }
   });
 };
