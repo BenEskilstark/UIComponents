@@ -64,6 +64,155 @@ const useResponsiveDimensions = onResize => {
 };
 
 // --------------------------------------------------------------------
+// UseHotkeyHandler
+// --------------------------------------------------------------------
+
+// NOTE:
+// type PseudoStore = {dispatch: (action) => void, getState: () => HotKeys}
+// Use Like:
+// const [hotKeys, hotKeyDispatch, getHotKeyState] = useEnhancedReducer(hotKeyReducer);
+// useHotKeyHandler({dispatch: hotKeyDispatch, getState: getHotKeyState});
+// useEffect(() => {
+//    hotKeyDispatch({type: 'SET_HOTKEY', key: 'space', press: 'onKeyDown', fn: (state, dispatch) => {
+//      doSomething();
+//    }});
+// }, []);
+const useHotKeyHandler = (pseudoStore, noWASD, dependencies) => {
+  useEffect(() => {
+    const {
+      dispatch,
+      getState
+    } = pseudoStore;
+    const keyFn = (ev, keyEventType, pressed) => {
+      const state = getState();
+      const dir = getUpDownLeftRight(ev, noWASD);
+      if (dir != null) {
+        if (state && state[keyEventType][dir] != null) {
+          state[keyEventType][dir](getState(), dispatch);
+        }
+        dispatch({
+          type: 'SET_KEY_PRESS',
+          key: dir,
+          pressed
+        });
+        return;
+      }
+      if (ev.keyCode === 13) {
+        if (state && state[keyEventType].enter != null) {
+          state[keyEventType].enter(getState(), dispatch);
+        }
+        dispatch({
+          type: 'SET_KEY_PRESS',
+          key: 'enter',
+          pressed
+        });
+        return;
+      }
+      if (ev.keyCode === 32) {
+        if (state && state[keyEventType].space != null) {
+          state[keyEventType].space(getState(), dispatch);
+        }
+        dispatch({
+          type: 'SET_KEY_PRESS',
+          key: 'space',
+          pressed
+        });
+        return;
+      }
+      const character = String.fromCharCode(ev.keyCode).toUpperCase();
+      if (character != null) {
+        if (state && state[keyEventType][character] != null) {
+          state[keyEventType][character](getState(), dispatch);
+        }
+        dispatch({
+          type: 'SET_KEY_PRESS',
+          key: character,
+          pressed
+        });
+      }
+    };
+
+    // keypress event handling
+    document.onkeydown = ev => {
+      keyFn(ev, "onKeyDown", true);
+    };
+    document.onkeypress = ev => {
+      keyFn(ev, "onKeyPress", true);
+    };
+    document.onkeyup = ev => {
+      keyFn(ev, "onKeyUp", false);
+    };
+  }, dependencies ?? []);
+};
+const hotKeyReducer = (hotKeys, action) => {
+  if (hotKeys === undefined) {
+    hotKeys = {
+      onKeyDown: {},
+      onKeyPress: {},
+      onKeyUp: {},
+      keysDown: {}
+    };
+  }
+  switch (action.type) {
+    case 'SET_KEY_PRESS':
+      {
+        const {
+          key,
+          pressed,
+          once
+        } = action;
+        hotKeys.keysDown[key] = pressed;
+        if (once == true) {
+          hotKeys.once = true;
+        }
+        return hotKeys;
+      }
+    case 'SET_HOTKEY':
+      {
+        const {
+          key,
+          press,
+          fn
+        } = action;
+        hotKeys[press][key] = fn;
+        return hotKeys;
+      }
+  }
+  return hotKeys;
+};
+const getUpDownLeftRight = (ev, noWASD) => {
+  const keyCode = ev.keyCode;
+  if (noWASD) {
+    if (keyCode === 38) {
+      return 'down';
+    }
+    if (keyCode === 40) {
+      return 'up';
+    }
+    if (keyCode === 37) {
+      return 'left';
+    }
+    if (keyCode === 39) {
+      return 'right';
+    }
+    return null;
+  }
+  if (keyCode === 87 || keyCode === 38 || keyCode === 119) {
+    return 'down';
+  }
+  if (keyCode === 83 || keyCode === 40 || keyCode === 115) {
+    return 'up';
+  }
+  if (keyCode === 65 || keyCode === 37 || keyCode === 97) {
+    return 'left';
+  }
+  if (keyCode === 68 || keyCode === 39 || keyCode === 100) {
+    return 'right';
+  }
+  return null;
+};
+
+// --------------------------------------------------------------------
 // UseMouseHandler
 // --------------------------------------------------------------------
 // NOTE:
@@ -331,6 +480,8 @@ module.exports = {
   useEnhancedReducer,
   useMouseHandler,
   mouseReducer,
+  useHotKeyHandler,
+  hotKeyReducer,
   useResponsiveDimensions,
   useEnhancedEffect,
   useCompare,

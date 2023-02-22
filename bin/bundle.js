@@ -281,6 +281,10 @@ function Canvas(props) {
     // only necessary if not useFullScreen
     width,
     height,
+    view,
+    // {x, y, width, height} of the world coordinates for the canvas
+    // independent of the canvas element's width/height
+
     style,
     // style overrides
 
@@ -288,31 +292,41 @@ function Canvas(props) {
     // optional if you have multiple canvases on the same page
 
     onResize // optional function called when the canvas resizes
-
-    // needed for resizing images on canvas relative to canvas size
-    // cellSize, // size in pixels of grid space
-    // dispatch,
-    // needed for focusing an entity (plus cellSize and dispatch)
-    // focus, // Entity
   } = props;
   const [windowWidth, windowHeight] = useResponsiveDimensions(onResize);
+
+  // maintain canvas context sizing
+  // useEffect(() => {
+  //   const canvas = document.getElementById(id || "canvas");
+  //   if (!canvas) return;
+  //   const ctx = canvas.getContext("2d");
+
+  //   ctx.restore(); // restore from previous resizing
+  //   ctx.save();
+  //   if (view && view.x != null && view.y != null) {
+  //     ctx.translate(view.x, view.y);
+  //   }
+  // }, [width, height, view, useFullScreen, windowWidth, windowHeight]);
+
   return /*#__PURE__*/React.createElement("div", {
     id: "canvasWrapper",
     style: {
-      width,
-      height
+      width: useFullScreen ? windowWidth : width,
+      height: useFullScreen ? windowHeight : height
     }
   }, /*#__PURE__*/React.createElement("canvas", {
     id: id || "canvas",
     style: {
       cursor: 'pointer',
+      width: useFullScreen ? windowWidth : width,
+      height: useFullScreen ? windowHeight : height,
       ...(style ? style : {})
     },
-    width: useFullScreen ? windowWidth : width,
-    height: useFullScreen ? windowHeight : height
+    width: view.width ? view.width : width,
+    height: view.height ? view.height : height
   }));
 }
-module.exports = React.memo(Canvas);
+module.exports = Canvas;
 },{"./hooks":21,"react":37}],5:[function(require,module,exports){
 const React = require('react');
 
@@ -342,7 +356,7 @@ function Checkbox(props) {
       style: {
         display: 'inline-block'
       }
-    }, label, checkbox);
+    }, checkbox, label);
   }
 }
 module.exports = Checkbox;
@@ -599,6 +613,9 @@ const DragArea = props => {
           x,
           y
         };
+      } else {
+        // only care about the mouse offset when we're not snapping
+        dropPosition = subtract(dropPosition, state.selectedOffset);
       }
       if (props.isDropAllowed && !props.isDropAllowed(state.selectedID, dropPosition)) {
         dispatch({
@@ -613,7 +630,7 @@ const DragArea = props => {
         dispatch({
           type: 'SET_DRAGGABLE',
           id: state.selectedID,
-          position: subtract(dropPosition, state.selectedOffset),
+          position: dropPosition,
           selectedID: null,
           selectedOffset: null
         });
@@ -1732,6 +1749,155 @@ const useResponsiveDimensions = onResize => {
 };
 
 // --------------------------------------------------------------------
+// UseHotkeyHandler
+// --------------------------------------------------------------------
+
+// NOTE:
+// type PseudoStore = {dispatch: (action) => void, getState: () => HotKeys}
+// Use Like:
+// const [hotKeys, hotKeyDispatch, getHotKeyState] = useEnhancedReducer(hotKeyReducer);
+// useHotKeyHandler({dispatch: hotKeyDispatch, getState: getHotKeyState});
+// useEffect(() => {
+//    hotKeyDispatch({type: 'SET_HOTKEY', key: 'space', press: 'onKeyDown', fn: (state, dispatch) => {
+//      doSomething();
+//    }});
+// }, []);
+const useHotKeyHandler = (pseudoStore, noWASD, dependencies) => {
+  useEffect(() => {
+    const {
+      dispatch,
+      getState
+    } = pseudoStore;
+    const keyFn = (ev, keyEventType, pressed) => {
+      const state = getState();
+      const dir = getUpDownLeftRight(ev, noWASD);
+      if (dir != null) {
+        if (state && state[keyEventType][dir] != null) {
+          state[keyEventType][dir](getState(), dispatch);
+        }
+        dispatch({
+          type: 'SET_KEY_PRESS',
+          key: dir,
+          pressed
+        });
+        return;
+      }
+      if (ev.keyCode === 13) {
+        if (state && state[keyEventType].enter != null) {
+          state[keyEventType].enter(getState(), dispatch);
+        }
+        dispatch({
+          type: 'SET_KEY_PRESS',
+          key: 'enter',
+          pressed
+        });
+        return;
+      }
+      if (ev.keyCode === 32) {
+        if (state && state[keyEventType].space != null) {
+          state[keyEventType].space(getState(), dispatch);
+        }
+        dispatch({
+          type: 'SET_KEY_PRESS',
+          key: 'space',
+          pressed
+        });
+        return;
+      }
+      const character = String.fromCharCode(ev.keyCode).toUpperCase();
+      if (character != null) {
+        if (state && state[keyEventType][character] != null) {
+          state[keyEventType][character](getState(), dispatch);
+        }
+        dispatch({
+          type: 'SET_KEY_PRESS',
+          key: character,
+          pressed
+        });
+      }
+    };
+
+    // keypress event handling
+    document.onkeydown = ev => {
+      keyFn(ev, "onKeyDown", true);
+    };
+    document.onkeypress = ev => {
+      keyFn(ev, "onKeyPress", true);
+    };
+    document.onkeyup = ev => {
+      keyFn(ev, "onKeyUp", false);
+    };
+  }, dependencies ?? []);
+};
+const hotKeyReducer = (hotKeys, action) => {
+  if (hotKeys === undefined) {
+    hotKeys = {
+      onKeyDown: {},
+      onKeyPress: {},
+      onKeyUp: {},
+      keysDown: {}
+    };
+  }
+  switch (action.type) {
+    case 'SET_KEY_PRESS':
+      {
+        const {
+          key,
+          pressed,
+          once
+        } = action;
+        hotKeys.keysDown[key] = pressed;
+        if (once == true) {
+          hotKeys.once = true;
+        }
+        return hotKeys;
+      }
+    case 'SET_HOTKEY':
+      {
+        const {
+          key,
+          press,
+          fn
+        } = action;
+        hotKeys[press][key] = fn;
+        return hotKeys;
+      }
+  }
+  return hotKeys;
+};
+const getUpDownLeftRight = (ev, noWASD) => {
+  const keyCode = ev.keyCode;
+  if (noWASD) {
+    if (keyCode === 38) {
+      return 'down';
+    }
+    if (keyCode === 40) {
+      return 'up';
+    }
+    if (keyCode === 37) {
+      return 'left';
+    }
+    if (keyCode === 39) {
+      return 'right';
+    }
+    return null;
+  }
+  if (keyCode === 87 || keyCode === 38 || keyCode === 119) {
+    return 'down';
+  }
+  if (keyCode === 83 || keyCode === 40 || keyCode === 115) {
+    return 'up';
+  }
+  if (keyCode === 65 || keyCode === 37 || keyCode === 97) {
+    return 'left';
+  }
+  if (keyCode === 68 || keyCode === 39 || keyCode === 100) {
+    return 'right';
+  }
+  return null;
+};
+
+// --------------------------------------------------------------------
 // UseMouseHandler
 // --------------------------------------------------------------------
 // NOTE:
@@ -1999,6 +2165,8 @@ module.exports = {
   useEnhancedReducer,
   useMouseHandler,
   mouseReducer,
+  useHotKeyHandler,
+  hotKeyReducer,
   useResponsiveDimensions,
   useEnhancedEffect,
   useCompare,
@@ -2041,13 +2209,21 @@ const TextField = require('./TextField.react.js');
 const {
   useEnhancedEffect,
   useEnhancedReducer,
-  useMouseHandler
+  useMouseHandler,
+  useHotKeyHandler,
+  hotKeyReducer
 } = require('./hooks.js');
 function renderUI(root) {
   root.render( /*#__PURE__*/React.createElement(Main, null));
 }
-const CANVAS_WIDTH = 300;
-const CANVAS_HEIGHT = 300;
+let CANVAS_WIDTH = 300;
+let CANVAS_HEIGHT = 300;
+const grid = {
+  x: 0,
+  y: 200,
+  width: 500,
+  height: 500
+};
 const Main = props => {
   const [modal, setModal] = useState(null);
   const [fullCanvas, setFullCanvas] = useState(false);
@@ -2090,6 +2266,21 @@ const Main = props => {
       }
     }
   });
+  const [hotKeys, hotKeyDispatch, getHotKeyState] = useEnhancedReducer(hotKeyReducer);
+  useHotKeyHandler({
+    dispatch: hotKeyDispatch,
+    getState: getHotKeyState
+  });
+  useEffect(() => {
+    hotKeyDispatch({
+      type: 'SET_HOTKEY',
+      key: 'space',
+      press: 'onKeyDown',
+      fn: (state, dispatch) => {
+        setKnookX(randomIn(0, 7));
+      }
+    });
+  }, []);
   const [mouse, mouseDispatch, getMouseState] = useEnhancedReducer((mouse, action) => {
     switch (action.type) {
       case 'SET_MOUSE_DOWN':
@@ -2301,6 +2492,19 @@ const Main = props => {
       }));
     }
   }), /*#__PURE__*/React.createElement(Button, {
+    label: "Grow Canvas",
+    onClick: () => {
+      CANVAS_WIDTH *= 1.2;
+      CANVAS_HEIGHT *= 1.2;
+      mouseDispatch({
+        type: 'CHANGE_CANVAS_SIZE',
+        canvasSize: {
+          width: CANVAS_WIDTH,
+          height: CANVAS_HEIGHT
+        }
+      });
+    }
+  }), /*#__PURE__*/React.createElement(Button, {
     label: fullCanvas ? "Smaller Canvas" : "Set Full Screen Canvas",
     onClick: () => setFullCanvas(!fullCanvas)
   })), /*#__PURE__*/React.createElement("div", {
@@ -2311,6 +2515,7 @@ const Main = props => {
   }, /*#__PURE__*/React.createElement(Canvas, {
     width: CANVAS_WIDTH,
     height: CANVAS_HEIGHT,
+    view: grid,
     useFullScreen: fullCanvas,
     onResize: () => {
       const canvasWidth = fullCanvas ? window.innerWidth : CANVAS_WIDTH;
@@ -2549,10 +2754,6 @@ const ModalBody = props => {
   }, [props.counter]);
   return /*#__PURE__*/React.createElement("div", null, "lorem ipsum the quick brown fox jumped over the lazy dog");
 };
-const grid = {
-  width: 500,
-  height: 500
-};
 const mult = (pos, size) => {
   return {
     x: pos.x * size.width,
@@ -2566,7 +2767,8 @@ const render = (canvasWidth, canvasHeight, lines) => {
   ctx.fillStyle = 'gray';
   const pxW = canvasWidth / grid.width;
   const pxH = canvasHeight / grid.height;
-  ctx.scale(pxW, pxH);
+  // ctx.scale(1 / pxW, 1 / pxH); // not needed now that canvas size is right
+
   ctx.fillRect(0, 0, grid.width, grid.height);
   ctx.fillStyle = 'steelblue';
   ctx.fillRect(25, 25, 250, 400);

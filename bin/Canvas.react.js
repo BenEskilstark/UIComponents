@@ -14,6 +14,10 @@ function Canvas(props) {
     // only necessary if not useFullScreen
     width,
     height,
+    view,
+    // {x, y, width, height} of the world coordinates for the canvas
+    // independent of the canvas element's width/height
+
     style,
     // style overrides
 
@@ -21,28 +25,38 @@ function Canvas(props) {
     // optional if you have multiple canvases on the same page
 
     onResize // optional function called when the canvas resizes
-
-    // needed for resizing images on canvas relative to canvas size
-    // cellSize, // size in pixels of grid space
-    // dispatch,
-    // needed for focusing an entity (plus cellSize and dispatch)
-    // focus, // Entity
   } = props;
   const [windowWidth, windowHeight] = useResponsiveDimensions(onResize);
+
+  // maintain canvas context sizing
+  // useEffect(() => {
+  //   const canvas = document.getElementById(id || "canvas");
+  //   if (!canvas) return;
+  //   const ctx = canvas.getContext("2d");
+
+  //   ctx.restore(); // restore from previous resizing
+  //   ctx.save();
+  //   if (view && view.x != null && view.y != null) {
+  //     ctx.translate(view.x, view.y);
+  //   }
+  // }, [width, height, view, useFullScreen, windowWidth, windowHeight]);
+
   return /*#__PURE__*/React.createElement("div", {
     id: "canvasWrapper",
     style: {
-      width,
-      height
+      width: useFullScreen ? windowWidth : width,
+      height: useFullScreen ? windowHeight : height
     }
   }, /*#__PURE__*/React.createElement("canvas", {
     id: id || "canvas",
     style: {
       cursor: 'pointer',
+      width: useFullScreen ? windowWidth : width,
+      height: useFullScreen ? windowHeight : height,
       ...(style ? style : {})
     },
-    width: useFullScreen ? windowWidth : width,
-    height: useFullScreen ? windowHeight : height
+    width: view.width ? view.width : width,
+    height: view.height ? view.height : height
   }));
 }
-module.exports = React.memo(Canvas);
+module.exports = Canvas;

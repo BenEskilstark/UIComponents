@@ -27,7 +27,7 @@ function Checkbox(props) {
           display: 'inline-block',
         }}
       >
-      {label}{checkbox}
+      {checkbox}{label}
       </div>
     );
   }

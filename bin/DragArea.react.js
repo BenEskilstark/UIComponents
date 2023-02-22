@@ -186,6 +186,9 @@ const DragArea = props => {
           x,
           y
         };
+      } else {
+        // only care about the mouse offset when we're not snapping
+        dropPosition = subtract(dropPosition, state.selectedOffset);
       }
       if (props.isDropAllowed && !props.isDropAllowed(state.selectedID, dropPosition)) {
         dispatch({
@@ -200,7 +203,7 @@ const DragArea = props => {
         dispatch({
           type: 'SET_DRAGGABLE',
           id: state.selectedID,
-          position: subtract(dropPosition, state.selectedOffset),
+          position: dropPosition,
           selectedID: null,
           selectedOffset: null
         });

@@ -26,7 +26,7 @@ function Checkbox(props) {
       style: {
         display: 'inline-block'
       }
-    }, label, checkbox);
+    }, checkbox, label);
   }
 }
 module.exports = Checkbox;

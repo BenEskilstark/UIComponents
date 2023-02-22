@@ -34,13 +34,21 @@ const TextField = require('./TextField.react.js');
 const {
   useEnhancedEffect,
   useEnhancedReducer,
-  useMouseHandler
+  useMouseHandler,
+  useHotKeyHandler,
+  hotKeyReducer
 } = require('./hooks.js');
 function renderUI(root) {
   root.render( /*#__PURE__*/React.createElement(Main, null));
 }
-const CANVAS_WIDTH = 300;
-const CANVAS_HEIGHT = 300;
+let CANVAS_WIDTH = 300;
+let CANVAS_HEIGHT = 300;
+const grid = {
+  x: 0,
+  y: 200,
+  width: 500,
+  height: 500
+};
 const Main = props => {
   const [modal, setModal] = useState(null);
   const [fullCanvas, setFullCanvas] = useState(false);
@@ -83,6 +91,21 @@ const Main = props => {
       }
     }
   });
+  const [hotKeys, hotKeyDispatch, getHotKeyState] = useEnhancedReducer(hotKeyReducer);
+  useHotKeyHandler({
+    dispatch: hotKeyDispatch,
+    getState: getHotKeyState
+  });
+  useEffect(() => {
+    hotKeyDispatch({
+      type: 'SET_HOTKEY',
+      key: 'space',
+      press: 'onKeyDown',
+      fn: (state, dispatch) => {
+        setKnookX(randomIn(0, 7));
+      }
+    });
+  }, []);
   const [mouse, mouseDispatch, getMouseState] = useEnhancedReducer((mouse, action) => {
     switch (action.type) {
       case 'SET_MOUSE_DOWN':
@@ -294,6 +317,19 @@ const Main = props => {
       }));
     }
   }), /*#__PURE__*/React.createElement(Button, {
+    label: "Grow Canvas",
+    onClick: () => {
+      CANVAS_WIDTH *= 1.2;
+      CANVAS_HEIGHT *= 1.2;
+      mouseDispatch({
+        type: 'CHANGE_CANVAS_SIZE',
+        canvasSize: {
+          width: CANVAS_WIDTH,
+          height: CANVAS_HEIGHT
+        }
+      });
+    }
+  }), /*#__PURE__*/React.createElement(Button, {
     label: fullCanvas ? "Smaller Canvas" : "Set Full Screen Canvas",
     onClick: () => setFullCanvas(!fullCanvas)
   })), /*#__PURE__*/React.createElement("div", {
@@ -304,6 +340,7 @@ const Main = props => {
   }, /*#__PURE__*/React.createElement(Canvas, {
     width: CANVAS_WIDTH,
     height: CANVAS_HEIGHT,
+    view: grid,
     useFullScreen: fullCanvas,
     onResize: () => {
       const canvasWidth = fullCanvas ? window.innerWidth : CANVAS_WIDTH;
@@ -542,10 +579,6 @@ const ModalBody = props => {
   }, [props.counter]);
   return /*#__PURE__*/React.createElement("div", null, "lorem ipsum the quick brown fox jumped over the lazy dog");
 };
-const grid = {
-  width: 500,
-  height: 500
-};
 const mult = (pos, size) => {
   return {
     x: pos.x * size.width,
@@ -559,7 +592,8 @@ const render = (canvasWidth, canvasHeight, lines) => {
   ctx.fillStyle = 'gray';
   const pxW = canvasWidth / grid.width;
   const pxH = canvasHeight / grid.height;
-  ctx.scale(pxW, pxH);
+  // ctx.scale(1 / pxW, 1 / pxH); // not needed now that canvas size is right
+
   ctx.fillRect(0, 0, grid.width, grid.height);
   ctx.fillStyle = 'steelblue';
   ctx.fillRect(25, 25, 250, 400);
