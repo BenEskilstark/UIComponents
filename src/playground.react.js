@@ -25,6 +25,7 @@ const Slider = require('./Slider.react.js');
 const SpriteSheet = require('./SpriteSheet.react.js');
 const Table = require('./Table.react.js');
 const TextField = require('./TextField.react.js');
+const TextArea = require('./TextArea.react.js');
 const {
   useEnhancedEffect, useEnhancedReducer,
   useMouseHandler,
@@ -190,6 +191,8 @@ const Main = (props) => {
   const [knookX, setKnookX] = useState(2);
   const [isRotated, setIsRotated] = useState(false);
 
+  const [someText, setSomeText] = useState('hello world');
+
   return (
     <div>
       {modal}
@@ -243,6 +246,15 @@ const Main = (props) => {
           value={"hello"}
           onBlur={(val) => {
             console.log(val);
+          }}
+        />
+        <TextArea
+          value={someText}
+          onChange={setSomeText}
+          rows={4}
+          style={{
+            resize: 'none',
+            width: 400,
           }}
         />
         <Button

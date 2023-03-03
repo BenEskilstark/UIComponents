@@ -26,6 +26,7 @@ module.exports = {
   SpriteSheet: require('./bin/SpriteSheet.react.js'),
   Table: require('./bin/Table.react.js'),
   TextField: require('./bin/TextField.react.js'),
+  TextArea: require('./bin/TextArea.react.js'),
   ...require('./bin/hooks.js'),
 };
 

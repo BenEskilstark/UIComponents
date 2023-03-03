@@ -77,6 +77,7 @@ const useResponsiveDimensions = onResize => {
 //      doSomething();
 //    }});
 // }, []);
+// NOTE: key must be capitalized! space, enter, left,right,up,down also allowed
 const useHotKeyHandler = (pseudoStore, noWASD, dependencies) => {
   useEffect(() => {
     const {
