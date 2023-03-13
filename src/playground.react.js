@@ -342,8 +342,8 @@ const Main = (props) => {
         }}
       >
         <DragArea
-          // snapX={100}
-          // snapY={100}
+          snapX={100}
+          snapY={100}
           isDropAllowed={(id, position) => {
             console.log(id, position);
             if (id == 'drag4') return false;

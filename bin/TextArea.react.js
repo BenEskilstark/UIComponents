@@ -40,7 +40,8 @@ const TextArea = props => {
       if (props.onFocus) onFocus(ev.target.value);
     },
     rows: rows,
-    cols: cols
-  }, value);
+    cols: cols,
+    value: value
+  });
 };
 module.exports = TextArea;

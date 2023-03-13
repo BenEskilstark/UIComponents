@@ -6,9 +6,10 @@ const React = require('react');
  *  label: ?string
  *  checked: boolean
  *  onChange: (value: boolean) => void
+ *  style: ?Object
  */
 function Checkbox(props) {
-  const {checked, label, onChange} = props;
+  const {checked, label, onChange, style} = props;
   const checkbox = (
     <input
       type='checkbox'
@@ -25,6 +26,7 @@ function Checkbox(props) {
       <div
         style={{
           display: 'inline-block',
+          ...style,
         }}
       >
       {checkbox}{label}

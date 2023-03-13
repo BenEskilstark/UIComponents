@@ -55,8 +55,8 @@ function Canvas(props) {
       height: useFullScreen ? windowHeight : height,
       ...(style ? style : {})
     },
-    width: view.width ? view.width : width,
-    height: view.height ? view.height : height
+    width: view && view.width ? view.width : width,
+    height: view && view.height ? view.height : height
   }));
 }
 module.exports = Canvas;

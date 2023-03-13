@@ -5,12 +5,14 @@ const React = require('react');
  *  label: ?string
  *  checked: boolean
  *  onChange: (value: boolean) => void
+ *  style: ?Object
  */
 function Checkbox(props) {
   const {
     checked,
     label,
-    onChange
+    onChange,
+    style
   } = props;
   const checkbox = /*#__PURE__*/React.createElement("input", {
     type: "checkbox",
@@ -24,7 +26,8 @@ function Checkbox(props) {
   } else {
     return /*#__PURE__*/React.createElement("div", {
       style: {
-        display: 'inline-block'
+        display: 'inline-block',
+        ...style
       }
     }, checkbox, label);
   }

@@ -322,8 +322,8 @@ function Canvas(props) {
       height: useFullScreen ? windowHeight : height,
       ...(style ? style : {})
     },
-    width: view.width ? view.width : width,
-    height: view.height ? view.height : height
+    width: view && view.width ? view.width : width,
+    height: view && view.height ? view.height : height
   }));
 }
 module.exports = Canvas;
@@ -335,12 +335,14 @@ const React = require('react');
  *  label: ?string
  *  checked: boolean
  *  onChange: (value: boolean) => void
+ *  style: ?Object
  */
 function Checkbox(props) {
   const {
     checked,
     label,
-    onChange
+    onChange,
+    style
   } = props;
   const checkbox = /*#__PURE__*/React.createElement("input", {
     type: "checkbox",
@@ -354,7 +356,8 @@ function Checkbox(props) {
   } else {
     return /*#__PURE__*/React.createElement("div", {
       style: {
-        display: 'inline-block'
+        display: 'inline-block',
+        ...style
       }
     }, checkbox, label);
   }
@@ -508,6 +511,7 @@ const DragArea = props => {
           let nextDraggables = [];
           for (const draggable of state.draggables) {
             if (draggable.id == id) {
+              console.log("set pos", position.x, selectedID);
               nextDraggables.push({
                 ...draggable,
                 style: {
@@ -644,8 +648,15 @@ const DragArea = props => {
     for (const draggable of state.draggables) {
       const elem = document.getElementById(draggable.id);
       if (!elem) continue;
-      elem.style.left = draggable.style.left;
-      elem.style.top = draggable.style.top;
+      // HACK: enfore snap not always working
+      let snapX = props.snapX ?? 1;
+      let snapY = props.snapY ?? 1;
+      if (state.selectedID) {
+        snapX = 1;
+        snapY = 1;
+      }
+      elem.style.left = Math.round(draggable.style.left / snapX) * snapX;
+      elem.style.top = Math.round(draggable.style.top / snapY) * snapY;
       if (draggable.id == state.selectedID) {
         elem.style.zIndex = 5;
       } else {
@@ -686,13 +697,15 @@ const React = require('react');
  * displayOptions: ?Array<string>
  * selected: string // which option is selected
  * onChange: (string) => void
+ * style: ?Object
  */
 const Dropdown = function (props) {
   const {
     options,
     selected,
     onChange,
-    displayOptions
+    displayOptions,
+    style
   } = props;
   const optionTags = options.map((option, i) => {
     const label = displayOptions != null && displayOptions[i] != null ? displayOptions[i] : option;
@@ -706,7 +719,10 @@ const Dropdown = function (props) {
       const val = ev.target.value;
       onChange(val);
     },
-    value: selected
+    value: selected,
+    style: style ? {
+      ...style
+    } : {}
   }, optionTags);
 };
 module.exports = Dropdown;
@@ -1683,8 +1699,9 @@ const TextArea = props => {
       if (props.onFocus) onFocus(ev.target.value);
     },
     rows: rows,
-    cols: cols
-  }, value);
+    cols: cols,
+    value: value
+  });
 };
 module.exports = TextArea;
 },{"react":38}],21:[function(require,module,exports){
@@ -2626,10 +2643,9 @@ const Main = props => {
     style: {
       display: 'flex'
     }
-  }, /*#__PURE__*/React.createElement(DragArea
-  // snapX={100}
-  // snapY={100}
-  , {
+  }, /*#__PURE__*/React.createElement(DragArea, {
+    snapX: 100,
+    snapY: 100,
     isDropAllowed: (id, position) => {
       console.log(id, position);
       if (id == 'drag4') return false;

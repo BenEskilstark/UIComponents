@@ -6,13 +6,15 @@ const React = require('react');
  * displayOptions: ?Array<string>
  * selected: string // which option is selected
  * onChange: (string) => void
+ * style: ?Object
  */
 const Dropdown = function (props) {
   const {
     options,
     selected,
     onChange,
-    displayOptions
+    displayOptions,
+    style
   } = props;
   const optionTags = options.map((option, i) => {
     const label = displayOptions != null && displayOptions[i] != null ? displayOptions[i] : option;
@@ -26,7 +28,10 @@ const Dropdown = function (props) {
       const val = ev.target.value;
       onChange(val);
     },
-    value: selected
+    value: selected,
+    style: style ? {
+      ...style
+    } : {}
   }, optionTags);
 };
 module.exports = Dropdown;

@@ -81,6 +81,7 @@ const DragArea = props => {
           let nextDraggables = [];
           for (const draggable of state.draggables) {
             if (draggable.id == id) {
+              console.log("set pos", position.x, selectedID);
               nextDraggables.push({
                 ...draggable,
                 style: {
@@ -217,8 +218,15 @@ const DragArea = props => {
     for (const draggable of state.draggables) {
       const elem = document.getElementById(draggable.id);
       if (!elem) continue;
-      elem.style.left = draggable.style.left;
-      elem.style.top = draggable.style.top;
+      // HACK: enfore snap not always working
+      let snapX = props.snapX ?? 1;
+      let snapY = props.snapY ?? 1;
+      if (state.selectedID) {
+        snapX = 1;
+        snapY = 1;
+      }
+      elem.style.left = Math.round(draggable.style.left / snapX) * snapX;
+      elem.style.top = Math.round(draggable.style.top / snapY) * snapY;
       if (draggable.id == state.selectedID) {
         elem.style.zIndex = 5;
       } else {

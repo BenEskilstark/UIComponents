@@ -7,9 +7,10 @@ const React = require('react');
  * displayOptions: ?Array<string>
  * selected: string // which option is selected
  * onChange: (string) => void
+ * style: ?Object
  */
 const Dropdown = function(props) {
-  const {options, selected, onChange, displayOptions} = props;
+  const {options, selected, onChange, displayOptions, style} = props;
   const optionTags = options.map((option, i) => {
     const label = displayOptions != null && displayOptions[i] != null
       ? displayOptions[i]
@@ -28,6 +29,7 @@ const Dropdown = function(props) {
         onChange(val);
       }}
       value={selected}
+      style={style ? {...style} : {}}
     >
       {optionTags}
     </select>

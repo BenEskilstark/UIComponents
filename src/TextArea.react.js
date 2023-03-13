@@ -36,9 +36,8 @@ const TextArea = (props) => {
       }}
       rows={rows}
       cols={cols}
-    >
-      {value}
-    </textarea>
+      value={value}
+    />
   );
 };
 

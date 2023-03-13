@@ -403,10 +403,9 @@ const Main = props => {
     style: {
       display: 'flex'
     }
-  }, /*#__PURE__*/React.createElement(DragArea
-  // snapX={100}
-  // snapY={100}
-  , {
+  }, /*#__PURE__*/React.createElement(DragArea, {
+    snapX: 100,
+    snapY: 100,
     isDropAllowed: (id, position) => {
       console.log(id, position);
       if (id == 'drag4') return false;
