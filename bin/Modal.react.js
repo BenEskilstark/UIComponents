@@ -6,6 +6,8 @@ const Divider = require('./Divider.react');
 type Props = {
   title: ?string,
   body: ?string,
+  dismiss: ?() => void, // if provided, will display an X
+                        // and call this fn on click
   buttons: Array<{
     label: string,
     onClick: () => void,
@@ -19,6 +21,7 @@ function Modal(props) {
   const {
     title,
     body,
+    dismiss,
     buttons,
     style,
     buttonStyle
@@ -63,7 +66,18 @@ function Modal(props) {
     style: {
       fontSize: '1.2em'
     }
-  }, /*#__PURE__*/React.createElement("b", null, title)), body, /*#__PURE__*/React.createElement(Divider, {
+  }, /*#__PURE__*/React.createElement("b", null, title), /*#__PURE__*/React.createElement(Button, {
+    label: "\u274C",
+    style: {
+      display: dismiss ? 'inline' : 'none',
+      border: 'none',
+      backgroundColor: 'inherit',
+      float: 'right',
+      cursor: 'pointer',
+      fontSize: 10
+    },
+    onClick: dismiss
+  })), body, /*#__PURE__*/React.createElement(Divider, {
     style: {
       marginTop: 4,
       marginBottom: 4

@@ -316,6 +316,7 @@ const Main = props => {
     onClick: () => {
       setModal( /*#__PURE__*/React.createElement(Modal, {
         title: "Modal",
+        dismiss: () => setModal(null),
         body: /*#__PURE__*/React.createElement(ModalBody, {
           counter: counter,
           counter2: counter2
@@ -377,9 +378,11 @@ const Main = props => {
       display: 'inline'
     },
     min: 0,
-    max: 100,
+    max: 10,
     value: counter.val,
     noOriginalValue: true,
+    step: 0.01,
+    isFloat: true,
     onChange: v => {
       return setCounter({
         val: v
@@ -391,7 +394,7 @@ const Main = props => {
       display: 'inline'
     },
     min: 0,
-    max: 100,
+    max: 10,
     value: counter2.val,
     noNumberField: true,
     onChange: v => {

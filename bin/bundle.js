@@ -511,7 +511,6 @@ const DragArea = props => {
           let nextDraggables = [];
           for (const draggable of state.draggables) {
             if (draggable.id == id) {
-              console.log("set pos", position.x, selectedID);
               nextDraggables.push({
                 ...draggable,
                 style: {
@@ -805,6 +804,8 @@ const Divider = require('./Divider.react');
 type Props = {
   title: ?string,
   body: ?string,
+  dismiss: ?() => void, // if provided, will display an X
+                        // and call this fn on click
   buttons: Array<{
     label: string,
     onClick: () => void,
@@ -818,6 +819,7 @@ function Modal(props) {
   const {
     title,
     body,
+    dismiss,
     buttons,
     style,
     buttonStyle
@@ -862,7 +864,18 @@ function Modal(props) {
     style: {
       fontSize: '1.2em'
     }
-  }, /*#__PURE__*/React.createElement("b", null, title)), body, /*#__PURE__*/React.createElement(Divider, {
+  }, /*#__PURE__*/React.createElement("b", null, title), /*#__PURE__*/React.createElement(Button, {
+    label: "\u274C",
+    style: {
+      display: dismiss ? 'inline' : 'none',
+      border: 'none',
+      backgroundColor: 'inherit',
+      float: 'right',
+      cursor: 'pointer',
+      fontSize: 10
+    },
+    onClick: dismiss
+  })), body, /*#__PURE__*/React.createElement(Divider, {
     style: {
       marginTop: 4,
       marginBottom: 4
@@ -1335,18 +1348,24 @@ const React = require('react');
 // options: Array<string>
 // selected: string
 // onChange: (option) => void
+// displayOptions: ?Array<string>
+// isInline: ?boolean,
 
 class RadioPicker extends React.Component {
   render() {
     const optionToggles = [];
-    for (const option of this.props.options) {
+    for (let i = 0; i < this.props.options.length; i++) {
+      const option = this.props.options[i];
+      const displayOption = this.props.displayOptions && this.props.displayOptions[i] ? this.props.displayOptions[i] : option;
       optionToggles.push( /*#__PURE__*/React.createElement("div", {
         key: 'radioOption_' + option,
-        className: "radioOption"
+        style: {
+          display: this.props.isInline ? 'inline' : 'block'
+        }
       }, option, /*#__PURE__*/React.createElement("input", {
         type: "radio",
         className: "radioCheckbox",
-        value: option,
+        value: displayOption,
         checked: option === this.props.selected,
         onChange: () => this.props.onChange(option)
       })));
@@ -1376,6 +1395,7 @@ const {
  *  noOrignalValue: ?boolean,
  *  inline: ?boolean,
  *  style: ?Object,
+ *  disabled: ?boolean,
  */
 function Slider(props) {
   const {
@@ -1394,6 +1414,11 @@ function Slider(props) {
   const originalValue = useMemo(() => {
     return displayValue;
   }, []);
+  let step = props.step != null ? props.step : 1;
+  if (isFloat && step < 1) {
+    step *= 10; // step is 0.1 by default for isFloat
+  }
+
   return /*#__PURE__*/React.createElement("div", {
     style: props.style || {}
   }, props.label != null ? label : null, /*#__PURE__*/React.createElement("input", {
@@ -1401,6 +1426,7 @@ function Slider(props) {
     id: 'slider_' + label,
     min: min,
     max: max,
+    disabled: props.disabled,
     value: value,
     onChange: ev => {
       if (props.disabled) {
@@ -1409,7 +1435,7 @@ function Slider(props) {
       const val = ev.target.value;
       props.onChange(parseFloat(isFloat ? val / 10 : val));
     },
-    step: props.step != null ? props.step : 1
+    step: step
   }), /*#__PURE__*/React.createElement("div", {
     style: {
       display: 'inline-block'
@@ -2556,6 +2582,7 @@ const Main = props => {
     onClick: () => {
       setModal( /*#__PURE__*/React.createElement(Modal, {
         title: "Modal",
+        dismiss: () => setModal(null),
         body: /*#__PURE__*/React.createElement(ModalBody, {
           counter: counter,
           counter2: counter2
@@ -2617,9 +2644,11 @@ const Main = props => {
       display: 'inline'
     },
     min: 0,
-    max: 100,
+    max: 10,
     value: counter.val,
     noOriginalValue: true,
+    step: 0.01,
+    isFloat: true,
     onChange: v => {
       return setCounter({
         val: v
@@ -2631,7 +2660,7 @@ const Main = props => {
       display: 'inline'
     },
     min: 0,
-    max: 100,
+    max: 10,
     value: counter2.val,
     noNumberField: true,
     onChange: v => {
@@ -3205,6 +3234,23 @@ var throttle = function throttle(func, args, wait) {
   };
 };
 
+var debounce = function debounce(func, delay) {
+  var timerID = null;
+  return function () {
+    for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+      args[_key] = arguments[_key];
+    }
+
+    if (timerID) {
+      clearTimeout(timerID);
+    }
+    timerID = setTimeout(function () {
+      func.apply.apply(func, args);
+      timerID = null;
+    }, delay);
+  };
+};
+
 function deepCopy(obj) {
   if ((typeof obj === 'undefined' ? 'undefined' : _typeof(obj)) !== 'object' || obj == null) {
     return obj;
@@ -3255,7 +3301,7 @@ module.exports = {
   encodePosition: encodePosition, decodePosition: decodePosition,
   getDisplayTime: getDisplayTime,
   deepCopy: deepCopy,
-  throttle: throttle
+  throttle: throttle, debounce: debounce
 };
 },{"./vectors":30}],27:[function(require,module,exports){
 "use strict";
@@ -3317,6 +3363,10 @@ function isMobile() {
   }) || isIpad();
 }
 
+function isPhone() {
+  return isMobile() && !isIpad();
+}
+
 // HACK: when we're in electron window.require is a function
 function isElectron() {
   // return true;
@@ -3326,7 +3376,8 @@ function isElectron() {
 module.exports = {
   isElectron: isElectron,
   isIpad: isIpad,
-  isMobile: isMobile
+  isMobile: isMobile,
+  isPhone: isPhone
 };
 },{}],29:[function(require,module,exports){
 "use strict";

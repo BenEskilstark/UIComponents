@@ -263,6 +263,7 @@ const Main = (props) => {
           onClick={() => {
             setModal(<Modal
               title="Modal"
+              dismiss={() => setModal(null)}
               body={
                 <ModalBody
                   counter={counter}
@@ -318,9 +319,11 @@ const Main = (props) => {
         <Slider
           label="Slider"
           style={{display: 'inline'}}
-          min={0} max={100}
+          min={0} max={10}
           value={counter.val}
           noOriginalValue={true}
+          step={0.1}
+          isFloat={true}
           onChange={(v) => {
             return setCounter({val: v});
           }}
@@ -328,7 +331,7 @@ const Main = (props) => {
         <Slider
           label="Slider 2"
           style={{display: 'inline'}}
-          min={0} max={100}
+          min={0} max={10}
           value={counter2.val}
           noNumberField={true}
           onChange={(v) => {

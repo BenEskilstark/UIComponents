@@ -57,7 +57,6 @@ const DragArea = (props) => {
           let nextDraggables = [];
           for (const draggable of state.draggables) {
             if (draggable.id == id) {
-              console.log("set pos", position.x, selectedID);
               nextDraggables.push({
                 ...draggable,
                 style: {

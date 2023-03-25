@@ -1,6 +1,6 @@
 {
   "name": "bens_ui_components",
-  "version": "1.4.94",
+  "version": "1.4.96",
   "description": "Some common react elements I use in pretty much every project",
   "main": "index.js",
   "scripts": {
@@ -14,7 +14,7 @@
   "license": "ISC",
   "dependencies": {
     "babel-preset-es2021": "^1.0.0",
-    "bens_utils": "^1.0.1",
+    "bens_utils": "^1.0.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },

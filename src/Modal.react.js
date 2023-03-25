@@ -6,6 +6,8 @@ const Divider = require('./Divider.react');
 type Props = {
   title: ?string,
   body: ?string,
+  dismiss: ?() => void, // if provided, will display an X
+                        // and call this fn on click
   buttons: Array<{
     label: string,
     onClick: () => void,
@@ -16,7 +18,10 @@ type Props = {
 */
 
 function Modal(props) {
-  const {title, body, buttons, style, buttonStyle} = props;
+  const {
+    title, body, dismiss,
+    buttons, style, buttonStyle,
+  } = props;
   const overrideStyle = style ? style : {};
   const overrideButtonStyle = buttonStyle ? buttonStyle : {};
 
@@ -63,6 +68,18 @@ function Modal(props) {
           }}
         >
           <b>{title}</b>
+          <Button
+            label="❌"
+            style={{
+              display: dismiss ? 'inline' : 'none',
+              border: 'none',
+              backgroundColor: 'inherit',
+              float: 'right',
+              cursor: 'pointer',
+              fontSize: 10,
+            }}
+            onClick={dismiss}
+          />
         </div>
         {body}
         <Divider style={{

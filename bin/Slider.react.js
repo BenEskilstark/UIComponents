@@ -18,6 +18,7 @@ const {
  *  noOrignalValue: ?boolean,
  *  inline: ?boolean,
  *  style: ?Object,
+ *  disabled: ?boolean,
  */
 function Slider(props) {
   const {
@@ -36,6 +37,11 @@ function Slider(props) {
   const originalValue = useMemo(() => {
     return displayValue;
   }, []);
+  let step = props.step != null ? props.step : 1;
+  if (isFloat && step < 1) {
+    step *= 10; // step is 0.1 by default for isFloat
+  }
+
   return /*#__PURE__*/React.createElement("div", {
     style: props.style || {}
   }, props.label != null ? label : null, /*#__PURE__*/React.createElement("input", {
@@ -43,6 +49,7 @@ function Slider(props) {
     id: 'slider_' + label,
     min: min,
     max: max,
+    disabled: props.disabled,
     value: value,
     onChange: ev => {
       if (props.disabled) {
@@ -51,7 +58,7 @@ function Slider(props) {
       const val = ev.target.value;
       props.onChange(parseFloat(isFloat ? val / 10 : val));
     },
-    step: props.step != null ? props.step : 1
+    step: step
   }), /*#__PURE__*/React.createElement("div", {
     style: {
       display: 'inline-block'
