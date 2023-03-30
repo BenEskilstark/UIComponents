@@ -381,7 +381,7 @@ const Main = props => {
     max: 10,
     value: counter.val,
     noOriginalValue: true,
-    step: 0.01,
+    step: 0.1,
     isFloat: true,
     onChange: v => {
       return setCounter({

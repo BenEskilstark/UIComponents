@@ -1362,7 +1362,7 @@ class RadioPicker extends React.Component {
         style: {
           display: this.props.isInline ? 'inline' : 'block'
         }
-      }, option, /*#__PURE__*/React.createElement("input", {
+      }, displayOption, /*#__PURE__*/React.createElement("input", {
         type: "radio",
         className: "radioCheckbox",
         value: displayOption,
@@ -2647,7 +2647,7 @@ const Main = props => {
     max: 10,
     value: counter.val,
     noOriginalValue: true,
-    step: 0.01,
+    step: 0.1,
     isFloat: true,
     onChange: v => {
       return setCounter({
@@ -3245,7 +3245,7 @@ var debounce = function debounce(func, delay) {
       clearTimeout(timerID);
     }
     timerID = setTimeout(function () {
-      func.apply.apply(func, args);
+      func.apply(undefined, args);
       timerID = null;
     }, delay);
   };

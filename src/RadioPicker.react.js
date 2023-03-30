@@ -23,7 +23,7 @@ class RadioPicker extends React.Component {
             display: this.props.isInline ? 'inline' : 'block',
           }}
         >
-          {option}
+          {displayOption}
           <input type="radio"
             className="radioCheckbox"
             value={displayOption}

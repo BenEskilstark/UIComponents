@@ -18,7 +18,7 @@ class RadioPicker extends React.Component {
         style: {
           display: this.props.isInline ? 'inline' : 'block'
         }
-      }, option, /*#__PURE__*/React.createElement("input", {
+      }, displayOption, /*#__PURE__*/React.createElement("input", {
         type: "radio",
         className: "radioCheckbox",
         value: displayOption,
