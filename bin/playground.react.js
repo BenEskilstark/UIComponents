@@ -265,7 +265,15 @@ const Main = props => {
     label: "Pressed " + counter.val + " times",
     onClick: () => setCounter({
       val: counter.val + 1
-    })
+    }),
+    hoverCard: /*#__PURE__*/React.createElement("div", {
+      style: {
+        position: 'absolute',
+        height: 20,
+        backgroundColor: 'white',
+        border: '1px solid black'
+      }
+    }, "Some help text")
   }), /*#__PURE__*/React.createElement(Button, {
     label: "Add Draggable",
     onClick: () => {

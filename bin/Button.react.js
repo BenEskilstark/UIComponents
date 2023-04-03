@@ -12,6 +12,7 @@ const {
 // onMouseUp: optional () => void
 // disabled: optional boolean
 // style: optional Object
+// hoverCard: optional JSX
 
 function Button(props) {
   const id = props.id || props.label;
@@ -23,6 +24,15 @@ function Button(props) {
     }
   };
   const [intervalID, setIntervalID] = useState(null);
+  const [hover, setHover] = useState(false);
+  let hoverDisplay = null;
+  if (hover) {
+    hoverDisplay = /*#__PURE__*/React.createElement("div", {
+      style: {
+        position: 'relative'
+      }
+    }, props.hoverCard);
+  }
   return /*#__PURE__*/React.createElement("button", {
     type: "button",
     style: {
@@ -67,7 +77,13 @@ function Button(props) {
     },
     onMouseDown: props.onMouseDown,
     onMouseUp: props.onMouseUp,
+    onMouseEnter: () => {
+      if (props.hoverCard) setHover(true);
+    },
+    onMouseLeave: () => {
+      setHover(false);
+    },
     disabled: props.disabled
-  }, props.label);
+  }, props.label, hoverDisplay);
 }
 module.exports = Button;

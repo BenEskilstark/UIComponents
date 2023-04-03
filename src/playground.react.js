@@ -207,6 +207,18 @@ const Main = (props) => {
         <Button
           label={"Pressed " + counter.val + " times"}
           onClick={() => setCounter({val: counter.val + 1})}
+          hoverCard={
+            <div
+              style={{
+                position: 'absolute',
+                height: 20,
+                backgroundColor: 'white',
+                border: '1px solid black',
+              }}
+            >
+              Some help text
+            </div>
+          }
         />
         <Button
           label={"Add Draggable"}
