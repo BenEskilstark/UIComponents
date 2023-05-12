@@ -31,6 +31,7 @@ function Modal(props) {
       key={"b_" + b.label}
       disabled={!!b.disabled}
       label={b.label} onClick={b.onClick}
+      style={b.style || {}}
     />);
   });
 

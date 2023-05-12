@@ -171,6 +171,7 @@ const SwipePicker = props => {
       overflowX: 'hidden',
       position: 'absolute',
       left: state.left,
+      transition: 'left ' + (state.mouse.isLeftDown ? '0s' : '0.25s'),
       top: 0,
       pointerEvents: 'none'
     }

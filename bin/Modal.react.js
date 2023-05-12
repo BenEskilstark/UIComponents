@@ -34,7 +34,8 @@ function Modal(props) {
       key: "b_" + b.label,
       disabled: !!b.disabled,
       label: b.label,
-      onClick: b.onClick
+      onClick: b.onClick,
+      style: b.style || {}
     });
   });
   const rect = document.getElementById('container').getBoundingClientRect();
