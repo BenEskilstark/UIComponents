@@ -22,10 +22,11 @@ function Modal(props) {
     title, body, dismiss,
     buttons, style, buttonStyle,
   } = props;
+  const modalButtons = buttons ? buttons : [];
   const overrideStyle = style ? style : {};
   const overrideButtonStyle = buttonStyle ? buttonStyle : {};
 
-  const buttonHTML = buttons.map(b => {
+  const buttonHTML = modalButtons.map(b => {
     return (<Button
       key={"b_" + b.label}
       disabled={!!b.disabled}
@@ -82,18 +83,20 @@ function Modal(props) {
           />
         </div>
         {body}
-        <Divider style={{
-          marginTop: 4,
-          marginBottom: 4,
-        }} />
-        <div
-          style={{
+        {modalButtons.length > 0 ? (<span>
+          <Divider style={{
+            marginTop: 4,
             marginBottom: 4,
-            ...overrideButtonStyle,
-          }}
-        >
-          {buttonHTML}
-        </div>
+          }} />
+          <div
+            style={{
+              marginBottom: 4,
+              ...overrideButtonStyle,
+            }}
+          >
+            {buttonHTML}
+          </div>
+        </span>) : null}
       </div>
     </div>
   );

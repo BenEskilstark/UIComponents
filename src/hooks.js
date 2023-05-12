@@ -207,9 +207,9 @@ const getUpDownLeftRight = (ev, noWASD) => {
 //  rightDown, rightUp,
 //  scroll,
 // };
-const useMouseHandler = (elementID, pseudoStore, handlers, dependencies) => {
+const useMouseHandler = (elementID, pseudoStore, handlers, dependencies, moveThrottle) => {
   useEffect(() => {
-    const mvFn = throttle(onMove, [elementID, pseudoStore, handlers], 12);
+    const mvFn = throttle(onMove, [elementID, pseudoStore, handlers], moveThrottle ?? 12);
     const touchMvFn = (ev) => {
       // if (ev.target.id != elementID) ev.preventDefault();
       onMove(elementID, pseudoStore, handlers, ev);

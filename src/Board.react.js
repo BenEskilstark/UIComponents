@@ -1,6 +1,6 @@
 const React = require('react');
 const CheckerBackground = require('./CheckerBackground.react.js');
-const DragArea = require('./DragArea.react.js');
+const DragArea = require('./DragAreaDeprecated.react.js');
 const {useState, useEffect, useMemo, useReducer} = React;
 
 

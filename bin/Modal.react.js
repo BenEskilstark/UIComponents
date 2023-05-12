@@ -26,9 +26,10 @@ function Modal(props) {
     style,
     buttonStyle
   } = props;
+  const modalButtons = buttons ? buttons : [];
   const overrideStyle = style ? style : {};
   const overrideButtonStyle = buttonStyle ? buttonStyle : {};
-  const buttonHTML = buttons.map(b => {
+  const buttonHTML = modalButtons.map(b => {
     return /*#__PURE__*/React.createElement(Button, {
       key: "b_" + b.label,
       disabled: !!b.disabled,
@@ -77,7 +78,7 @@ function Modal(props) {
       fontSize: 10
     },
     onClick: dismiss
-  })), body, /*#__PURE__*/React.createElement(Divider, {
+  })), body, modalButtons.length > 0 ? /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement(Divider, {
     style: {
       marginTop: 4,
       marginBottom: 4
@@ -87,6 +88,6 @@ function Modal(props) {
       marginBottom: 4,
       ...overrideButtonStyle
     }
-  }, buttonHTML)));
+  }, buttonHTML)) : null));
 }
 module.exports = Modal;
