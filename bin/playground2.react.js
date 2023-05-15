@@ -24,6 +24,9 @@ const Main = () => {
     deselectedStyle: {
       opacity: 0.7
     },
+    onSelectIndex: (index, option, isCancel) => {
+      console.log(index, option, isCancel);
+    },
     options: [{
       isCircular: true,
       color: 'red'

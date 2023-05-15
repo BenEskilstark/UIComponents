@@ -19,6 +19,7 @@ const {
  * Props:
  *  - id: id of draggable area
  *  - options: Array<{label, onClick, style, isCircular, color}>
+ *  - onSelectIndex: (index, option, isCancel) => void,
  *  - width: pixels
  *  - height: pixels
  *  - style: style overrides for outermost component
@@ -34,6 +35,7 @@ const SwipePicker = props => {
     maxSize = 0.9,
     selectedStyle = {},
     deselectedStyle = {},
+    onSelectIndex,
     defaultColor = 'rgb(205,202,179)',
     gap = 10
   } = props;
@@ -128,19 +130,28 @@ const SwipePicker = props => {
       }
     },
     leftUp: (state, dispatch, pixel) => {
+      const selectedIndex = getOptionAtCenter(state.left);
       dispatch({
-        selectedIndex: getOptionAtCenter(state.left)
+        selectedIndex
       });
+      if (onSelectIndex) {
+        onSelectIndex(selectedIndex, options[selectedIndex]);
+      }
     },
     mouseLeave: (state, dispatch) => {
+      if (!state.mouse.isLeftDown) return;
+      const selectedIndex = getOptionAtCenter(state.left);
       dispatch({
         type: 'SET_MOUSE_DOWN',
         isLeft: true,
         isDown: false
       });
       dispatch({
-        selectedIndex: getOptionAtCenter(state.left)
+        selectedIndex
       });
+      if (onSelectIndex) {
+        onSelectIndex(selectedIndex, options[selectedIndex], true /* is cancel */);
+      }
     }
   }, [], 12 // throttle rate for mouse move
   );
