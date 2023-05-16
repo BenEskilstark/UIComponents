@@ -1,10 +1,16 @@
 const React = require('react');
 const ReactDOM = require('react-dom/client');
 const SwipePicker = require('./SwipePicker.react');
+const {
+  useState,
+  useEffect,
+  useMemo
+} = React;
 function renderUI(root) {
   root.render( /*#__PURE__*/React.createElement(Main, null));
 }
 const Main = () => {
+  const [selectedIndex, setSelectedIndex] = useState(2);
   return /*#__PURE__*/React.createElement("div", {
     style: {
       backgroundColor: 'black',
@@ -24,9 +30,8 @@ const Main = () => {
     deselectedStyle: {
       opacity: 0.7
     },
-    onSelectIndex: (index, option, isCancel) => {
-      console.log(index, option, isCancel);
-    },
+    selectedIndex: selectedIndex,
+    onSelectIndex: setSelectedIndex,
     options: [{
       isCircular: true,
       color: 'red'

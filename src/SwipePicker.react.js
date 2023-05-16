@@ -4,19 +4,21 @@ const {useMouseHandler, useEnhancedReducer, mouseReducer} = require('./hooks');
 const {useEffect, useState, useMemo} = React;
 
 /**
- * Props:
+ * Required Props:
  *  - id: id of draggable area
  *  - options: Array<{label, onClick, style, isCircular, color}>
  *  - onSelectIndex: (index, option, isCancel) => void,
+ *  - selectedIndex: index,
  *  - width: pixels
  *  - height: pixels
- *  - style: style overrides for outermost component
  */
 const SwipePicker = (props) => {
   const {
     options, style, width, height, id, minSize = 0.6, maxSize = 0.9,
     selectedStyle = {}, deselectedStyle = {},
-    onSelectIndex, defaultColor = 'rgb(205,202,179)', gap = 10,
+    onSelectIndex, selectedIndex,
+    defaultColor = 'rgb(205,202,179)', gap = 10,
+    onMouseDown, onMouseMove,
   } = props;
 
   // options can have dynamic widths so use these to get them on the fly
@@ -48,7 +50,7 @@ const SwipePicker = (props) => {
   }
 
   // get option relative to location
-  const getOptionAtCenter = (left) => {
+  const getOptionAtCenter = (options, left) => {
     let index = 0;
     let distToCenter = Math.abs(getOptionDistFromCenter(0, left));
     for (let i = 0; i < options.length; i++) {
@@ -60,7 +62,7 @@ const SwipePicker = (props) => {
     }
     return index;
   }
-  const getOptionAtOffset = (offset) => {
+  const getOptionAtOffset = (options, offset) => {
     const parentLeft = document.getElementById(id).getBoundingClientRect().x;
     for (let i = 0; i < options.length; i++) {
       const optionElem = document.getElementById(id + "_option_" + i);
@@ -76,7 +78,7 @@ const SwipePicker = (props) => {
   // handle state of everything
   const [state, dispatch, getState] = useEnhancedReducer(
     (state, action) => ({...state, mouse: mouseReducer(state.mouse, action)}),
-    {mouse: {}, selectedIndex: 1, left: 0, prevLeft: 0},
+    {mouse: {}, selectedIndex, left: 0, prevLeft: 0},
   );
 
   // drag handling
@@ -86,17 +88,23 @@ const SwipePicker = (props) => {
       mouseMove: (state, dispatch, pixel) => {
         if (!state.mouse.isLeftDown) return;
         dispatch({left: state.prevLeft + subtract(pixel, state.mouse.downPixel).x});
+        if (onMouseMove) {
+          onMouseMove(pixel);
+        }
       },
       leftDown: (state, dispatch, pixel) => {
         dispatch({prevLeft: state.left});
         // check for onClick:
-        const indexAtPixel = getOptionAtOffset(pixel.x);
+        const indexAtPixel = getOptionAtOffset(options, pixel.x);
         if (indexAtPixel != null && indexAtPixel == state.selectedIndex && options[indexAtPixel].onClick) {
           options[indexAtPixel].onClick();
         }
+        if (onMouseDown) {
+          onMouseDown(pixel);
+        }
       },
       leftUp: (state, dispatch, pixel) => {
-        const selectedIndex = getOptionAtCenter(state.left);
+        const selectedIndex = getOptionAtCenter(options, state.left);
         dispatch({selectedIndex});
         if (onSelectIndex) {
           onSelectIndex(selectedIndex, options[selectedIndex]);
@@ -104,15 +112,20 @@ const SwipePicker = (props) => {
       },
       mouseLeave: (state, dispatch) => {
         if (!state.mouse.isLeftDown) return;
-        const selectedIndex = getOptionAtCenter(state.left);
+        const selectedIndex = getOptionAtCenter(options, state.left);
         dispatch({type: 'SET_MOUSE_DOWN', isLeft: true, isDown: false})
         dispatch({selectedIndex});
         if (onSelectIndex) {
           onSelectIndex(selectedIndex, options[selectedIndex], true /* is cancel */);
         }
       },
-    }, [], 12, // throttle rate for mouse move
+    }, [options], 12, // throttle rate for mouse move
   );
+
+  // listening for selected element changing from outside
+  useEffect(() => {
+    dispatch({selectedIndex});
+  }, [selectedIndex]);
 
   // centering selected element
   useEffect(() => {
