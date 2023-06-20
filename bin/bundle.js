@@ -1,15 +1,462 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
+const React = require('react');
+const Button = require('./Button.react');
+const {
+  useState,
+  useEffect,
+  useMemo
+} = React;
+
+/**
+ * Props:
+ *
+ * audioFiles, // array of {path, type} pairs
+ * isMuted, // optional boolean for outside control of this widget
+ * setIsMuted, // optional function called when this is toggled
+ * isShuffled, // optional boolean for whether audio should play in random order
+ * style, // optional object of css styles
+ *
+ */
+
+const AudioWidget = props => {
+  const [isMuted, setIsMuted] = useState(!!props.isMuted);
+  const [playIndex, setPlayIndex] = useState(0);
+  const playOrder = useMemo(() => {
+    let array = props.audioFiles.map((a, i) => i);
+    if (props.isShuffled) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const temp = array[i];
+        array[i] = array[j];
+        array[j] = temp;
+      }
+      // initialOrder.sort(() => (Math.random() > 0.5) ? 1 : -1)
+    }
+
+    return array;
+  }, [props.audioFiles]);
+  let widgetStyle = {
+    margin: 5,
+    borderRadius: 8,
+    left: 5
+  };
+
+  // player
+  const audioPlayer = useMemo(() => {
+    const a = new Audio(props.audioFiles[playIndex].path);
+    return a;
+  }, [playIndex, isMuted, props.audioFiles]);
+  useEffect(() => {
+    if (!isMuted) {
+      audioPlayer.addEventListener('loadeddata', () => {
+        audioPlayer.play();
+        setTimeout(() => setPlayIndex((playIndex + 1) % props.audioFiles.length), audioPlayer.duration * 1000);
+      });
+    }
+    return () => {
+      audioPlayer.pause();
+    };
+  }, [playIndex, isMuted, props.audioFiles, audioPlayer]);
+  return /*#__PURE__*/React.createElement("div", {
+    style: props.style ? props.style : widgetStyle
+  }, /*#__PURE__*/React.createElement(Button, {
+    label: isMuted ? 'Turn Music ON' : 'Turn Music OFF',
+    onClick: () => {
+      audioPlayer.pause();
+      setIsMuted(!isMuted);
+      if (props.setIsMuted) {
+        props.setIsMuted(!isMuted);
+      }
+    }
+  }));
+};
+module.exports = AudioWidget;
+},{"./Button.react":3,"react":38}],2:[function(require,module,exports){
 function _extends() { _extends = Object.assign ? Object.assign.bind() : function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
 const React = require('react');
+const CheckerBackground = require('./CheckerBackground.react.js');
+const DragArea = require('./DragAreaDeprecated.react.js');
 const {
-  subtract,
-  add
-} = require('bens_utils').vectors;
+  useState,
+  useEffect,
+  useMemo,
+  useReducer
+} = React;
+
+/**
+ *  Props:
+ *    - pixelSize: {width, height}, // board size in pixels
+ *    - gridSize: {width, height}, // board size in squares
+ *    - pieces: Array<{id, position, ?size, ?disabled, sprite}>
+ *    - background: HTML, // background div
+ *    - onPiecePickup: (id, position) => void, // board position
+ *    - onMoveCancel: (id) => void, // NOTE: must setTimeout any state updates here
+ *    - onPieceMove: (id, position) => void, // board position
+ *    - isMoveAllowed: (id, position) => void, // board position
+ *
+ *  Props for pieces:
+ *    - sprite: see SpriteSheet.react
+ */
+
+const Board = props => {
+  const id = props.id ?? "Board";
+  const {
+    pixelSize,
+    gridSize,
+    pieces
+  } = props;
+  const cellWidth = pixelSize.width / gridSize.width;
+  const cellHeight = pixelSize.height / gridSize.height;
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: 'relative'
+    }
+  }, props.background ?? /*#__PURE__*/React.createElement(CheckerBackground, {
+    style: {
+      marginTop: 1,
+      marginLeft: 1
+    },
+    color1: "#6B8E23",
+    color2: "#FFFAF0",
+    pixelSize: pixelSize,
+    gridSize: gridSize
+  }), /*#__PURE__*/React.createElement(DragArea, {
+    isDropAllowed: (id, position) => {
+      if (!props.isMoveAllowed) return true;
+      const x = Math.round(position.x / cellWidth);
+      const y = Math.round(position.y / cellHeight);
+      return props.isMoveAllowed(id, {
+        x,
+        y
+      });
+    },
+    onDrop: (id, position) => {
+      if (!props.onPieceMove) return;
+      const x = Math.round(position.x / cellWidth);
+      const y = Math.round(position.y / cellHeight);
+      props.onPieceMove(id, {
+        x,
+        y
+      });
+    },
+    onPickup: (id, position) => {
+      if (!props.onPiecePickup) return;
+      const x = Math.round(position.x / cellWidth);
+      const y = Math.round(position.y / cellHeight);
+      props.onPiecePickup(id, {
+        x,
+        y
+      });
+    },
+    onCancel: id => {
+      if (!props.onMoveCancel) return;
+      props.onMoveCancel(id);
+    },
+    id: id,
+    snapX: cellWidth,
+    snapY: cellHeight,
+    style: {
+      border: '1px solid black',
+      ...(props.style ?? {}),
+      ...pixelSize
+    }
+  }, pieces.map(p => {
+    return /*#__PURE__*/React.createElement(Piece, _extends({
+      key: p.id,
+      cellWidth: cellWidth,
+      cellHeight: cellHeight
+    }, p));
+  })));
+};
+const Piece = props => {
+  const {
+    cellWidth,
+    cellHeight
+  } = props;
+  const size = props.size ?? {
+    width: 1,
+    height: 1
+  };
+  return /*#__PURE__*/React.createElement("div", {
+    id: props.id,
+    disabled: props.disabled,
+    style: {
+      top: props.position.y * cellHeight,
+      left: props.position.x * cellWidth,
+      width: size.width * cellWidth,
+      height: size.height * cellHeight,
+      position: 'absolute'
+    }
+  }, props.sprite);
+};
+module.exports = Board;
+},{"./CheckerBackground.react.js":6,"./DragAreaDeprecated.react.js":8,"react":38}],3:[function(require,module,exports){
+const React = require('react');
+const {
+  useState,
+  useEffect
+} = React;
+
+// props:
+// id: ?string
+// label: string
+// onClick: () => void
+// onMouseDown: optional () => void
+// onMouseUp: optional () => void
+// disabled: optional boolean
+// style: optional Object
+// hoverCard: optional JSX
+
+function Button(props) {
+  const id = props.id || props.label;
+  const touchFn = () => {
+    if (props.onMouseDown != null) {
+      props.onMouseDown();
+    } else {
+      props.onClick();
+    }
+  };
+  const [intervalID, setIntervalID] = useState(null);
+  const [hover, setHover] = useState(false);
+  let hoverDisplay = null;
+  if (hover) {
+    hoverDisplay = /*#__PURE__*/React.createElement("div", {
+      style: {
+        position: 'relative'
+      }
+    }, props.hoverCard);
+  }
+  return /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    style: {
+      touchAction: 'initial',
+      fontSize: '18px',
+      ...props.style
+    },
+    key: id || label,
+    className: props.disabled ? 'buttonDisable' : '',
+    id: id.toUpperCase() + '_button',
+    onClick: props.disabled ? () => {} : props.onClick,
+    onTouchStart: ev => {
+      ev.preventDefault();
+      if (props.disabled) {
+        return;
+      }
+      if (intervalID) {
+        console.log("already in interval, clearing");
+        clearInterval(intervalID);
+        setIntervalID(null);
+      }
+      touchFn();
+      // HACK: if you set the right condition, allow repetive presses
+      if (false) {
+        const interval = setInterval(touchFn, 120);
+        setIntervalID(interval);
+      }
+    },
+    onTouchEnd: ev => {
+      ev.preventDefault();
+      clearInterval(intervalID);
+      setIntervalID(null);
+      props.onMouseUp;
+    },
+    onTouchCancel: ev => {
+      clearInterval(intervalID);
+      setIntervalID(null);
+      props.onMouseUp;
+    },
+    onTouchMove: ev => {
+      ev.preventDefault();
+    },
+    onMouseDown: props.onMouseDown,
+    onMouseUp: props.onMouseUp,
+    onMouseEnter: () => {
+      if (props.hoverCard) setHover(true);
+    },
+    onMouseLeave: () => {
+      setHover(false);
+    },
+    disabled: props.disabled
+  }, props.label, hoverDisplay);
+}
+module.exports = Button;
+},{"react":38}],4:[function(require,module,exports){
+const React = require('react');
+const {
+  useResponsiveDimensions
+} = require('./hooks');
+const {
+  useEffect,
+  useState,
+  useMemo,
+  Component
+} = React;
+function Canvas(props) {
+  let {
+    useFullScreen,
+    // only necessary if not useFullScreen
+    width,
+    height,
+    view,
+    // {x, y, width, height} of the world coordinates for the canvas
+    // independent of the canvas element's width/height
+
+    style,
+    // style overrides
+
+    id,
+    // optional if you have multiple canvases on the same page
+
+    onResize // optional function called when the canvas resizes
+  } = props;
+  const [windowWidth, windowHeight] = useResponsiveDimensions(onResize);
+
+  // maintain canvas context sizing
+  // useEffect(() => {
+  //   const canvas = document.getElementById(id || "canvas");
+  //   if (!canvas) return;
+  //   const ctx = canvas.getContext("2d");
+
+  //   ctx.restore(); // restore from previous resizing
+  //   ctx.save();
+  //   if (view && view.x != null && view.y != null) {
+  //     ctx.translate(view.x, view.y);
+  //   }
+  // }, [width, height, view, useFullScreen, windowWidth, windowHeight]);
+
+  return /*#__PURE__*/React.createElement("div", {
+    id: "canvasWrapper",
+    style: {
+      width: useFullScreen ? windowWidth : width,
+      height: useFullScreen ? windowHeight : height
+    }
+  }, /*#__PURE__*/React.createElement("canvas", {
+    id: id || "canvas",
+    style: {
+      cursor: 'pointer',
+      width: useFullScreen ? windowWidth : width,
+      height: useFullScreen ? windowHeight : height,
+      ...(style ? style : {})
+    },
+    width: view && view.width ? view.width : width,
+    height: view && view.height ? view.height : height
+  }));
+}
+module.exports = Canvas;
+},{"./hooks":22,"react":38}],5:[function(require,module,exports){
+const React = require('react');
+
+/**
+ * Props:
+ *  label: ?string
+ *  checked: boolean
+ *  onChange: (value: boolean) => void
+ *  style: ?Object
+ */
+function Checkbox(props) {
+  const {
+    checked,
+    label,
+    onChange,
+    style
+  } = props;
+  const checkbox = /*#__PURE__*/React.createElement("input", {
+    type: "checkbox",
+    checked: checked,
+    onChange: () => {
+      onChange(!checked);
+    }
+  });
+  if (label == null) {
+    return checkbox;
+  } else {
+    return /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: 'inline-block',
+        ...style
+      }
+    }, checkbox, label);
+  }
+}
+module.exports = Checkbox;
+},{"react":38}],6:[function(require,module,exports){
+const React = require('react');
+
+/**
+ *  Props:
+ *    - color1: cssColor,
+ *    - color2: cssColor,
+ *    - pixelSize: {width, height}, // board size in pixels
+ *    - gridSize: {width, height}, // board size in squares
+ */
+const CheckerBackground = props => {
+  const {
+    color1,
+    color2,
+    pixelSize,
+    gridSize
+  } = props;
+  const cellWidth = pixelSize.width / gridSize.width;
+  const cellHeight = pixelSize.height / gridSize.height;
+  const squares = [];
+  for (let y = 0; y < gridSize.height; y++) {
+    for (let x = 0; x < gridSize.width; x++) {
+      let backgroundColor = x % 2 == 1 ? color1 : color2;
+      if (y % 2 == 1) {
+        backgroundColor = x % 2 == 0 ? color1 : color2;
+      }
+      squares.push( /*#__PURE__*/React.createElement("div", {
+        key: "checker_" + x + "_" + y,
+        style: {
+          width: cellWidth,
+          height: cellHeight,
+          backgroundColor
+        }
+      }));
+    }
+  }
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      flexWrap: 'wrap',
+      position: 'absolute',
+      width: pixelSize.width,
+      height: pixelSize.height,
+      ...(props.style ?? {})
+    }
+  }, squares);
+};
+module.exports = CheckerBackground;
+},{"react":38}],7:[function(require,module,exports){
+const React = require('react');
+function Divider(props) {
+  const {
+    style
+  } = props;
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: '100%',
+      height: '0px',
+      border: '1px solid black',
+      ...style
+    }
+  });
+}
+module.exports = Divider;
+},{"react":38}],8:[function(require,module,exports){
+const React = require('react');
 const {
   useMouseHandler,
-  useEnhancedReducer,
-  mouseReducer
+  mouseReducer,
+  useEnhancedReducer
 } = require('./hooks');
+const {
+  add,
+  subtract
+} = require('bens_utils').vectors;
+const {
+  clamp
+} = require('bens_utils').math;
 const {
   useEffect,
   useState,
@@ -17,99 +464,101 @@ const {
 } = React;
 
 /**
- * Required Props:
- *  - id: id of draggable area
- *  - options: Array<{label, onClick, style, isCircular, color}>
- *  - onSelectIndex: (index, option, isCancel) => void,
- *  - selectedIndex: index,
- *  - width: pixels
- *  - height: pixels
+ * TODO:
  */
-const SwipePicker = props => {
-  const {
-    options,
-    style,
-    width,
-    height,
-    id,
-    minSize = 0.6,
-    maxSize = 0.9,
-    selectedStyle = {},
-    deselectedStyle = {},
-    onSelectIndex,
-    selectedIndex,
-    defaultColor = 'rgb(205,202,179)',
-    gap = 10,
-    onMouseDown,
-    onMouseMove
-  } = props;
 
-  // options can have dynamic widths so use these to get them on the fly
-  const getOptionWidth = index => {
-    const optionElem = document.getElementById(id + "_option_" + index);
-    if (!optionElem) return 0;
-    return optionElem.getBoundingClientRect().width;
-  };
-  const getWidthToOption = index => {
-    let widthToCurrentElement = 0;
-    for (let i = 0; i < index; i++) {
-      widthToCurrentElement += getOptionWidth(i) + gap;
-    }
-    return widthToCurrentElement + getOptionWidth(index) / 2;
-  };
+/*
+ *  Props:
+ *    id: string,
+ *    style: object, // optional styling for the drag area
+ *    snapX: number, // nearest multiple to snap to
+ *    snapY: number,
+ *    isDropAllowed: (id, position) => boolean,
+ *    onDrop: (id, position) => void,
+ *    onPickup: (id, position) => void,
+ *    onCancel: (id) => void,
+ *  Children Props:
+ *    id: string,
+ *    disabled: optional boolean, // not draggable
+ *    style: {top, left, width, height}
+ */
 
-  // distances to left, right, center
-  const getOptionDistFromLeft = (index, left) => {
-    const widthToCurrentElement = getWidthToOption(index);
-    return widthToCurrentElement + left;
-  };
-  const getOptionDistFromRight = (index, left) => {
-    const widthToCurrentElement = getWidthToOption(index);
-    return Math.abs(widthToCurrentElement + left - width);
-  };
-  const getOptionDistFromCenter = (index, left) => {
-    const widthToCurrentElement = getWidthToOption(index);
-    return widthToCurrentElement + left - width / 2;
-  };
+const DragArea = props => {
+  var _state$mouse;
+  const id = props.id ? props.id : "dragArea";
+  let children = props.children.length ? props.children : [props.children];
+  // let children = props.children;
 
-  // get option relative to location
-  const getOptionAtCenter = (options, left) => {
-    let index = 0;
-    let distToCenter = Math.abs(getOptionDistFromCenter(0, left));
-    for (let i = 0; i < options.length; i++) {
-      let testDist = Math.abs(getOptionDistFromCenter(i, left));
-      if (testDist < distToCenter) {
-        distToCenter = testDist;
-        index = i;
-      }
-    }
-    return index;
-  };
-  const getOptionAtOffset = (options, offset) => {
-    const parentLeft = document.getElementById(id).getBoundingClientRect().x;
-    for (let i = 0; i < options.length; i++) {
-      const optionElem = document.getElementById(id + "_option_" + i);
-      const {
-        x,
-        width
-      } = optionElem.getBoundingClientRect();
-      const left = x - parentLeft;
-      if (left < offset && left + width > offset) {
-        return i;
-      }
-    }
-    return null;
-  };
+  // check for new draggables or removed draggables
+  useEffect(() => {
+    dispatch({
+      draggables: children.map(c => {
+        const elem = document.getElementById(c.props.id);
+        if (!elem) return null;
+        return {
+          id: c.props.id,
+          disabled: c.props.disabled,
+          style: {
+            top: parseInt(elem.style.top),
+            left: parseInt(elem.style.left),
+            width: parseInt(elem.style.width),
+            height: parseInt(elem.style.height)
+          }
+        };
+      }).filter(e => e != null).reverse()
+    });
+    children.forEach(c => {
+      const elem = document.getElementById(c.props.id);
+      elem.style["pointer-events"] = "none";
+    });
+  }, [children]);
 
   // handle state of everything
-  const [state, dispatch, getState] = useEnhancedReducer((state, action) => ({
-    ...state,
-    mouse: mouseReducer(state.mouse, action)
-  }), {
-    mouse: {},
-    selectedIndex,
-    left: 0,
-    prevLeft: 0
+  const [state, dispatch, getState] = useEnhancedReducer((state, action) => {
+    switch (action.type) {
+      case 'SET_DRAGGABLE':
+        {
+          const {
+            id,
+            position,
+            selectedID,
+            selectedOffset
+          } = action;
+          let nextDraggables = [];
+          for (const draggable of state.draggables) {
+            if (draggable.id == id) {
+              nextDraggables.push({
+                ...draggable,
+                style: {
+                  ...draggable.style,
+                  top: position.y,
+                  left: position.x
+                }
+              });
+            } else {
+              nextDraggables.push(draggable);
+            }
+          }
+          return {
+            ...state,
+            draggables: nextDraggables,
+            selectedID: selectedID !== undefined ? selectedID : state.selectedID,
+            selectedOffset: selectedOffset !== undefined ? selectedOffset : state.selectedOffset
+          };
+        }
+      case 'SET_MOUSE_DOWN':
+      case 'SET_MOUSE_POS':
+        return {
+          ...state,
+          mouse: mouseReducer(state.mouse, action)
+        };
+    }
+    return state;
+  }, {
+    mouse: null,
+    selectedID: null,
+    draggables: [],
+    selectedOffset: null
   });
 
   // drag handling
@@ -118,152 +567,1230 @@ const SwipePicker = props => {
     getState
   }, {
     mouseMove: (state, dispatch, pixel) => {
-      if (!state.mouse.isLeftDown) return;
-      dispatch({
-        left: state.prevLeft + subtract(pixel, state.mouse.downPixel).x
-      });
-      if (onMouseMove) {
-        onMouseMove(pixel);
+      if (!state.selectedID) return;
+      let draggable = null;
+      for (const d of state.draggables) {
+        if (d.id == state.selectedID) draggable = d;
       }
+      if (!draggable) return;
+      const nextPosition = clampToArea(id, subtract(pixel, state.selectedOffset), draggable.style);
+      dispatch({
+        type: 'SET_DRAGGABLE',
+        id: state.selectedID,
+        position: nextPosition
+      });
+    },
+    mouseLeave: (state, dispatch) => {
+      if (!state.selectedID) return;
+      const id = state.selectedID;
+      dispatch({
+        type: 'SET_DRAGGABLE',
+        id: state.selectedID,
+        position: subtract(state.mouse.downPixel, state.selectedOffset)
+      });
+      dispatch({
+        selectedID: null,
+        selectedOffset: null
+      });
+      dispatch({
+        type: 'SET_MOUSE_DOWN',
+        isDown: false,
+        isLeft: true
+      });
+      if (props.onCancel) props.onCancel(id);
     },
     leftDown: (state, dispatch, pixel) => {
-      dispatch({
-        prevLeft: state.left
-      });
-      // check for onClick:
-      const indexAtPixel = getOptionAtOffset(options, pixel.x);
-      if (indexAtPixel != null && indexAtPixel == state.selectedIndex && options[indexAtPixel].onClick) {
-        options[indexAtPixel].onClick();
-      }
-      if (onMouseDown) {
-        onMouseDown(pixel);
+      for (const draggable of state.draggables) {
+        if (clickedInElem(pixel, draggable.style) && !draggable.disabled) {
+          const selectedOffset = {
+            x: pixel.x - draggable.style.left,
+            y: pixel.y - draggable.style.top
+          };
+          dispatch({
+            selectedID: draggable.id,
+            selectedOffset
+          });
+          if (props.onPickup) props.onPickup(draggable.id, pixel);
+          return;
+        }
       }
     },
     leftUp: (state, dispatch, pixel) => {
-      const selectedIndex = getOptionAtCenter(options, state.left);
-      dispatch({
-        selectedIndex
-      });
-      if (onSelectIndex) {
-        onSelectIndex(selectedIndex, options[selectedIndex]);
+      if (!state.selectedID) return;
+      const id = state.selectedID;
+      let draggable = null;
+      for (const d of state.draggables) {
+        if (d.id == state.selectedID) draggable = d;
       }
-    },
-    mouseLeave: (state, dispatch) => {
-      if (!state.mouse.isLeftDown) return;
-      const selectedIndex = getOptionAtCenter(options, state.left);
-      dispatch({
-        type: 'SET_MOUSE_DOWN',
-        isLeft: true,
-        isDown: false
-      });
-      dispatch({
-        selectedIndex
-      });
-      if (onSelectIndex) {
-        onSelectIndex(selectedIndex, options[selectedIndex], true /* is cancel */);
+      let dropPosition = pixel;
+      if (draggable && (props.snapX || props.snapY)) {
+        let snapX = props.snapX ?? 1;
+        let snapY = props.snapY ?? 1;
+        const x = Math.round(draggable.style.left / snapX) * snapX;
+        const y = Math.round(draggable.style.top / snapY) * snapY;
+        dropPosition = {
+          x,
+          y
+        };
+      } else {
+        // only care about the mouse offset when we're not snapping
+        dropPosition = subtract(dropPosition, state.selectedOffset);
+      }
+      if (props.isDropAllowed && !props.isDropAllowed(state.selectedID, dropPosition)) {
+        dispatch({
+          type: 'SET_DRAGGABLE',
+          id: state.selectedID,
+          position: subtract(state.mouse.downPixel, state.selectedOffset),
+          selectedID: null,
+          selectedOffset: null
+        });
+        if (props.onCancel) props.onCancel(id);
+      } else {
+        dispatch({
+          type: 'SET_DRAGGABLE',
+          id: state.selectedID,
+          position: dropPosition,
+          selectedID: null,
+          selectedOffset: null
+        });
+        if (props.onDrop) props.onDrop(id, dropPosition);
       }
     }
-  }, [options], 12 // throttle rate for mouse move
-  );
+  });
 
-  // listening for selected element changing from outside
+  // update element positions based on state
   useEffect(() => {
-    dispatch({
-      selectedIndex
-    });
-  }, [selectedIndex]);
-
-  // centering selected element
-  useEffect(() => {
-    const widthToSelectedElement = getWidthToOption(state.selectedIndex);
-    dispatch({
-      left: width / 2 - widthToSelectedElement
-    });
-  }, [state.selectedIndex, !state.mouse.isLeftDown]);
+    for (const draggable of state.draggables) {
+      const elem = document.getElementById(draggable.id);
+      if (!elem) continue;
+      // HACK: enfore snap not always working
+      let snapX = props.snapX ?? 1;
+      let snapY = props.snapY ?? 1;
+      if (state.selectedID) {
+        snapX = 1;
+        snapY = 1;
+      }
+      elem.style.left = Math.round(draggable.style.left / snapX) * snapX;
+      elem.style.top = Math.round(draggable.style.top / snapY) * snapY;
+      if (draggable.id == state.selectedID) {
+        elem.style.zIndex = 5;
+      } else {
+        elem.style.zIndex = 1;
+      }
+    }
+  }, [state.draggables, state.selectedID]);
   return /*#__PURE__*/React.createElement("div", {
     id: id,
     style: {
+      cursor: state !== null && state !== void 0 && (_state$mouse = state.mouse) !== null && _state$mouse !== void 0 && _state$mouse.isLeftDown && state.selectedID ? 'grabbing' : 'grab',
       position: 'relative',
-      width,
-      height,
-      overflow: 'hidden',
-      ...style
+      ...(props.style ? props.style : {})
     }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      height: '100%',
-      display: 'flex',
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap,
-      overflowX: 'hidden',
-      position: 'absolute',
-      left: state.left,
-      transition: 'left ' + (state.mouse.isLeftDown ? '0s' : '0.25s'),
-      top: 0,
-      pointerEvents: 'none'
-    }
-  }, options.map((o, i) => /*#__PURE__*/React.createElement(PickerOption, _extends({
-    key: id + "_option_" + o.label + "_" + i
-  }, o, {
-    width: width,
-    height: height,
-    color: o.color ?? defaultColor,
-    style: {
-      ...o.style,
-      ...(i == state.selectedIndex ? selectedStyle : deselectedStyle),
-      background: getOptionDistFromLeft(i, state.left) < getOptionWidth(i) ? `linear-gradient(to right, transparent 0%, ${o.color ?? defaultColor} ${300 - getOptionDistFromLeft(i, state.left) / getOptionWidth(i) * 300}%)` : getOptionDistFromRight(i, state.left) < getOptionWidth(i) ? `linear-gradient(to left, transparent 0%, ${o.color ?? defaultColor} ${300 - getOptionDistFromRight(i, state.left) / getOptionWidth(i) * 300}%)` : o.color ?? defaultColor // NO-OP
-    },
-
-    isSelected: i == state.selectedIndex,
-    sizeMult: !state.mouse.isLeftDown ? i == state.selectedIndex ? maxSize : minSize : Math.max(maxSize - Math.abs(getOptionDistFromCenter(i, state.left)) / (width / 2), minSize),
-    id: id + "_option_" + i
-  })))));
+  }, children);
 };
+const clickedInElem = (pixel, style) => {
+  return pixel.x >= style.left && pixel.x <= style.left + style.width && pixel.y >= style.top && pixel.y <= style.top + style.height;
+};
+const clampToArea = (dragAreaID, pixel, style) => {
+  const dragArea = document.getElementById(dragAreaID);
+  const {
+    width,
+    height
+  } = dragArea.getBoundingClientRect();
+  return {
+    x: clamp(pixel.x, 0, width - style.width),
+    y: clamp(pixel.y, 0, height - style.height)
+  };
+};
+module.exports = DragArea;
+},{"./hooks":22,"bens_utils":31,"react":38}],9:[function(require,module,exports){
+const React = require('react');
 
 /**
  * Props:
- *  - isSelected: boolean
- *  - onClick: () => void
- *  - style: style overrides for outermost component
+ * options: Array<string>
+ * displayOptions: ?Array<string>
+ * selected: string // which option is selected
+ * onChange: (string) => void
+ * style: ?Object
  */
-const PickerOption = props => {
+const Dropdown = function (props) {
   const {
-    style,
-    isSelected,
-    onClick,
-    label,
-    width: parentWidth,
-    height: parentHeight,
-    isCircular,
-    id,
-    sizeMult,
-    color: backgroundColor
+    options,
+    selected,
+    onChange,
+    displayOptions,
+    style
   } = props;
-  return /*#__PURE__*/React.createElement("div", {
-    id: id,
-    style: {
-      backgroundColor,
-      borderRadius: isCircular ? '50%' : 5,
-      // transition: 'background 0.5s',
+  const optionTags = options.map((option, i) => {
+    const label = displayOptions != null && displayOptions[i] != null ? displayOptions[i] : option;
+    return /*#__PURE__*/React.createElement("option", {
+      key: 'option_' + option,
+      value: option
+    }, label);
+  });
+  return /*#__PURE__*/React.createElement("select", {
+    onChange: ev => {
+      const val = ev.target.value;
+      onChange(val);
+    },
+    value: selected,
+    style: style ? {
+      ...style
+    } : {}
+  }, optionTags);
+};
+module.exports = Dropdown;
+},{"react":38}],10:[function(require,module,exports){
+const React = require('react');
+const {
+  useEffect,
+  useRef
+} = React;
 
-      height: sizeMult * parentHeight,
-      width: isCircular ? sizeMult * parentHeight : 'auto',
-      padding: isCircular ? 0 : '0 ' + parentHeight * 0.2,
-      textAlign: 'center',
+/**
+ *
+ * props:
+ *   value: number, // will watch for changes in this value
+ *   minChange: ?number, // changes smaller than this won't be registered
+ */
+
+const Indicator = props => {
+  const prev = usePrevious(props.value);
+  const minChange = props.minChange ? props.minChange : 0;
+  let change = props.value - prev;
+  let color = 'black';
+  let symbol = '-';
+  if (Math.abs(change) > minChange) {
+    if (change > 0) {
+      color = 'green';
+      symbol = '/\\';
+    } else {
+      color = 'red';
+      symbol = '\\/';
+    }
+  }
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'inline',
+      color,
+      fontFamily: 'Times',
+      fontSize: 15
+    }
+  }, /*#__PURE__*/React.createElement("b", null, symbol));
+};
+const usePrevious = value => {
+  const ref = useRef();
+  useEffect(() => {
+    ref.current = value;
+  });
+  return ref.current;
+};
+module.exports = Indicator;
+},{"react":38}],11:[function(require,module,exports){
+const React = require('react');
+const InfoCard = props => {
+  const overrideStyle = props.style || {};
+  const underrideStyle = props.underrideStyle || {};
+  return /*#__PURE__*/React.createElement("div", {
+    id: props.id ? props.id : '',
+    style: {
+      ...underrideStyle,
+      border: props.border != null ? props.border : '1px solid black',
+      backgroundColor: 'white',
+      opacity: props.opacity != null ? props.opacity : 1,
+      // width: 200,
+      // height: 148,
+      verticalAlign: 'top',
+      marginBottom: 4,
+      marginLeft: 4,
+      display: 'inline-block',
+      padding: 4,
+      ...overrideStyle
+    }
+  }, props.children);
+};
+module.exports = InfoCard;
+},{"react":38}],12:[function(require,module,exports){
+const React = require('react');
+const Button = require('./Button.react');
+const Divider = require('./Divider.react');
+
+/*
+type Props = {
+  title: ?string,
+  body: ?string,
+  dismiss: ?() => void, // if provided, will display an X
+                        // and call this fn on click
+  buttons: Array<{
+    label: string,
+    onClick: () => void,
+  }>,
+  style: ?Object,
+  height: ?number,
+};
+*/
+
+function Modal(props) {
+  const {
+    title,
+    body,
+    dismiss,
+    buttons,
+    style,
+    buttonStyle
+  } = props;
+  const modalButtons = buttons ? buttons : [];
+  const overrideStyle = style ? style : {};
+  const overrideButtonStyle = buttonStyle ? buttonStyle : {};
+  const buttonHTML = modalButtons.map(b => {
+    return /*#__PURE__*/React.createElement(Button, {
+      key: "b_" + b.label,
+      disabled: !!b.disabled,
+      label: b.label,
+      onClick: b.onClick,
+      style: b.style || {}
+    });
+  });
+  const rect = document.getElementById('container').getBoundingClientRect();
+  const width = props.width ? props.width : Math.min(rect.width * 0.8, 350);
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: 'absolute',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      flexShrink: 0,
-      pointerEvents: 'none',
-      userSelect: 'none',
-      ...style
+      width: '100%',
+      height: '100%',
+      top: 0,
+      left: 0,
+      zIndex: 10
     }
-    // onClick={onClick}
-  }, label);
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      backgroundColor: 'whitesmoke',
+      border: '1px solid black',
+      boxSizing: 'border-box',
+      boxShadow: '2px 2px #666666',
+      borderRadius: 3,
+      color: '#46403a',
+      textAlign: 'center',
+      width,
+      ...overrideStyle
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '1.2em'
+    }
+  }, /*#__PURE__*/React.createElement("b", null, title), /*#__PURE__*/React.createElement(Button, {
+    label: "\u274C",
+    style: {
+      display: dismiss ? 'inline' : 'none',
+      border: 'none',
+      backgroundColor: 'inherit',
+      float: 'right',
+      cursor: 'pointer',
+      fontSize: 10
+    },
+    onClick: dismiss
+  })), body, modalButtons.length > 0 ? /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement(Divider, {
+    style: {
+      marginTop: 4,
+      marginBottom: 4
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginBottom: 4,
+      ...overrideButtonStyle
+    }
+  }, buttonHTML)) : null));
+}
+module.exports = Modal;
+},{"./Button.react":3,"./Divider.react":7,"react":38}],13:[function(require,module,exports){
+const React = require('react');
+const {
+  useState,
+  useMemo,
+  useEffect
+} = React;
+
+/**
+ * props:
+ * value: number
+ * onChange: (number) => void,
+ * onlyInt: boolean, // only allow ints instead of floats
+ * width: number,
+ * submitOnEnter: boolean, // not implemented -- hard to play nice w/other keys
+ * submitOnBlur: boolean,
+ * disabled: ?boolean,
+ */
+const NumberField = props => {
+  const {
+    value,
+    onChange,
+    onlyInt,
+    submitOnEnter,
+    submitOnBlur
+  } = props;
+  const [stateValue, setValue] = useState(value);
+  useEffect(() => {
+    setValue(value);
+  }, [value]);
+  const [isFocused, setFocus] = useState(false);
+  useEffect(() => {
+    // document.onkeydown = (ev) => {
+    //   if (ev.keyCode == 13)  { // Enter
+    //     if (isFocused) {
+    //       submitValue(onChange, stateValue, onlyInt);
+    //     }
+    //   }
+    // };
+  }, [isFocused, stateValue]);
+  return /*#__PURE__*/React.createElement("input", {
+    type: "text",
+    style: {
+      width: props.width != null ? props.width : 40
+    },
+    value: stateValue,
+    onFocus: () => {
+      setFocus(true);
+    },
+    onBlur: () => {
+      setFocus(false);
+      if (submitOnBlur) {
+        submitValue(onChange, stateValue, onlyInt);
+      }
+    },
+    onChange: ev => {
+      if (props.disabled) {
+        setValue(value);
+        return;
+      }
+      const nextVal = ev.target.value;
+      if (isNaN(Number(nextVal))) return; // don't allow non-numerical input
+      setValue(nextVal);
+      if (!submitOnEnter && !submitOnBlur) {
+        submitValue(onChange, nextVal, onlyInt);
+      }
+    }
+  });
 };
-module.exports = SwipePicker;
-},{"./hooks":2,"bens_utils":10,"react":17}],2:[function(require,module,exports){
+const submitValue = (onChange, nextVal, onlyInt) => {
+  if (nextVal === '') {
+    onChange(0);
+  } else if (!onlyInt && nextVal[nextVal.length - 1] === '.') {
+    onChange(parseFloat(nextVal + '0'));
+  } else if (isNaN(Number(nextVal))) {
+    return; // ignore NaNs
+  } else {
+    const num = onlyInt ? parseInt(nextVal) : parseFloat(nextVal);
+    onChange(num);
+  }
+};
+module.exports = NumberField;
+},{"react":38}],14:[function(require,module,exports){
+function _extends() { _extends = Object.assign ? Object.assign.bind() : function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
+/**
+ * See ~/Code/teaching/clusters for an example of how to use the plot
+ * Specifically ui/Main and reducers/plotReducer
+ */
+
+const React = require('react');
+const Button = require('./Button.react');
+const Canvas = require('./Canvas.react');
+const {
+  useState,
+  useMemo,
+  useEffect,
+  useReducer
+} = React;
+
+// type Point = {
+//   x: number,
+//   y: number,
+//   color: ?string, // css color
+// };
+//
+// type Axis = {
+//   dimension: 'x' | 'y',
+//   label: string,
+//   min: ?number,
+//   max: ?number,
+//   adaptiveRange: ?boolean, // min/max adapt to the given points
+//   hidden: ?boolean, // don't render the axis
+//   majorTicks: ?number,
+//   minorTicks: ?number,
+// };
+
+/**
+ * NOTE: 0, 0 is the bottom left corner
+ *
+ * props:
+ *   points: Array<Point>,
+ *   xAxis: Axis,
+ *   yAxis: Axis,
+ *   isLinear: boolean,
+ *   watch: ?number, // if provided, will watch for changes in this value
+ *                   // and add a point to the plot whenever it changes
+ *                   // up to a maximum number of points equal to the xAxis size
+ *   changeOnly: ?boolean, // a watch prop, only add a point if watched prop changes
+ *   inline: ?boolean,
+ *
+ * canvas props:
+ *   canvasID: ?string, // for when there's multiple plots
+ *   useFullScreen: boolean, // overriden by width and height
+ *   width: number,
+ *   height: number,
+ */
+
+const Plot = props => {
+  // screen resizing
+  const [resizeCount, setResize] = useState(0);
+  useEffect(() => {
+    function handleResize() {
+      setResize(resizeCount + 1);
+    }
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [resizeCount]);
+
+  // rendering
+  useEffect(() => {
+    const canvas = document.getElementById(props.canvasID || 'canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const {
+      xAxis,
+      yAxis,
+      isLinear
+    } = props;
+    const {
+      width,
+      height
+    } = canvas.getBoundingClientRect();
+    let xmax = xAxis.max == null ? 10 : xAxis.max;
+    let xmin = xAxis.min == null ? 0 : xAxis.min;
+    let ymax = yAxis.max == null ? 10 : yAxis.max;
+    let ymin = yAxis.min == null ? 0 : yAxis.min;
+
+    // handling adaptive ranges
+    if (xAxis.adaptiveRange) {
+      for (const point of allPoints) {
+        if (point.x < xmin) {
+          xmin = point.x;
+        }
+        if (point.x > xmax) {
+          xmax = point.x;
+        }
+      }
+    }
+    if (yAxis.adaptiveRange) {
+      for (const point of props.points) {
+        if (point.y < ymin) {
+          ymin = point.y;
+        }
+        if (point.y > ymax) {
+          ymax = point.y;
+        }
+      }
+    }
+
+    // scaling props.points to canvas
+    const xTrans = width / (xmax - xmin);
+    const yTrans = height / (ymax - ymin);
+    const transX = x => x * xTrans - xmin * xTrans;
+    const transY = y => y * yTrans - ymin * yTrans;
+
+    // clear canvas
+    ctx.fillStyle = 'white';
+    ctx.fillRect(0, 0, width, height);
+
+    // drawing axes
+    if (!xAxis.hidden) {
+      ctx.fillStyle = 'black';
+      const xMajor = xAxis.majorTicks || 10;
+      for (let x = xmin; x < xmax; x += xMajor) {
+        drawLine(ctx, {
+          x: transX(x),
+          y: height
+        }, {
+          x: transX(x),
+          y: height - 20
+        });
+      }
+      const xMinor = xAxis.minorTicks || 2;
+      for (let x = xmin; x < xmax; x += xMinor) {
+        drawLine(ctx, {
+          x: transX(x),
+          y: height
+        }, {
+          x: transX(x),
+          y: height - 10
+        });
+      }
+    }
+    if (!yAxis.hidden) {
+      const yMajor = yAxis.majorTicks || 10;
+      for (let y = ymin; y < ymax; y += yMajor) {
+        drawLine(ctx, {
+          x: 0,
+          y: transY(y)
+        }, {
+          x: 20,
+          y: transY(y)
+        });
+      }
+      const yMinor = yAxis.minorTicks || 2;
+      for (let y = ymin; y < ymax; y += yMinor) {
+        drawLine(ctx, {
+          x: 0,
+          y: transY(y)
+        }, {
+          x: 10,
+          y: transY(y)
+        });
+      }
+    }
+
+    // drawing props.points
+    const sortedPoints = [...props.points].sort((a, b) => a.x - b.x);
+    let prevPoint = null;
+    for (const point of sortedPoints) {
+      ctx.fillStyle = point.color ? point.color : 'black';
+      const x = transX(point.x);
+      const y = ymax * yTrans - ymin * yTrans - point.y * yTrans;
+      const size = 2;
+      if (!isLinear) {
+        ctx.fillRect(x - size, y - size, size * 2, size * 2);
+      }
+      if (isLinear && prevPoint != null) {
+        ctx.fillStyle = 'black';
+        drawLine(ctx, prevPoint, {
+          x,
+          y
+        });
+      }
+      prevPoint = {
+        x,
+        y
+      };
+    }
+  }, [props, resizeCount]);
+
+  // axis labels
+  let xAxisLabel = null;
+  let yAxisLabel = null;
+  if (props.xAxis.label != null) {
+    xAxisLabel = /*#__PURE__*/React.createElement("div", {
+      style: {
+        textAlign: 'center'
+      }
+    }, props.xAxis.label);
+  }
+  if (props.yAxis.label != null) {
+    yAxisLabel = /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: 'table-cell',
+        verticalAlign: 'middle'
+      }
+    }, props.yAxis.label);
+  }
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: 'fit-content',
+      display: props.inline ? 'inline' : 'table'
+    }
+  }, yAxisLabel, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'inline-block'
+    }
+  }, /*#__PURE__*/React.createElement(Canvas, {
+    id: props.canvasID,
+    useFullScreen: props.useFullScreen,
+    width: props.width,
+    height: props.height
+  })), xAxisLabel);
+};
+const drawLine = (ctx, p1, p2) => {
+  ctx.beginPath();
+  ctx.moveTo(p1.x, p1.y);
+  ctx.lineTo(p2.x, p2.y);
+  ctx.stroke();
+  ctx.closePath();
+};
+const PlotWatcher = props => {
+  // track points with watching
+  const [pointState, dispatch] = useReducer((state, action) => {
+    if (action.type == 'SET_ALL') {
+      return {
+        points: [...action.points]
+      };
+    }
+    const {
+      value
+    } = action;
+    // don't add a point if we're changeOnly and value is the same
+    let prevVal = state.points.length > 0 ? state.points[state.points.length - 1].y : -1;
+    if (props.changeOnly && value == prevVal) {
+      return state;
+    }
+    const point = {
+      x: state.points.length,
+      y: value
+    };
+    if (point.x < props.xAxis.max) {
+      return {
+        ...state,
+        points: state.points ? [...state.points, point] : points
+      };
+    } else {
+      const [_, ...next] = state.points;
+      for (const p of next) {
+        p.x -= 1;
+      }
+      return {
+        ...state,
+        points: state.points ? [...next, point] : points
+      };
+    }
+  }, {
+    points: [...props.points]
+  });
+  useEffect(() => {
+    if (props.watch == null) {
+      dispatch({
+        type: 'SET_ALL',
+        points: props.points
+      });
+    } else {
+      dispatch({
+        type: 'SET',
+        value: props.watch
+      });
+    }
+  }, [props.watch, dispatch, props.points]);
+  return /*#__PURE__*/React.createElement(Plot, _extends({}, props, {
+    points: pointState.points
+  }));
+};
+module.exports = PlotWatcher;
+},{"./Button.react":3,"./Canvas.react":4,"react":38}],15:[function(require,module,exports){
+const React = require('react');
+const Button = require('./Button.react');
+const Modal = require('./Modal.react');
+const {
+  isElectron
+} = require('bens_utils').platform;
+const {
+  useState,
+  useEffect,
+  useMemo
+} = React;
+const QuitButton = props => {
+  const {
+    isInGame,
+    dispatch
+  } = props;
+  if (!isInGame && !isElectron()) return null;
+  const buttonStyle = isInGame ? {} : {
+    margin: 5,
+    borderRadius: 8,
+    left: 5
+  };
+  return /*#__PURE__*/React.createElement("div", {
+    style: buttonStyle
+  }, /*#__PURE__*/React.createElement(Button, {
+    label: "Quit",
+    onClick: () => {
+      if (!isInGame) {
+        remote.webFrame.context.close();
+      } else {
+        quitGameModal(dispatch);
+      }
+    }
+  }));
+};
+const quitGameModal = dispatch => {
+  dispatch({
+    type: 'STOP_TICK'
+  });
+  const returnToMainMenuButton = {
+    label: 'Main Menu',
+    onClick: () => {
+      dispatch({
+        type: 'DISMISS_MODAL'
+      });
+      dispatch({
+        type: 'RETURN_TO_LOBBY'
+      });
+    }
+  };
+  const returnToGameButton = {
+    label: 'Return to Game',
+    onClick: () => {
+      dispatch({
+        type: 'DISMISS_MODAL'
+      });
+      dispatch({
+        type: 'START_TICK'
+      });
+    }
+  };
+  const quitAppButton = {
+    label: 'Quit Application',
+    onClick: () => {
+      remote.webFrame.context.close();
+    }
+  };
+  const buttons = [returnToGameButton, returnToMainMenuButton];
+  if (isElectron()) {
+    buttons.push(quitAppButton);
+  }
+  const body = /*#__PURE__*/React.createElement("div", null);
+  dispatch({
+    type: 'SET_MODAL',
+    modal: /*#__PURE__*/React.createElement(Modal, {
+      title: 'Quit Game?',
+      body: body,
+      buttons: buttons
+    })
+  });
+};
+module.exports = QuitButton;
+},{"./Button.react":3,"./Modal.react":12,"bens_utils":31,"react":38}],16:[function(require,module,exports){
+const React = require('react');
+
+// props:
+// options: Array<string>
+// selected: string
+// onChange: (option) => void
+// displayOptions: ?Array<string>
+// isInline: ?boolean,
+
+class RadioPicker extends React.Component {
+  render() {
+    const optionToggles = [];
+    for (let i = 0; i < this.props.options.length; i++) {
+      const option = this.props.options[i];
+      const displayOption = this.props.displayOptions && this.props.displayOptions[i] ? this.props.displayOptions[i] : option;
+      optionToggles.push( /*#__PURE__*/React.createElement("div", {
+        key: 'radioOption_' + option,
+        style: {
+          display: this.props.isInline ? 'inline' : 'block'
+        }
+      }, displayOption, /*#__PURE__*/React.createElement("input", {
+        type: "radio",
+        className: "radioCheckbox",
+        value: displayOption,
+        checked: option === this.props.selected,
+        onChange: () => this.props.onChange(option)
+      })));
+    }
+    return /*#__PURE__*/React.createElement("div", null, optionToggles);
+  }
+}
+module.exports = RadioPicker;
+},{"react":38}],17:[function(require,module,exports){
+const React = require('react');
+const NumberField = require('./NumberField.react');
+const {
+  useState,
+  useMemo,
+  useEffect
+} = React;
+
+/**
+ *  props:
+ *  min, max: number,
+ *  value: ?number (min if null),
+ *  onChange: (number) => void,
+ *  step: ?number (1 if null),
+ *  label: ?string,
+ *  isFloat: ?boolean,
+ *  noNumberField: ?boolean,
+ *  noOrignalValue: ?boolean,
+ *  inline: ?boolean,
+ *  style: ?Object,
+ *  disabled: ?boolean,
+ */
+function Slider(props) {
+  const {
+    isFloat
+  } = props;
+  const label = /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'inline-block'
+    }
+  }, props.label);
+  let value = props.value != null ? props.value : props.min;
+  value = isFloat ? Math.floor(value * 10) : value;
+  const displayValue = isFloat ? value / 10 : value;
+  const min = isFloat ? props.min * 10 : props.min;
+  const max = isFloat ? props.max * 10 : props.max;
+  const originalValue = useMemo(() => {
+    return displayValue;
+  }, []);
+  let step = props.step != null ? props.step : 1;
+  if (isFloat && step < 1) {
+    step *= 10; // step is 0.1 by default for isFloat
+  }
+
+  return /*#__PURE__*/React.createElement("div", {
+    style: props.style || {}
+  }, props.label != null ? label : null, /*#__PURE__*/React.createElement("input", {
+    type: "range",
+    id: 'slider_' + label,
+    min: min,
+    max: max,
+    disabled: props.disabled,
+    value: value,
+    onChange: ev => {
+      if (props.disabled) {
+        return;
+      }
+      const val = ev.target.value;
+      props.onChange(parseFloat(isFloat ? val / 10 : val));
+    },
+    step: step
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'inline-block'
+    }
+  }, props.noNumberField ? null : /*#__PURE__*/React.createElement(NumberField, {
+    disabled: props.disabled,
+    value: displayValue,
+    onlyInt: !isFloat,
+    onChange: val => {
+      props.onChange(val);
+    },
+    submitOnBlur: false
+  }), props.noOriginalValue ? null : "(" + originalValue + ")"));
+}
+module.exports = Slider;
+},{"./NumberField.react":13,"react":38}],18:[function(require,module,exports){
+const React = require('react');
+
+/**
+ *  Props:
+ *    - style: object, // additional styling for outer div
+ *    - width: px, height: px,
+ *    - src: string, // image source
+ *    - spriteSheet: {pxWidth, pxHeight, imagesAcross, imagesDown}, // width of a single image
+ *    - offset: {x, y}, // x and y positions inside the spritesheet indexed by image
+ *
+ */
+
+const SpriteSheet = props => {
+  const {
+    spriteSheet,
+    offset
+  } = props;
+  const {
+    pxWidth,
+    pxHeight,
+    imagesAcross,
+    imagesDown
+  } = spriteSheet;
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: props.width ?? '100%',
+      height: props.height ?? '100%',
+      overflow: 'hidden',
+      position: 'absolute',
+      ...(props.style ?? {})
+    }
+  }, /*#__PURE__*/React.createElement("img", {
+    src: props.src,
+    style: {
+      position: 'absolute',
+      width: pxWidth * imagesAcross,
+      height: pxHeight * imagesDown,
+      left: pxWidth * -1 * offset.x,
+      top: pxHeight * -1 * offset.y
+    }
+  }));
+};
+module.exports = SpriteSheet;
+},{"react":38}],19:[function(require,module,exports){
+const React = require('react');
+const Button = require('./Button.react');
+const Dropdown = require('./Dropdown.react');
+const {
+  useEffect,
+  useMemo,
+  useState
+} = React;
+
+/**
+type ColumnName = string;
+type Props = {
+  columns: {[name: ColumnName]: {
+    displayName: string,
+    sortFn: ?() => number, // sorts alphanumerically if not provided
+    maxWidth: number, // maximum number of characters allowed
+    filterable: ?boolean, // if true, then have a dropdown with all unique
+                          // options and filter rows by these
+  }},
+  rows: Array<{[name: ColumnName]: mixed}>,
+  hideColSorts: boolean,
+  hideNumRows: boolean,
+  style: Object containing additional styles for outer div
+};
+*/
+
+const tableStyle = {
+  backgroundColor: '#faf8ef',
+  width: '100%',
+  borderRadius: 8
+};
+function Table(props) {
+  const {
+    columns,
+    rows,
+    hideColSorts
+  } = props;
+  let colNames = [];
+  if (props.columns) {
+    colNames = Object.keys(columns);
+  } else {
+    // TODO: infer column names if not provided
+  }
+
+  // sort by column
+  const [sortByColumn, setSortByColumn] = useState({
+    by: 'ASC',
+    name: null
+  });
+  useEffect(() => {
+    if (!colNames.includes(sortByColumn.name)) {
+      setSortByColumn({
+        by: 'ASC',
+        name: null
+      });
+    }
+  }, [columns]);
+
+  // filter by column
+  const computeSelectedByColumn = colNames => {
+    const selected = {};
+    for (const col of colNames) {
+      if (columns[col].filterable) {
+        selected[col] = '*';
+      }
+    }
+    return selected;
+  };
+  const [selectedByColumn, setSelectedByColumn] = useState(computeSelectedByColumn(colNames));
+  useEffect(() => {
+    const selected = {};
+    for (const col of colNames) {
+      if (columns[col].filterable) {
+        selected[col] = selectedByColumn[col] || '*';
+      }
+    }
+    setSelectedByColumn(selected);
+  }, [columns]);
+  const columnOptions = useMemo(() => {
+    const filters = {};
+    for (const col of colNames) {
+      if (columns[col].filterable) {
+        filters[col] = ['*'];
+        for (const row of rows) {
+          if (!filters[col].includes(row[col])) {
+            filters[col].push(row[col]);
+          }
+        }
+      }
+    }
+    return filters;
+  }, [columns]);
+  const headers = colNames.map(col => {
+    let filterDropdown = null;
+    if (columns[col].filterable) {
+      filterDropdown = /*#__PURE__*/React.createElement(Dropdown, {
+        options: columnOptions[col],
+        selected: selectedByColumn[col] ? selectedByColumn[col].selected : '*',
+        onChange: n => {
+          setSelectedByColumn({
+            ...selectedByColumn,
+            [col]: n
+          });
+        }
+      });
+    }
+    return /*#__PURE__*/React.createElement("th", {
+      key: 'header_' + col
+    }, columns[col].displayName || col, hideColSorts ? null : /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontWeight: 'normal'
+      }
+    }, "Sort:", /*#__PURE__*/React.createElement(Button, {
+      label: "/\\",
+      fontSize: 12,
+      onClick: () => {
+        setSortByColumn({
+          by: 'ASC',
+          name: col
+        });
+      }
+    }), /*#__PURE__*/React.createElement(Button, {
+      label: "\\/",
+      fontSize: 12,
+      onClick: () => {
+        setSortByColumn({
+          by: 'DESC',
+          name: col
+        });
+      }
+    }), filterDropdown));
+  });
+  const filteredRows = useMemo(() => {
+    const filtered = [];
+    for (const row of rows) {
+      let addRow = true;
+      for (const col in selectedByColumn) {
+        if (row[col] != selectedByColumn[col] && selectedByColumn[col] != '*') {
+          addRow = false;
+          break;
+        }
+      }
+      if (addRow) {
+        filtered.push(row);
+      }
+    }
+    return filtered;
+  }, [rows, selectedByColumn, columnOptions]);
+  const sortedRows = useMemo(() => {
+    if (sortByColumn.name == null) return filteredRows;
+    if (columns[sortByColumn.name] == null) return filteredRows;
+    let sorted = [];
+    if (columns[sortByColumn.name].sortFn != null) {
+      sorted = [...filteredRows].sort(columns[sortByColumn.name].sortFn);
+    } else {
+      sorted = [...filteredRows].sort((rowA, rowB) => {
+        if (rowA[sortByColumn.name] < rowB[sortByColumn.name]) {
+          return -1;
+        }
+        return 1;
+      });
+    }
+    if (sortByColumn.by != 'ASC') {
+      return sorted.reverse();
+    }
+    return sorted;
+  }, [sortByColumn, filteredRows]);
+  const rowHTML = sortedRows.map((row, i) => {
+    const rowData = colNames.map(col => {
+      const dataCell = columns[col].maxWidth ? ("" + row[col]).slice(0, columns[col].maxWidth) : row[col];
+      return /*#__PURE__*/React.createElement("td", {
+        key: 'cell_' + col + row[col]
+      }, dataCell);
+    });
+    return /*#__PURE__*/React.createElement("tr", {
+      key: 'row_' + i
+    }, rowData);
+  });
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      ...tableStyle,
+      ...props.style
+    }
+  }, props.hideNumRows ? null : /*#__PURE__*/React.createElement("span", null, "Total Rows: ", rows.length, " Rows Displayed: ", filteredRows.length), /*#__PURE__*/React.createElement("table", null, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, headers)), /*#__PURE__*/React.createElement("tbody", null, rowHTML)));
+}
+module.exports = Table;
+},{"./Button.react":3,"./Dropdown.react":9,"react":38}],20:[function(require,module,exports){
+const React = require('react');
+
+/**
+ * Props:
+ *  - value: str,
+ *  - placeholder: ?str
+ *  - rows: number
+ *  - cols: ?number
+ *  - onChange: (str) => void
+ *  - style: Object
+ *
+ *  NOTE:
+ *    in the style use resize: none to prevent it from being resizeable
+ */
+const TextArea = props => {
+  const {
+    value,
+    placeholder,
+    id,
+    onChange,
+    onBlur,
+    onFocus,
+    className,
+    rows,
+    cols
+  } = props;
+  const style = props.style != null ? props.style : {};
+  return /*#__PURE__*/React.createElement("textarea", {
+    id: id ? id : null,
+    className: className ? className : null,
+    style: style,
+    placeholder: placeholder,
+    onChange: ev => {
+      if (props.onChange) onChange(ev.target.value);
+    },
+    onBlur: ev => {
+      if (props.onBlur) onBlur(ev.target.value);
+    },
+    onFocus: ev => {
+      if (props.onFocus) onFocus(ev.target.value);
+    },
+    rows: rows,
+    cols: cols,
+    value: value
+  });
+};
+module.exports = TextArea;
+},{"react":38}],21:[function(require,module,exports){
+const React = require('react');
+
+/**
+ * Props:
+ *  - value: str,
+ *  - placeholder: ?str
+ *  - password: ?boolean
+ *  - onChange: (str) => void
+ *  - style: Object
+ */
+const TextField = props => {
+  const {
+    value,
+    placeholder,
+    password,
+    id,
+    onChange,
+    onBlur,
+    onFocus,
+    className
+  } = props;
+  const style = props.style != null ? props.style : {};
+  return /*#__PURE__*/React.createElement("input", {
+    id: id ? id : null,
+    className: className ? className : null,
+    style: style,
+    placeholder: placeholder,
+    type: password ? 'password' : 'text',
+    value: value,
+    onChange: ev => {
+      if (props.onChange) onChange(ev.target.value);
+    },
+    onBlur: ev => {
+      if (props.onBlur) onBlur(ev.target.value);
+    },
+    onFocus: ev => {
+      if (props.onFocus) onFocus(ev.target.value);
+    }
+  });
+};
+module.exports = TextField;
+},{"react":38}],22:[function(require,module,exports){
 const React = require('react');
 const {
   throttle
@@ -754,105 +2281,733 @@ module.exports = {
   useCompare,
   usePrevious
 };
-},{"bens_utils":10,"react":17}],3:[function(require,module,exports){
+},{"bens_utils":31,"react":38}],23:[function(require,module,exports){
 const React = require('react');
 const ReactDOM = require('react-dom/client');
-const SwipePicker = require('./SwipePicker.react');
 const {
   useState,
   useEffect,
-  useMemo
+  useMemo,
+  useReducer
 } = React;
+const {
+  oneOf,
+  randomIn
+} = require('bens_utils').stochastic;
+const AudioWidget = require('./AudioWidget.react.js');
+const Board = require('./Board.react.js');
+const Button = require('./Button.react.js');
+const Canvas = require('./Canvas.react.js');
+const Checkbox = require('./Checkbox.react.js');
+const CheckerBackground = require('./CheckerBackground.react.js');
+const Divider = require('./Divider.react.js');
+const DragArea = require('./DragAreaDeprecated.react.js');
+const Dropdown = require('./Dropdown.react.js');
+const Indicator = require('./Indicator.react.js');
+const InfoCard = require('./InfoCard.react.js');
+const Modal = require('./Modal.react.js');
+const NumberField = require('./NumberField.react.js');
+const Plot = require('./Plot.react.js');
+const plotReducer = require('./plotReducer.js').plotReducer;
+const QuitButton = require('./QuitButton.react.js');
+const RadioPicker = require('./RadioPicker.react.js');
+const Slider = require('./Slider.react.js');
+const SpriteSheet = require('./SpriteSheet.react.js');
+const Table = require('./Table.react.js');
+const TextField = require('./TextField.react.js');
+const TextArea = require('./TextArea.react.js');
+const {
+  useEnhancedEffect,
+  useEnhancedReducer,
+  useMouseHandler,
+  useHotKeyHandler,
+  hotKeyReducer
+} = require('./hooks.js');
 function renderUI(root) {
   root.render( /*#__PURE__*/React.createElement(Main, null));
 }
-const Main = () => {
-  const [selectedIndex, setSelectedIndex] = useState(2);
+let CANVAS_WIDTH = 300;
+let CANVAS_HEIGHT = 300;
+const grid = {
+  x: 0,
+  y: 200,
+  width: 500,
+  height: 500
+};
+const Main = props => {
+  const [modal, setModal] = useState(null);
+  const [fullCanvas, setFullCanvas] = useState(false);
+  const [counter, setCounter] = useState({
+    val: 0
+  });
+  const [counter2, setCounter2] = useEnhancedReducer(() => {}, {
+    val: 0
+  });
+  useEffect(() => {
+    console.log("counter1", counter.val, "counter2", counter2.val);
+  }, [counter]);
+  const [table, updateTable] = useEnhancedReducer((table, action) => {
+    if (action.type == 'ADD_NAME') {
+      const id = table.nextID++;
+      return {
+        ...table,
+        columns: {
+          ...table.columns
+        },
+        rows: [...table.rows, {
+          id: table.nextID++,
+          name: action.name
+        }]
+      };
+    }
+    return table;
+  }, {
+    nextID: 1,
+    rows: [{
+      id: 0,
+      name: 'ben'
+    }, {
+      id: 0,
+      name: /*#__PURE__*/React.createElement(Button, {
+        label: "hello",
+        onClick: () => console.log("click")
+      })
+    }],
+    columns: {
+      id: {
+        filterable: true
+      },
+      name: {
+        filterable: true
+      }
+    }
+  });
+  const [hotKeys, hotKeyDispatch, getHotKeyState] = useEnhancedReducer(hotKeyReducer);
+  useHotKeyHandler({
+    dispatch: hotKeyDispatch,
+    getState: getHotKeyState
+  });
+  useEffect(() => {
+    hotKeyDispatch({
+      type: 'SET_HOTKEY',
+      key: 'space',
+      press: 'onKeyDown',
+      fn: (state, dispatch) => {
+        setKnookX(randomIn(0, 7));
+      }
+    });
+  }, []);
+  const [mouse, mouseDispatch, getMouseState] = useEnhancedReducer((mouse, action) => {
+    switch (action.type) {
+      case 'SET_MOUSE_DOWN':
+        {
+          const {
+            isLeft,
+            isDown,
+            downPixel
+          } = action;
+          return {
+            ...mouse,
+            isLeftDown: isLeft ? isDown : mouse.isLeftDown,
+            isRightDown: isLeft ? mouse.isRightDown : isDown,
+            downPixel: isDown && downPixel != null ? downPixel : mouse.downPixel
+          };
+        }
+      case 'SET_MOUSE_POS':
+        {
+          const {
+            curPixel
+          } = action;
+          return {
+            ...mouse,
+            prevPixel: {
+              ...mouse.curPixel
+            },
+            curPixel
+          };
+        }
+      case 'ADD_LINE':
+        {
+          return {
+            ...mouse,
+            lines: [...mouse.lines, action.line]
+          };
+        }
+      case 'CHANGE_CANVAS_SIZE':
+        {
+          return {
+            ...mouse,
+            canvasSize: action.canvasSize
+          };
+        }
+    }
+    return mouse;
+  }, {
+    isLeftDown: false,
+    isRightDown: false,
+    downPixel: {
+      x: 0,
+      y: 0
+    },
+    prevPixel: {
+      x: 0,
+      y: 0
+    },
+    curPixel: {
+      x: 0,
+      y: 0
+    },
+    canvasSize: {
+      width: CANVAS_WIDTH,
+      height: CANVAS_HEIGHT
+    },
+    lines: [],
+    prevInteractPos: null
+  });
+  const div = (pos, size) => {
+    return {
+      x: pos.x / size.width,
+      y: pos.y / size.height
+    };
+  };
+  useMouseHandler("canvas", {
+    dispatch: mouseDispatch,
+    getState: getMouseState
+  }, {
+    leftDown: (state, dispatch, pos) => {
+      console.log("click", pos);
+    },
+    mouseMove: (state, dispatch, gridPos) => {
+      if (!state.isLeftDown) return;
+      dispatch({
+        inMove: true
+      });
+      const {
+        canvasSize
+      } = state;
+      if (state.prevInteractPos) {
+        const prevPos = state.prevInteractPos;
+        dispatch({
+          type: 'ADD_LINE',
+          line: {
+            start: div(prevPos, canvasSize),
+            end: div(gridPos, canvasSize),
+            color: 'red'
+          }
+        });
+        dispatch({
+          prevInteractPos: gridPos
+        });
+      } else {
+        dispatch({
+          prevInteractPos: gridPos
+        });
+      }
+    },
+    leftUp: (state, dispatch, gridPos) => {
+      dispatch({
+        inMove: false
+      });
+      dispatch({
+        prevInteractPos: null
+      });
+    }
+  });
+  useEffect(() => {
+    const canvasWidth = fullCanvas ? window.innerWidth : CANVAS_WIDTH;
+    const canvasHeight = fullCanvas ? window.innerHeight : CANVAS_HEIGHT;
+    render(canvasWidth, canvasHeight, mouse.lines);
+  }, [mouse.lines, fullCanvas]);
+  const [draggables, setDraggables] = useState([/*#__PURE__*/React.createElement(Draggable, {
+    id: "drag1",
+    disabled: false,
+    key: "drag1",
+    style: {
+      top: 300,
+      left: 200
+    }
+  }), /*#__PURE__*/React.createElement(Draggable, {
+    id: "drag2",
+    key: "drag2",
+    style: {
+      top: 300,
+      left: 100
+    }
+  }), /*#__PURE__*/React.createElement(Draggable, {
+    id: "drag3",
+    key: "drag3",
+    style: {
+      top: 100,
+      left: 100
+    }
+  })]);
+  const [knookX, setKnookX] = useState(2);
+  const [isRotated, setIsRotated] = useState(false);
+  const [someText, setSomeText] = useState('hello world');
+  return /*#__PURE__*/React.createElement("div", null, modal, /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: 'absolute',
+      top: 4,
+      left: 4,
+      zIndex: 5
+    }
+  }, /*#__PURE__*/React.createElement(Button, {
+    label: "Pressed " + counter.val + " times",
+    onClick: () => setCounter({
+      val: counter.val + 1
+    }),
+    hoverCard: /*#__PURE__*/React.createElement("div", {
+      style: {
+        position: 'absolute',
+        height: 20,
+        backgroundColor: 'white',
+        border: '1px solid black'
+      }
+    }, "Some help text")
+  }), /*#__PURE__*/React.createElement(Button, {
+    label: "Add Draggable",
+    onClick: () => {
+      const nextID = "drag" + (draggables.length + 1);
+      setDraggables([...draggables, /*#__PURE__*/React.createElement(Draggable, {
+        id: nextID,
+        key: nextID,
+        style: {
+          top: randomIn(0, 3) * 100,
+          left: randomIn(0, 3) * 100,
+          backgroundColor: oneOf(['red', 'blue', 'orange', 'purple'])
+        }
+      })]);
+    }
+  }), /*#__PURE__*/React.createElement(Button, {
+    label: "Remove Draggable",
+    onClick: () => {
+      setDraggables(draggables.slice(0, -1));
+    }
+  }), /*#__PURE__*/React.createElement(Button, {
+    label: "Add Row",
+    onClick: () => updateTable({
+      type: 'ADD_NAME',
+      name: 'foo'
+    })
+  }), /*#__PURE__*/React.createElement(Button, {
+    label: "Set KnookX",
+    onClick: () => setKnookX(randomIn(0, 7))
+  }), /*#__PURE__*/React.createElement(Button, {
+    label: "Rotate Board",
+    onClick: () => setIsRotated(!isRotated)
+  }), /*#__PURE__*/React.createElement("div", null), /*#__PURE__*/React.createElement(TextField, {
+    value: "hello",
+    onBlur: val => {
+      console.log(val);
+    }
+  }), /*#__PURE__*/React.createElement(TextArea, {
+    value: someText,
+    onChange: setSomeText,
+    rows: 4,
+    style: {
+      resize: 'none',
+      width: 400
+    }
+  }), /*#__PURE__*/React.createElement(Button, {
+    label: "Display Modal",
+    disabled: modal != null,
+    onClick: () => {
+      setModal( /*#__PURE__*/React.createElement(Modal, {
+        title: "Modal",
+        dismiss: () => setModal(null),
+        body: /*#__PURE__*/React.createElement(ModalBody, {
+          counter: counter,
+          counter2: counter2
+        }),
+        buttons: [{
+          label: 'Dismiss',
+          onClick: () => setModal(null)
+        }]
+      }));
+    }
+  }), /*#__PURE__*/React.createElement(Button, {
+    label: "Grow Canvas",
+    onClick: () => {
+      CANVAS_WIDTH *= 1.2;
+      CANVAS_HEIGHT *= 1.2;
+      mouseDispatch({
+        type: 'CHANGE_CANVAS_SIZE',
+        canvasSize: {
+          width: CANVAS_WIDTH,
+          height: CANVAS_HEIGHT
+        }
+      });
+    }
+  }), /*#__PURE__*/React.createElement(Button, {
+    label: fullCanvas ? "Smaller Canvas" : "Set Full Screen Canvas",
+    onClick: () => setFullCanvas(!fullCanvas)
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      marginTop: 50
+    }
+  }, /*#__PURE__*/React.createElement(Canvas, {
+    width: CANVAS_WIDTH,
+    height: CANVAS_HEIGHT,
+    view: grid,
+    useFullScreen: fullCanvas,
+    onResize: () => {
+      const canvasWidth = fullCanvas ? window.innerWidth : CANVAS_WIDTH;
+      const canvasHeight = fullCanvas ? window.innerHeight : CANVAS_HEIGHT;
+      mouseDispatch({
+        type: 'CHANGE_CANVAS_SIZE',
+        canvasSize: {
+          width: canvasWidth,
+          height: canvasHeight
+        }
+      });
+      render(canvasWidth, canvasHeight, mouse.lines);
+    }
+  }), /*#__PURE__*/React.createElement(Table, {
+    style: {
+      paddingTop: '3rem',
+      fontSize: 19
+    },
+    rows: table.rows,
+    columns: table.columns
+  })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Slider, {
+    label: "Slider",
+    style: {
+      display: 'inline'
+    },
+    min: 0,
+    max: 10,
+    value: counter.val,
+    noOriginalValue: true,
+    step: 0.1,
+    isFloat: true,
+    onChange: v => {
+      return setCounter({
+        val: v
+      });
+    }
+  }), /*#__PURE__*/React.createElement(Slider, {
+    label: "Slider 2",
+    style: {
+      display: 'inline'
+    },
+    min: 0,
+    max: 10,
+    value: counter2.val,
+    noNumberField: true,
+    onChange: v => {
+      return setCounter2({
+        val: v
+      });
+    }
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex'
+    }
+  }, /*#__PURE__*/React.createElement(DragArea, {
+    snapX: 100,
+    snapY: 100,
+    isDropAllowed: (id, position) => {
+      console.log(id, position);
+      if (id == 'drag4') return false;
+      return true;
+    },
+    onDrop: (id, position) => {
+      console.log(id, "dropped at", position);
+    },
+    style: {
+      width: 400,
+      height: 400,
+      border: '1px solid black'
+    }
+  }, draggables), /*#__PURE__*/React.createElement(Board, {
+    pixelSize: {
+      width: 400,
+      height: 400
+    },
+    gridSize: {
+      width: 8,
+      height: 8
+    },
+    isRotated: isRotated,
+    onPieceMove: (id, position) => {
+      console.log(id, "moved to", position);
+    },
+    onPiecePickup: (id, position) => {
+      console.log(id, "picked up at", position);
+    },
+    isMoveAllowed: (id, position) => {
+      return true;
+    },
+    onMoveCancel: id => {
+      console.log("cancel", id);
+    },
+    pieces: [{
+      id: 'whiteKing',
+      position: {
+        x: 1,
+        y: 1
+      },
+      sprite: /*#__PURE__*/React.createElement(SpriteSheet, {
+        src: '../chess.png',
+        offset: {
+          x: 0,
+          y: 0
+        },
+        spriteSheet: {
+          pxWidth: 50,
+          pxHeight: 50,
+          imagesAcross: 6,
+          imagesDown: 2
+        }
+      })
+    }, {
+      id: 'whiteQueen',
+      position: {
+        x: 1,
+        y: 2
+      },
+      sprite: /*#__PURE__*/React.createElement(SpriteSheet, {
+        src: '../chess.png',
+        offset: {
+          x: 1,
+          y: 0
+        },
+        spriteSheet: {
+          pxWidth: 50,
+          pxHeight: 50,
+          imagesAcross: 6,
+          imagesDown: 2
+        }
+      })
+    }, {
+      id: 'blackKing',
+      position: {
+        x: 7,
+        y: 7
+      },
+      sprite: /*#__PURE__*/React.createElement(SpriteSheet, {
+        src: '../chess.png',
+        offset: {
+          x: 0,
+          y: 1
+        },
+        spriteSheet: {
+          pxWidth: 50,
+          pxHeight: 50,
+          imagesAcross: 6,
+          imagesDown: 2
+        }
+      })
+    }, {
+      id: 'blackQueen',
+      position: {
+        x: 6,
+        y: 7
+      },
+      sprite: /*#__PURE__*/React.createElement(SpriteSheet, {
+        src: '../chess.png',
+        offset: {
+          x: 1,
+          y: 1
+        },
+        spriteSheet: {
+          pxWidth: 50,
+          pxHeight: 50,
+          imagesAcross: 6,
+          imagesDown: 2
+        }
+      })
+    }, {
+      id: 'whiteKnook',
+      position: {
+        x: knookX,
+        y: 2
+      },
+      sprite: /*#__PURE__*/React.createElement(SpriteSheet, {
+        src: '../chess2.png',
+        offset: {
+          x: 6,
+          y: 0
+        },
+        spriteSheet: {
+          pxWidth: 50,
+          pxHeight: 50,
+          imagesAcross: 10,
+          imagesDown: 2
+        }
+      })
+    }]
+  })));
+};
+const Draggable = props => {
+  return /*#__PURE__*/React.createElement("div", {
+    id: props.id,
+    style: {
+      position: 'absolute',
+      width: 100,
+      height: 100,
+      top: 200,
+      left: 250,
+      textAlign: 'center',
+      backgroundColor: 'green',
+      borderRadius: '5%',
+      cursor: 'pointer',
+      ...(props.style || {})
+    }
+  }, props.id);
+};
+const HorizontalSplitPane = props => {
   return /*#__PURE__*/React.createElement("div", {
     style: {
-      backgroundColor: 'black',
-      width: '100%',
-      height: '100%',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      flexDirection: 'column',
-      padding: 10
+      display: "flex",
+      flexFlow: "column",
+      width: '100%'
     }
-  }, /*#__PURE__*/React.createElement(SwipePicker, {
-    id: "swipepicker_1",
-    style: {},
-    width: 500,
-    height: 60,
-    deselectedStyle: {
-      opacity: 0.7
-    },
-    selectedIndex: selectedIndex,
-    onSelectIndex: setSelectedIndex,
-    options: [{
-      isCircular: true,
-      color: 'red'
-    }, {
-      isCircular: true,
-      color: 'green'
-    }, {
-      isCircular: true,
-      color: 'pink'
-    }, {
-      isCircular: true,
-      color: 'purple'
-    }, {
-      color: 'steelblue',
-      isCircular: true
-    }, {
-      isCircular: true
-    }, {
-      label: 'Encoder'
-    }, {
-      label: 'H'
-    }, {
-      label: 'I',
-      isCircular: true
-    }, {
-      label: 'J',
-      isCircular: true
-    }, {
-      label: 'K',
-      isCircular: true
-    }]
-  }), /*#__PURE__*/React.createElement(SwipePicker, {
-    id: "swipepicker_2",
+  }, /*#__PURE__*/React.createElement("div", {
     style: {
-      marginTop: 10
-    },
-    width: 500,
-    height: 60,
-    options: [{
-      label: '+',
-      isCircular: true
-    }, {
-      label: 'Encoder 1',
-      onClick: () => console.log("?")
-    }, {
-      label: 'Encoder 2',
-      onClick: () => console.log("2")
-    }, {
-      label: 'Encoder 3',
-      onClick: () => console.log("3")
-    }, {
-      label: 'Encoder 4',
-      onClick: () => console.log("4")
-    }, {
-      label: 'Encoder 5',
-      onClick: () => console.log("5")
-    }, {
-      label: 'Encoder 6',
-      onClick: () => console.log("6")
-    }]
-  }));
+      backgroundColor: 'red',
+      opacity: 0.2,
+      width: '100%',
+      borderBottom: '1px solid black'
+    }
+  }, "Hello"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      backgroundColor: 'steelblue',
+      opacity: 0.2,
+      width: '100%',
+      borderTop: '1px solid black'
+    }
+  }, "World"));
 };
-renderUI(ReactDOM.createRoot(document.getElementById('container')));
-},{"./SwipePicker.react":1,"react":17,"react-dom/client":13}],4:[function(require,module,exports){
+const ModalBody = props => {
+  useEffect(() => {
+    console.log(props.counter.val, props.counter2.val);
+    return () => {
+      console.log(props.counter.val, props.counter2.val);
+    };
+  }, [props.counter]);
+  return /*#__PURE__*/React.createElement("div", null, "lorem ipsum the quick brown fox jumped over the lazy dog");
+};
+const mult = (pos, size) => {
+  return {
+    x: pos.x * size.width,
+    y: pos.y * size.height
+  };
+};
+const render = (canvasWidth, canvasHeight, lines) => {
+  const cvs = document.getElementById('canvas');
+  const ctx = cvs.getContext('2d');
+  ctx.save();
+  ctx.fillStyle = 'gray';
+  const pxW = canvasWidth / grid.width;
+  const pxH = canvasHeight / grid.height;
+  // ctx.scale(1 / pxW, 1 / pxH); // not needed now that canvas size is right
+
+  ctx.fillRect(0, 0, grid.width, grid.height);
+  ctx.fillStyle = 'steelblue';
+  ctx.fillRect(25, 25, 250, 400);
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  for (const line of lines) {
+    const start = mult(line.start, grid);
+    const end = mult(line.end, grid);
+    ctx.strokeStyle = line.color;
+    ctx.moveTo(start.x, start.y);
+    ctx.lineTo(end.x, end.y);
+    ctx.stroke();
+  }
+  ctx.closePath();
+  ctx.restore();
+};
+const root = ReactDOM.createRoot(document.getElementById('container'));
+renderUI(root);
+},{"./AudioWidget.react.js":1,"./Board.react.js":2,"./Button.react.js":3,"./Canvas.react.js":4,"./Checkbox.react.js":5,"./CheckerBackground.react.js":6,"./Divider.react.js":7,"./DragAreaDeprecated.react.js":8,"./Dropdown.react.js":9,"./Indicator.react.js":10,"./InfoCard.react.js":11,"./Modal.react.js":12,"./NumberField.react.js":13,"./Plot.react.js":14,"./QuitButton.react.js":15,"./RadioPicker.react.js":16,"./Slider.react.js":17,"./SpriteSheet.react.js":18,"./Table.react.js":19,"./TextArea.react.js":20,"./TextField.react.js":21,"./hooks.js":22,"./plotReducer.js":24,"bens_utils":31,"react":38,"react-dom/client":34}],24:[function(require,module,exports){
+// type Point = {
+//   x: number,
+//   y: number,
+//   color: ?string, // css color
+// };
+//
+// type Axis = {
+//   dimension: 'x' | 'y',
+//   label: string,
+//   min: ?number,
+//   max: ?number,
+// };
+
+const plotReducer = (state, action) => {
+  switch (action.type) {
+    case 'SET_AXIS':
+      const {
+        axis
+      } = action;
+      const whichAxis = axis.dimension == 'x' ? 'xAxis' : 'yAxis';
+      return {
+        ...state,
+        [whichAxis]: {
+          label: axis.dimension,
+          min: 0,
+          max: 100,
+          ...axis
+        }
+      };
+    case 'SET_POINTS':
+      const {
+        points
+      } = action;
+      return {
+        ...state,
+        points
+      };
+    case 'ADD_POINTS':
+      {
+        const {
+          points
+        } = action;
+        return {
+          ...state,
+          points: state.points ? [...state.points, ...points] : points
+        };
+      }
+    case 'ADD_POINT_CIRCULAR':
+      {
+        const {
+          point
+        } = action;
+        if (point.x < state.xAxis.max) {
+          return {
+            ...state,
+            points: state.points ? [...state.points, point] : points
+          };
+        } else {
+          const [_, ...next] = state.points;
+          return {
+            ...state,
+            points: state.points ? [...next, point] : points
+          };
+        }
+      }
+    case 'CLEAR_POINTS':
+      {
+        return {
+          ...state,
+          points: []
+        };
+      }
+    case 'PRINT_POINTS':
+      {
+        for (const point of state.points) {
+          console.log(point.x + "," + point.y);
+        }
+        return state;
+      }
+  }
+};
+module.exports = {
+  plotReducer
+};
+},{}],25:[function(require,module,exports){
 'use strict';
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
@@ -1016,7 +3171,7 @@ module.exports = {
   getEntityPositions: getEntityPositions,
   entityInsideGrid: entityInsideGrid
 };
-},{"./helpers":5,"./math":6,"./vectors":9}],5:[function(require,module,exports){
+},{"./helpers":26,"./math":27,"./vectors":30}],26:[function(require,module,exports){
 'use strict';
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
@@ -1180,7 +3335,7 @@ module.exports = {
   deepCopy: deepCopy,
   throttle: throttle, debounce: debounce
 };
-},{"./vectors":9}],6:[function(require,module,exports){
+},{"./vectors":30}],27:[function(require,module,exports){
 "use strict";
 
 var clamp = function clamp(val, min, max) {
@@ -1225,7 +3380,7 @@ module.exports = {
   clamp: clamp,
   subtractWithDeficit: subtractWithDeficit
 };
-},{}],7:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 'use strict';
 
 function isIpad() {
@@ -1256,7 +3411,7 @@ module.exports = {
   isMobile: isMobile,
   isPhone: isPhone
 };
-},{}],8:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 "use strict";
 
 var floor = Math.floor,
@@ -1311,7 +3466,7 @@ module.exports = {
   oneOf: oneOf,
   weightedOneOf: weightedOneOf
 };
-},{}],9:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 "use strict";
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
@@ -1510,7 +3665,7 @@ module.exports = {
   rotate: rotate,
   abs: abs
 };
-},{}],10:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 
 module.exports = {
   vectors: require('./bin/vectors'),
@@ -1521,7 +3676,7 @@ module.exports = {
   math: require('./bin/math'),
 }
 
-},{"./bin/gridHelpers":4,"./bin/helpers":5,"./bin/math":6,"./bin/platform":7,"./bin/stochastic":8,"./bin/vectors":9}],11:[function(require,module,exports){
+},{"./bin/gridHelpers":25,"./bin/helpers":26,"./bin/math":27,"./bin/platform":28,"./bin/stochastic":29,"./bin/vectors":30}],32:[function(require,module,exports){
 (function (process){(function (){
 /**
  * @license React
@@ -31393,7 +33548,7 @@ if (
 }
 
 }).call(this)}).call(this,require('_process'))
-},{"_process":21,"react":17,"scheduler":20}],12:[function(require,module,exports){
+},{"_process":42,"react":38,"scheduler":41}],33:[function(require,module,exports){
 /**
  * @license React
  * react-dom.production.min.js
@@ -31718,7 +33873,7 @@ exports.hydrateRoot=function(a,b,c){if(!ol(a))throw Error(p(405));var d=null!=c&
 e);return new nl(b)};exports.render=function(a,b,c){if(!pl(b))throw Error(p(200));return sl(null,a,b,!1,c)};exports.unmountComponentAtNode=function(a){if(!pl(a))throw Error(p(40));return a._reactRootContainer?(Sk(function(){sl(null,null,a,!1,function(){a._reactRootContainer=null;a[uf]=null})}),!0):!1};exports.unstable_batchedUpdates=Rk;
 exports.unstable_renderSubtreeIntoContainer=function(a,b,c,d){if(!pl(c))throw Error(p(200));if(null==a||void 0===a._reactInternals)throw Error(p(38));return sl(a,b,c,!1,d)};exports.version="18.2.0-next-9e3b772b8-20220608";
 
-},{"react":17,"scheduler":20}],13:[function(require,module,exports){
+},{"react":38,"scheduler":41}],34:[function(require,module,exports){
 (function (process){(function (){
 'use strict';
 
@@ -31747,7 +33902,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 }).call(this)}).call(this,require('_process'))
-},{"_process":21,"react-dom":14}],14:[function(require,module,exports){
+},{"_process":42,"react-dom":35}],35:[function(require,module,exports){
 (function (process){(function (){
 'use strict';
 
@@ -31789,7 +33944,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 }).call(this)}).call(this,require('_process'))
-},{"./cjs/react-dom.development.js":11,"./cjs/react-dom.production.min.js":12,"_process":21}],15:[function(require,module,exports){
+},{"./cjs/react-dom.development.js":32,"./cjs/react-dom.production.min.js":33,"_process":42}],36:[function(require,module,exports){
 (function (process){(function (){
 /**
  * @license React
@@ -34532,7 +36687,7 @@ if (
 }
 
 }).call(this)}).call(this,require('_process'))
-},{"_process":21}],16:[function(require,module,exports){
+},{"_process":42}],37:[function(require,module,exports){
 /**
  * @license React
  * react.production.min.js
@@ -34560,7 +36715,7 @@ exports.useCallback=function(a,b){return U.current.useCallback(a,b)};exports.use
 exports.useInsertionEffect=function(a,b){return U.current.useInsertionEffect(a,b)};exports.useLayoutEffect=function(a,b){return U.current.useLayoutEffect(a,b)};exports.useMemo=function(a,b){return U.current.useMemo(a,b)};exports.useReducer=function(a,b,e){return U.current.useReducer(a,b,e)};exports.useRef=function(a){return U.current.useRef(a)};exports.useState=function(a){return U.current.useState(a)};exports.useSyncExternalStore=function(a,b,e){return U.current.useSyncExternalStore(a,b,e)};
 exports.useTransition=function(){return U.current.useTransition()};exports.version="18.2.0";
 
-},{}],17:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
 (function (process){(function (){
 'use strict';
 
@@ -34571,7 +36726,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 }).call(this)}).call(this,require('_process'))
-},{"./cjs/react.development.js":15,"./cjs/react.production.min.js":16,"_process":21}],18:[function(require,module,exports){
+},{"./cjs/react.development.js":36,"./cjs/react.production.min.js":37,"_process":42}],39:[function(require,module,exports){
 (function (process,setImmediate){(function (){
 /**
  * @license React
@@ -35209,7 +37364,7 @@ if (
 }
 
 }).call(this)}).call(this,require('_process'),require("timers").setImmediate)
-},{"_process":21,"timers":22}],19:[function(require,module,exports){
+},{"_process":42,"timers":43}],40:[function(require,module,exports){
 (function (setImmediate){(function (){
 /**
  * @license React
@@ -35232,7 +37387,7 @@ exports.unstable_scheduleCallback=function(a,b,c){var d=exports.unstable_now();"
 exports.unstable_shouldYield=M;exports.unstable_wrapCallback=function(a){var b=y;return function(){var c=y;y=b;try{return a.apply(this,arguments)}finally{y=c}}};
 
 }).call(this)}).call(this,require("timers").setImmediate)
-},{"timers":22}],20:[function(require,module,exports){
+},{"timers":43}],41:[function(require,module,exports){
 (function (process){(function (){
 'use strict';
 
@@ -35243,7 +37398,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 }).call(this)}).call(this,require('_process'))
-},{"./cjs/scheduler.development.js":18,"./cjs/scheduler.production.min.js":19,"_process":21}],21:[function(require,module,exports){
+},{"./cjs/scheduler.development.js":39,"./cjs/scheduler.production.min.js":40,"_process":42}],42:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -35429,7 +37584,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],22:[function(require,module,exports){
+},{}],43:[function(require,module,exports){
 (function (setImmediate,clearImmediate){(function (){
 var nextTick = require('process/browser.js').nextTick;
 var apply = Function.prototype.apply;
@@ -35508,4 +37663,4 @@ exports.clearImmediate = typeof clearImmediate === "function" ? clearImmediate :
   delete immediateIds[id];
 };
 }).call(this)}).call(this,require("timers").setImmediate,require("timers").clearImmediate)
-},{"process/browser.js":21,"timers":22}]},{},[3]);
+},{"process/browser.js":42,"timers":43}]},{},[23]);

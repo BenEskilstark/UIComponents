@@ -82,6 +82,12 @@ const Main = props => {
     rows: [{
       id: 0,
       name: 'ben'
+    }, {
+      id: 0,
+      name: /*#__PURE__*/React.createElement(Button, {
+        label: "hello",
+        onClick: () => console.log("click")
+      })
     }],
     columns: {
       id: {

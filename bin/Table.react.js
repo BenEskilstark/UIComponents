@@ -111,7 +111,7 @@ function Table(props) {
         fontWeight: 'normal'
       }
     }, "Sort:", /*#__PURE__*/React.createElement(Button, {
-      label: "/\\\\",
+      label: "/\\",
       fontSize: 12,
       onClick: () => {
         setSortByColumn({

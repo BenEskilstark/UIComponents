@@ -101,7 +101,7 @@ function Table(props) {
           <div style={{fontWeight: 'normal'}}>
             Sort:
             <Button
-              label="/\\"
+              label="/\"
               fontSize={12}
               onClick={() => {
                 setSortByColumn({by: 'ASC', name: col});

@@ -76,7 +76,10 @@ const Main = (props) => {
     },
     {
       nextID: 1,
-      rows: [{id: 0, name: 'ben'}],
+      rows: [
+        {id: 0, name: 'ben'},
+        {id: 0, name: <Button label="hello" onClick={() => console.log("click")} />}
+      ],
       columns: {
         id: {filterable: true},
         name: {filterable: true},
