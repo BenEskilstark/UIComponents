@@ -33,6 +33,7 @@ function Button(props) {
       }
     }, props.hoverCard);
   }
+  const [touched, setTouched] = useState(false);
   return /*#__PURE__*/React.createElement("button", {
     type: "button",
     style: {
@@ -43,9 +44,17 @@ function Button(props) {
     key: id || label,
     className: props.disabled ? 'buttonDisable' : '',
     id: id.toUpperCase() + '_button',
-    onClick: props.disabled ? () => {} : props.onClick,
+    onClick: () => {
+      if (props.disabled) {
+        return;
+      }
+      if (touched) {
+        setTouched(false);
+        return;
+      }
+      props.onClick();
+    },
     onTouchStart: ev => {
-      ev.preventDefault();
       if (props.disabled) {
         return;
       }
@@ -55,14 +64,17 @@ function Button(props) {
         setIntervalID(null);
       }
       touchFn();
+      setTouched(true);
       // HACK: if you set the right condition, allow repetive presses
-      if (false) {
-        const interval = setInterval(touchFn, 120);
-        setIntervalID(interval);
-      }
+      // if (false) {
+      //   const interval = setInterval(touchFn, 120);
+      //   setIntervalID(interval);
+      // }
     },
+
     onTouchEnd: ev => {
       ev.preventDefault();
+      ev.stopPropagation();
       clearInterval(intervalID);
       setIntervalID(null);
       props.onMouseUp;

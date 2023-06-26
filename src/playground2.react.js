@@ -1,6 +1,7 @@
 const React = require('react');
 const ReactDOM = require('react-dom/client');
 const SwipePicker = require('./SwipePicker.react');
+const Button = require('./Button.react');
 const {useState, useEffect, useMemo} = React;
 
 function renderUI(root) {
@@ -10,6 +11,7 @@ function renderUI(root) {
 const Main = () => {
 
   const [selectedIndex, setSelectedIndex] = useState(2);
+  const [buttonLabel, setButtonLabel] = useState("click");
 
   return (
     <div
@@ -24,6 +26,13 @@ const Main = () => {
         padding: 10,
       }}
     >
+      <Button
+        label={buttonLabel}
+        onClick={() => {
+          if (buttonLabel == "click") setButtonLabel("plunk");
+          if (buttonLabel == "plunk") setButtonLabel("click");
+        }}
+      />
       <SwipePicker
         id={"swipepicker_1"}
         style={{

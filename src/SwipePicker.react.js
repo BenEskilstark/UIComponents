@@ -94,20 +94,26 @@ const SwipePicker = (props) => {
       },
       leftDown: (state, dispatch, pixel) => {
         dispatch({prevLeft: state.left});
-        // check for onClick:
-        const indexAtPixel = getOptionAtOffset(options, pixel.x);
-        if (indexAtPixel != null && indexAtPixel == state.selectedIndex && options[indexAtPixel].onClick) {
-          options[indexAtPixel].onClick();
-        }
         if (onMouseDown) {
           onMouseDown(pixel);
         }
       },
       leftUp: (state, dispatch, pixel) => {
-        const selectedIndex = getOptionAtCenter(options, state.left);
-        dispatch({selectedIndex});
+        const nextSelectedIndex = getOptionAtCenter(options, state.left);
+        // check for onClick:
+        const indexAtPixel = getOptionAtOffset(options, pixel.x);
+        if (
+          indexAtPixel != null &&
+          indexAtPixel == state.selectedIndex &&
+          options[indexAtPixel].onClick &&
+          nextSelectedIndex == state.selectedIndex
+        ) {
+          options[indexAtPixel].onClick();
+        }
+
+        dispatch({selectedIndex: nextSelectedIndex});
         if (onSelectIndex) {
-          onSelectIndex(selectedIndex, options[selectedIndex]);
+          onSelectIndex(nextSelectedIndex, options[nextSelectedIndex]);
         }
       },
       mouseLeave: (state, dispatch) => {

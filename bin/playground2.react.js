@@ -1,6 +1,7 @@
 const React = require('react');
 const ReactDOM = require('react-dom/client');
 const SwipePicker = require('./SwipePicker.react');
+const Button = require('./Button.react');
 const {
   useState,
   useEffect,
@@ -11,6 +12,7 @@ function renderUI(root) {
 }
 const Main = () => {
   const [selectedIndex, setSelectedIndex] = useState(2);
+  const [buttonLabel, setButtonLabel] = useState("click");
   return /*#__PURE__*/React.createElement("div", {
     style: {
       backgroundColor: 'black',
@@ -22,7 +24,13 @@ const Main = () => {
       flexDirection: 'column',
       padding: 10
     }
-  }, /*#__PURE__*/React.createElement(SwipePicker, {
+  }, /*#__PURE__*/React.createElement(Button, {
+    label: buttonLabel,
+    onClick: () => {
+      if (buttonLabel == "click") setButtonLabel("plunk");
+      if (buttonLabel == "plunk") setButtonLabel("click");
+    }
+  }), /*#__PURE__*/React.createElement(SwipePicker, {
     id: "swipepicker_1",
     style: {},
     width: 500,
