@@ -28,6 +28,7 @@ module.exports = {
   Table: require('./bin/Table.react.js'),
   TextField: require('./bin/TextField.react.js'),
   TextArea: require('./bin/TextArea.react.js'),
+  ...require('./bin/WindowSizeContext.react.js'),
   ...require('./bin/hooks.js'),
 };
 

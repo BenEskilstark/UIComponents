@@ -178,7 +178,7 @@ const SwipePicker = props => {
     dispatch({
       left: width / 2 - widthToSelectedElement
     });
-  }, [state.selectedIndex, !state.mouse.isLeftDown]);
+  }, [state.selectedIndex, !state.mouse.isLeftDown, width]);
   return /*#__PURE__*/React.createElement("div", {
     id: id,
     style: {

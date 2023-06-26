@@ -131,7 +131,7 @@ const SwipePicker = (props) => {
   useEffect(() => {
     const widthToSelectedElement = getWidthToOption(state.selectedIndex);
     dispatch({left: width / 2 - widthToSelectedElement});
-  }, [state.selectedIndex, !state.mouse.isLeftDown]);
+  }, [state.selectedIndex, !state.mouse.isLeftDown, width]);
 
 
   return (
