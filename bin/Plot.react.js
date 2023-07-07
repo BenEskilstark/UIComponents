@@ -44,6 +44,8 @@ const {
  *                   // up to a maximum number of points equal to the xAxis size
  *   changeOnly: ?boolean, // a watch prop, only add a point if watched prop changes
  *   inline: ?boolean,
+ *   dontClear: ?boolean,
+ *   style: ?object, // optional additional stylin
  *
  * canvas props:
  *   canvasID: ?string, // for when there's multiple plots
@@ -113,12 +115,15 @@ const Plot = props => {
     const transY = y => y * yTrans - ymin * yTrans;
 
     // clear canvas
-    ctx.fillStyle = 'white';
-    ctx.fillRect(0, 0, width, height);
+    if (!props.dontClear) {
+      ctx.fillStyle = 'white';
+      ctx.fillRect(0, 0, width, height);
+    }
 
     // drawing axes
     if (!xAxis.hidden) {
       ctx.fillStyle = 'black';
+      ctx.strokeStyle = 'black';
       const xMajor = xAxis.majorTicks || 10;
       for (let x = xmin; x < xmax; x += xMajor) {
         drawLine(ctx, {
@@ -141,6 +146,7 @@ const Plot = props => {
       }
     }
     if (!yAxis.hidden) {
+      ctx.strokeStyle = 'black';
       const yMajor = yAxis.majorTicks || 10;
       for (let y = ymin; y < ymax; y += yMajor) {
         drawLine(ctx, {
@@ -175,7 +181,7 @@ const Plot = props => {
         ctx.fillRect(x - size, y - size, size * 2, size * 2);
       }
       if (isLinear && prevPoint != null) {
-        ctx.fillStyle = 'black';
+        ctx.strokeStyle = point.color ? point.color : 'black';
         drawLine(ctx, prevPoint, {
           x,
           y
@@ -209,7 +215,8 @@ const Plot = props => {
   return /*#__PURE__*/React.createElement("div", {
     style: {
       width: 'fit-content',
-      display: props.inline ? 'inline' : 'table'
+      display: props.inline ? 'inline' : 'table',
+      ...props.style
     }
   }, yAxisLabel, /*#__PURE__*/React.createElement("div", {
     style: {
