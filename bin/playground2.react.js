@@ -40,6 +40,7 @@ const Main = () => {
     },
     selectedIndex: selectedIndex,
     onSelectIndex: setSelectedIndex,
+    frozenOnOneOption: true,
     options: [{
       isCircular: true,
       color: 'red'
@@ -76,8 +77,10 @@ const Main = () => {
     style: {
       marginTop: 10
     },
+    clickToSelect: true,
     width: 500,
     height: 60,
+    frozenOnOneOption: true,
     options: [{
       label: '+',
       isCircular: true

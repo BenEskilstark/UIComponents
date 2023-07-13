@@ -124,6 +124,7 @@ const {
  *  - options: Array<{label, onClick, style, isCircular, color}>
  *  - onSelectIndex: (index, option, isCancel) => void,
  *  - selectedIndex: index,
+ *  - clickToSelect: ?boolean // whether clicking an element should select it from anywhere
  *  - width: pixels
  *  - height: pixels
  */
@@ -136,6 +137,8 @@ const SwipePicker = props => {
     id,
     minSize = 0.6,
     maxSize = 0.9,
+    clickToSelect,
+    frozenOnOneOption,
     selectedStyle = {},
     deselectedStyle = {},
     onSelectIndex,
@@ -221,6 +224,7 @@ const SwipePicker = props => {
   }, {
     mouseMove: (state, dispatch, pixel) => {
       if (!state.mouse.isLeftDown) return;
+      if (options.length < 2 && frozenOnOneOption) return;
       dispatch({
         left: state.prevLeft + subtract(pixel, state.mouse.downPixel).x
       });
@@ -229,6 +233,7 @@ const SwipePicker = props => {
       }
     },
     leftDown: (state, dispatch, pixel) => {
+      if (options.length < 2 && frozenOnOneOption) return;
       dispatch({
         prevLeft: state.left
       });
@@ -237,12 +242,16 @@ const SwipePicker = props => {
       }
     },
     leftUp: (state, dispatch, pixel) => {
-      const nextSelectedIndex = getOptionAtCenter(options, state.left);
-      // check for onClick:
+      let nextSelectedIndex = getOptionAtCenter(options, state.left);
       const indexAtPixel = getOptionAtOffset(options, pixel.x);
-      if (indexAtPixel != null && indexAtPixel == state.selectedIndex && options[indexAtPixel].onClick && nextSelectedIndex == state.selectedIndex) {
-        options[indexAtPixel].onClick();
+      if (clickToSelect && indexAtPixel != null && nextSelectedIndex == state.selectedIndex) {
+        nextSelectedIndex = indexAtPixel;
       }
+      // check for onClick:
+      if (indexAtPixel != null && (indexAtPixel == state.selectedIndex && nextSelectedIndex == state.selectedIndex || clickToSelect) && options[nextSelectedIndex].onClick) {
+        options[nextSelectedIndex].onClick();
+      }
+      if (options.length < 2 && frozenOnOneOption) return;
       dispatch({
         selectedIndex: nextSelectedIndex
       });
@@ -252,6 +261,7 @@ const SwipePicker = props => {
     },
     mouseLeave: (state, dispatch) => {
       if (!state.mouse.isLeftDown) return;
+      if (options.length < 2 && frozenOnOneOption) return;
       const selectedIndex = getOptionAtCenter(options, state.left);
       dispatch({
         type: 'SET_MOUSE_DOWN',
@@ -899,6 +909,7 @@ const Main = () => {
     },
     selectedIndex: selectedIndex,
     onSelectIndex: setSelectedIndex,
+    frozenOnOneOption: true,
     options: [{
       isCircular: true,
       color: 'red'
@@ -935,8 +946,10 @@ const Main = () => {
     style: {
       marginTop: 10
     },
+    clickToSelect: true,
     width: 500,
     height: 60,
+    frozenOnOneOption: true,
     options: [{
       label: '+',
       isCircular: true
